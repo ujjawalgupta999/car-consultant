@@ -17,6 +17,7 @@ export const Navbar: React.FC = () => {
     { name: 'Explore Cars', path: '/explore' },
     { name: 'Rent a Car', path: '/rent' },
     { name: 'Buy a Car', path: '/buy' },
+    { name: 'Sell a Car', path: '/sell-car' },
     { name: 'Compare', path: '/compare', badge: comparedVehicles.length },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },

@@ -6,6 +6,12 @@ from .vehicle import VehicleCategory, FuelType, Transmission, VehicleCondition
 class IntentType(str, Enum):
     RENT = "RENT"
     BUY = "BUY"
+    SELL = "SELL"
+    BROWSE = "BROWSE"
+    COMPARE = "COMPARE"
+    PURCHASE_HISTORY = "PURCHASE_HISTORY"
+    RENTAL_HISTORY = "RENTAL_HISTORY"
+    SELLING_HISTORY = "SELLING_HISTORY"
 
     def __eq__(self, other):
         if isinstance(other, str):
@@ -40,6 +46,19 @@ class PurchaseDetails(BaseModel):
     financing_preference: Optional[str] = "loan" # "cash", "loan", "lease"
     intended_ownership_use: Optional[str] = None
 
+class SellDetails(BaseModel):
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    variant: Optional[str] = None
+    year: Optional[int] = None
+    fuel_type: Optional[str] = None
+    transmission: Optional[str] = None
+    kms_driven: Optional[int] = None
+    condition: Optional[str] = None
+    expected_price: Optional[float] = None
+    location: Optional[str] = None
+    is_registered_in_user_name: Optional[bool] = None
+
 class UserPreferences(BaseModel):
     session_id: Optional[str] = None
     
@@ -65,6 +84,7 @@ class UserPreferences(BaseModel):
     additional_preferences: List[str] = Field(default_factory=list)
     rental_details: Optional[RentalDetails] = None
     purchase_details: Optional[PurchaseDetails] = None
+    sell_details: Optional[SellDetails] = None
     interview_complete: bool = False
 
     @model_validator(mode="after")

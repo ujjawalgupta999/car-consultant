@@ -14,7 +14,10 @@ from .api import (
     routes_bookings,
     routes_payments,
     routes_a2ui,
-    routes_auth
+    routes_auth,
+    routes_purchases,
+    routes_dashboard,
+    routes_listings
 )
 
 logging.basicConfig(
@@ -68,6 +71,9 @@ app.include_router(routes_bookings.router)
 app.include_router(routes_payments.router)
 app.include_router(routes_a2ui.router)
 app.include_router(routes_auth.router)
+app.include_router(routes_purchases.router)
+app.include_router(routes_dashboard.router)
+app.include_router(routes_listings.router)
 
 # Mount MCP Apps static directory if it exists
 mcp_apps_dir = Path(__file__).parent.parent.parent / "mcp-apps"

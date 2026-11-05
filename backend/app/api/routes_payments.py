@@ -3,6 +3,8 @@ from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel
 from ..services.payment_simulator import payment_simulator
 from ..repositories.session import session_repo
+from ..repositories.user_data_repo import user_data_repo
+from ..api.routes_auth import resolve_user_id
 from ..models.payment import PaymentMethod, SimulatedScenario, PaymentStatus
 from ..models.booking import BookingStatus
 from ..models.order import OrderStatus
@@ -21,9 +23,11 @@ class MockPaymentRequest(BaseModel):
 @router.post("/mock")
 def execute_mock_payment(
     req: MockPaymentRequest,
-    idempotency_header: Optional[str] = Header(None, alias="Idempotency-Key")
+    idempotency_header: Optional[str] = Header(None, alias="Idempotency-Key"),
+    authorization: Optional[str] = Header(None)
 ):
     key = idempotency_header or req.idempotency_key or f"idemp_pay_{req.order_or_booking_id}"
+    user_id = resolve_user_id(authorization)
     
     method_enum = PaymentMethod.UPI_SIMULATOR
     if req.payment_method == "card":
@@ -76,6 +80,16 @@ def execute_mock_payment(
                     OrderStatus.CONFIRMED,
                     payment.transaction_reference
                 )
+                # Persist immutable purchase record and add to user ownership portfolio
+                try:
+                    user_data_repo.record_purchase(
+                        order_id=req.order_or_booking_id,
+                        transaction_reference=payment.transaction_reference,
+                        user_id=user_id
+                    )
+                except Exception as e:
+                    print(f"Error persisting purchase record: {e}")
+
                 if session:
                     session.workflow_state = WorkflowState.CONFIRMED
                     session_repo.save_session(session)

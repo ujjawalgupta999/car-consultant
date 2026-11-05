@@ -2,7 +2,7 @@ import re
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timedelta
 from ..models.preferences import (
-    UserPreferences, IntentType, Budget, BudgetPeriod, RentalDetails, PurchaseDetails
+    UserPreferences, IntentType, Budget, BudgetPeriod, RentalDetails, PurchaseDetails, SellDetails
 )
 from ..models.vehicle import VehicleCategory
 
@@ -64,6 +64,25 @@ class AdaptiveInterviewAgent:
         # ---------------------------------------------------------
         # 1. Intent Detection
         # ---------------------------------------------------------
+        purchase_hist_patterns = [
+            r'\b(my\s+purchases?|purchased\s+cars?|bought\s+cars?|purchase\s+history|show\s+(?:me\s+)?(?:my\s+)?purchases?|what\s+cars?\s+(?:did\s+i|have\s+i)\s+bought)\b',
+            r'\b(view\s+(?:my\s+)?purchases?|my\s+orders?|order\s+history)\b'
+        ]
+        rental_hist_patterns = [
+            r'\b(my\s+rentals?|previous\s+rentals?|rental\s+history|show\s+(?:me\s+)?(?:my\s+)?rentals?|past\s+rentals?)\b'
+        ]
+        selling_hist_patterns = [
+            r'\b(my\s+listings?|selling\s+listings?|cars\s+i(?:\x27m|\s+am)?\s+selling|show\s+(?:me\s+)?(?:my\s+)?listings?|my\s+cars\s+for\s+sale)\b'
+        ]
+        sell_patterns = [
+            r'\b(sell|selling|resell|reselling|trade\s*in|list\s+(?:my\s+)?car|put\s+up\s+for\s+sale)\b',
+            r'\bwant\s+to\s+sell\b',
+            r'\bhelp\s+(?:me\s+)?sell\b',
+            r'\bsell\s+a\s+(?:car|sedan|suv|vehicle|hatchback)\b'
+        ]
+        compare_patterns = [
+            r'\b(compare|comparison|versus|\bvs\b|difference\s+between)\b'
+        ]
         buy_patterns = [
             r'\b(buy|buying|purchase|purchasing|acquire|ordering)\b',
             r'\b(second\s*hand|pre-?owned|preowned)\b',
@@ -82,24 +101,45 @@ class AdaptiveInterviewAgent:
         # Check negated intents: "instead of buying", "rather than renting", etc.
         negated_buy = bool(re.search(r'(?:instead\s+of|rather\s+than|not)\s+(?:buying|buy|purchase)', text_lower))
         negated_rent = bool(re.search(r'(?:instead\s+of|rather\s+than|not)\s+(?:renting|rent|hire|lease)', text_lower))
+        negated_sell = bool(re.search(r'(?:instead\s+of|rather\s+than|not)\s+(?:selling|sell)', text_lower))
 
-        has_buy_signal = any(re.search(pat, text_lower) for pat in buy_patterns) and not negated_buy
-        has_rent_signal = any(re.search(pat, text_lower) for pat in rent_patterns) and not negated_rent
+        if any(re.search(pat, text_lower) for pat in purchase_hist_patterns):
+            current_prefs.intent = IntentType.PURCHASE_HISTORY
+            extracted_fields.append("intent: PURCHASE_HISTORY")
+        elif any(re.search(pat, text_lower) for pat in rental_hist_patterns):
+            current_prefs.intent = IntentType.RENTAL_HISTORY
+            extracted_fields.append("intent: RENTAL_HISTORY")
+        elif any(re.search(pat, text_lower) for pat in selling_hist_patterns):
+            current_prefs.intent = IntentType.SELLING_HISTORY
+            extracted_fields.append("intent: SELLING_HISTORY")
+        elif any(re.search(pat, text_lower) for pat in sell_patterns) and not negated_sell:
+            current_prefs.intent = IntentType.SELL
+            if not current_prefs.sell_details:
+                current_prefs.sell_details = SellDetails()
+            extracted_fields.append("intent: SELL")
+        elif any(re.search(pat, text_lower) for pat in compare_patterns):
+            current_prefs.intent = IntentType.COMPARE
+            extracted_fields.append("intent: COMPARE")
+        else:
+            has_buy_signal = any(re.search(pat, text_lower) for pat in buy_patterns) and not negated_buy
+            has_rent_signal = any(re.search(pat, text_lower) for pat in rent_patterns) and not negated_rent
 
-        if has_rent_signal and (not has_buy_signal or negated_buy):
-            current_prefs.intent = IntentType.RENT
-            current_prefs.purchase_details = None
-            if not current_prefs.rental_details:
-                current_prefs.rental_details = RentalDetails()
-            extracted_fields.append("intent: RENT")
-        elif has_buy_signal and (not has_rent_signal or negated_rent):
-            current_prefs.intent = IntentType.BUY
-            current_prefs.rental_details = None
-            current_prefs.rental_start_date = None
-            current_prefs.rental_end_date = None
-            if not current_prefs.purchase_details:
-                current_prefs.purchase_details = PurchaseDetails()
-            extracted_fields.append("intent: BUY")
+            if has_rent_signal and (not has_buy_signal or negated_buy):
+                current_prefs.intent = IntentType.RENT
+                current_prefs.purchase_details = None
+                current_prefs.sell_details = None
+                if not current_prefs.rental_details:
+                    current_prefs.rental_details = RentalDetails()
+                extracted_fields.append("intent: RENT")
+            elif has_buy_signal and (not has_rent_signal or negated_rent):
+                current_prefs.intent = IntentType.BUY
+                current_prefs.rental_details = None
+                current_prefs.sell_details = None
+                current_prefs.rental_start_date = None
+                current_prefs.rental_end_date = None
+                if not current_prefs.purchase_details:
+                    current_prefs.purchase_details = PurchaseDetails()
+                extracted_fields.append("intent: BUY")
 
         # ---------------------------------------------------------
         # 2. Seating Capacity Semantic Extraction
@@ -346,7 +386,79 @@ class AdaptiveInterviewAgent:
                 extracted_fields.append("purchase_type: new")
 
         # ---------------------------------------------------------
-        # 11. Completeness Check
+        # 11. Sell Specific Entity Extraction
+        # ---------------------------------------------------------
+        is_sell_active = (current_prefs.intent == "SELL" or current_prefs.intent == IntentType.SELL)
+        if is_sell_active:
+            if not current_prefs.sell_details:
+                current_prefs.sell_details = SellDetails()
+
+            # Registration status in user's name
+            if re.search(r'\b(yes|yeah|yep|registered\s+in\s+my\s+name|in\s+my\s+name|on\s+my\s+name|registered\s+to\s+me)\b', text_lower):
+                current_prefs.sell_details.is_registered_in_user_name = True
+                extracted_fields.append("registered_in_user_name: True")
+            elif re.search(r'\b(no|nope|not\s+in\s+my\s+name|not\s+registered\s+in\s+my\s+name|someone\s+else)\b', text_lower):
+                current_prefs.sell_details.is_registered_in_user_name = False
+                extracted_fields.append("registered_in_user_name: False")
+
+            # Year e.g. 2021, 2019, 2022
+            year_match = re.search(r'\b(199\d|20[0-2]\d)\b', text_lower)
+            if year_match:
+                y_val = int(year_match.group(1))
+                current_prefs.sell_details.year = y_val
+                extracted_fields.append(f"year: {y_val}")
+
+            # Kms driven e.g. "32,000 km", "35000 kms", "32k km", "40000"
+            kms_match = re.search(r'(\d{1,3}(?:,\d{3})+|\d+)\s*(?:kms?|kilometers?|km)\b', text_lower)
+            if not kms_match:
+                kms_k = re.search(r'(\d+(?:\.\d+)?)\s*k\s*(?:kms?|km)\b', text_lower)
+                if kms_k:
+                    km_val = int(float(kms_k.group(1)) * 1000)
+                    current_prefs.sell_details.kms_driven = km_val
+                    extracted_fields.append(f"kms_driven: {km_val:,}")
+            else:
+                km_val = int(kms_match.group(1).replace(",", ""))
+                current_prefs.sell_details.kms_driven = km_val
+                extracted_fields.append(f"kms_driven: {km_val:,}")
+
+            # Model recognition
+            models_to_check = [
+                ("city", "City"), ("creta", "Creta"), ("harrier", "Harrier"), ("fortuner", "Fortuner"),
+                ("swift", "Swift"), ("baleno", "Baleno"), ("verna", "Verna"), ("i20", "i20"),
+                ("nexon", "Nexon"), ("seltos", "Seltos"), ("innova", "Innova"), ("xuv700", "XUV700"),
+                ("thar", "Thar"), ("scorpio", "Scorpio"), ("brezza", "Brezza"), ("tiago", "Tiago"),
+                ("altroz", "Altroz"), ("punch", "Punch"), ("slavia", "Slavia"), ("virtus", "Virtus")
+            ]
+            for m_kw, m_label in models_to_check:
+                if re.search(r'\b' + m_kw + r'\b', text_lower):
+                    current_prefs.sell_details.model = m_label
+                    extracted_fields.append(f"model: {m_label}")
+                    break
+
+            # Brand
+            if current_prefs.preferred_brands:
+                current_prefs.sell_details.brand = current_prefs.preferred_brands[0]
+            elif current_prefs.brand_preference:
+                current_prefs.sell_details.brand = current_prefs.brand_preference
+
+            # Location
+            if current_prefs.location:
+                current_prefs.sell_details.location = current_prefs.location
+
+            # Expected Price
+            if current_prefs.budget_max and current_prefs.budget_max > 0:
+                current_prefs.sell_details.expected_price = current_prefs.budget_max
+            elif current_prefs.budget and current_prefs.budget.amount > 0:
+                current_prefs.sell_details.expected_price = current_prefs.budget.amount
+
+            # Technical attributes
+            if current_prefs.fuel_type:
+                current_prefs.sell_details.fuel_type = current_prefs.fuel_type.title()
+            if current_prefs.transmission:
+                current_prefs.sell_details.transmission = current_prefs.transmission.title()
+
+        # ---------------------------------------------------------
+        # 12. Completeness Check
         # ---------------------------------------------------------
         missing = AdaptiveInterviewAgent.check_missing_fields(current_prefs)
         current_prefs.interview_complete = (len(missing) == 0)
@@ -360,6 +472,21 @@ class AdaptiveInterviewAgent:
         Never demands category if seating capacity is already specified.
         """
         missing = []
+
+        # History and comparison intents require no extra interview fields
+        if prefs.intent in [
+            IntentType.PURCHASE_HISTORY, IntentType.RENTAL_HISTORY,
+            IntentType.SELLING_HISTORY, IntentType.COMPARE,
+            "PURCHASE_HISTORY", "RENTAL_HISTORY", "SELLING_HISTORY", "COMPARE"
+        ]:
+            return []
+
+        # Sell intent requires ownership registration check
+        if prefs.intent == IntentType.SELL or prefs.intent == "SELL":
+            if not prefs.sell_details or prefs.sell_details.is_registered_in_user_name is None:
+                missing.append("is_registered_in_user_name")
+            return missing
+
         is_buy = (prefs.intent == IntentType.BUY or prefs.intent == "BUY")
         has_cat_or_seats = bool(prefs.category or prefs.seating_capacity)
         has_budget = bool(
@@ -403,6 +530,12 @@ class AdaptiveInterviewAgent:
         missing = AdaptiveInterviewAgent.check_missing_fields(prefs)
         if not missing:
             return "All set! I have gathered your key requirements. Let's find your perfect match."
+
+        if prefs.intent == IntentType.SELL or prefs.intent == "SELL":
+            if "is_registered_in_user_name" in missing:
+                cat_desc = prefs.category.value.lower() if prefs.category else "car"
+                return f"Sure! I can help you sell your {cat_desc}. Is it already registered in your name?"
+            return "Could you provide details about your car — such as make, model, year, kilometers driven, and expected selling price?"
 
         is_rent = (prefs.intent == "RENT" or prefs.intent == IntentType.RENT)
 

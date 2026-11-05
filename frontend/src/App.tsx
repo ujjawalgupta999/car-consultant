@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { FloatingConsultantDrawer } from './components/FloatingConsultantDrawer';
+import { useConsultantStore } from './store/consultantStore';
+import { useVehicleStore } from './store/vehicleStore';
 
-// Pages
+// Marketplace & Flow Pages
 import { Home } from './pages/Home';
 import { ExploreCars } from './pages/ExploreCars';
 import { RentCars } from './pages/RentCars';
@@ -15,17 +17,38 @@ import { Booking } from './pages/Booking';
 import { Checkout } from './pages/Checkout';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
-import { Dashboard } from './pages/Dashboard';
 import { About } from './pages/About';
 import { Contact } from './pages/Contact';
 import { ConsultantPage } from './pages/ConsultantPage';
+import { SellCarPage } from './pages/SellCarPage';
 
-// Scroll to top on route navigation
+// Authenticated User Dashboard Sub-pages
+import { DashboardLayout } from './pages/dashboard/DashboardLayout';
+import { OverviewPage } from './pages/dashboard/OverviewPage';
+import { PurchasesPage } from './pages/dashboard/PurchasesPage';
+import { RentalsPage } from './pages/dashboard/RentalsPage';
+import { VehiclesPage } from './pages/dashboard/VehiclesPage';
+import { ListingsPage } from './pages/dashboard/ListingsPage';
+import { SavedPage } from './pages/dashboard/SavedPage';
+import { ProfilePage } from './pages/dashboard/ProfilePage';
+
+// Scroll to top and synchronize route context
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
+  const { setActiveContext } = useConsultantStore();
+  const { vehicles, fetchVehicles } = useVehicleStore();
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [pathname]);
+    setActiveContext({ currentRoute: pathname });
+  }, [pathname, setActiveContext]);
+
+  useEffect(() => {
+    if (vehicles.length === 0) {
+      fetchVehicles();
+    }
+  }, [vehicles.length, fetchVehicles]);
+
   return null;
 };
 
@@ -42,6 +65,7 @@ export const App: React.FC = () => {
             <Route path="/explore" element={<ExploreCars />} />
             <Route path="/rent" element={<RentCars />} />
             <Route path="/buy" element={<BuyCars />} />
+            <Route path="/sell-car" element={<SellCarPage />} />
             <Route path="/vehicles/:id" element={<VehicleDetails />} />
             <Route path="/compare" element={<CompareCars />} />
             <Route path="/booking/:vehicleId" element={<Booking />} />
@@ -49,7 +73,18 @@ export const App: React.FC = () => {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+
+            {/* Complete Authenticated User Dashboard */}
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<OverviewPage />} />
+              <Route path="purchases" element={<PurchasesPage />} />
+              <Route path="rentals" element={<RentalsPage />} />
+              <Route path="vehicles" element={<VehiclesPage />} />
+              <Route path="listings" element={<ListingsPage />} />
+              <Route path="saved" element={<SavedPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
+
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/consultant" element={<ConsultantPage />} />
@@ -65,4 +100,3 @@ export const App: React.FC = () => {
     </Router>
   );
 };
-export default App;

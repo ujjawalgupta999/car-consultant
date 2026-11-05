@@ -30,6 +30,8 @@ interface ConsultantStore {
   setCurrentEvent: (event: ProgressEvent | null) => void;
   activeContext: { currentRoute: string; vehicleId?: string; vehicleName?: string };
   setActiveContext: (ctx: { currentRoute: string; vehicleId?: string; vehicleName?: string }) => void;
+  sellDraft: any | null;
+  setSellDraft: (draft: any) => void;
   executeWebsiteAction: (action: WebsiteAction, navigate?: (path: string) => void) => void;
   resetConversation: () => void;
 }
@@ -69,12 +71,18 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
   setCurrentEvent: (event) => set({ currentEvent: event }),
   activeContext: { currentRoute: '/' },
   setActiveContext: (ctx) => set({ activeContext: ctx }),
+  sellDraft: null,
+  setSellDraft: (draft) => set({ sellDraft: draft }),
 
   executeWebsiteAction: (action: WebsiteAction, navigate?: (path: string) => void) => {
     console.log('[AI Consultant Controller Action]:', action);
     const { type, payload } = action;
 
     switch (type) {
+      case 'PREFILL_SELL_FORM':
+        set({ sellDraft: payload });
+        break;
+
       case 'NAVIGATE_TO_PAGE':
         if (navigate && payload.path) {
           navigate(payload.path);
@@ -157,6 +165,7 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
       activeMcpApp: null,
       confirmedBooking: null,
       currentEvent: null,
+      sellDraft: null,
     });
   },
 }));

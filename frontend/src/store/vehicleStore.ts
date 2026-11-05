@@ -62,9 +62,18 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
   },
 
   setFilters: (partial) => {
-    set((state) => ({
-      filters: { ...state.filters, ...partial },
-    }));
+    set((state) => {
+      const merged = { ...state.filters, ...partial };
+      // Safety guard against cross-intent price leakage between buy & rent
+      if (partial.intent === 'buy' && (merged.maxPrice < 100000 || (partial.maxPrice === undefined && state.filters.intent === 'rent'))) {
+        merged.maxPrice = 50000000;
+        merged.minPrice = 0;
+      } else if (partial.intent === 'rent' && (merged.maxPrice > 100000 || (partial.maxPrice === undefined && state.filters.intent === 'buy'))) {
+        merged.maxPrice = 50000;
+        merged.minPrice = 0;
+      }
+      return { filters: merged };
+    });
   },
 
   resetFilters: () => {

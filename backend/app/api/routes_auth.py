@@ -37,6 +37,15 @@ _TOKENS_DB: Dict[str, str] = {
 def _hash_pw(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
+def resolve_user_id(authorization: Optional[str] = None) -> str:
+    """Derives user ID from session/token, defaulting to demo user in demo environment."""
+    if authorization:
+        token = authorization.replace("Bearer ", "").strip()
+        email = _TOKENS_DB.get(token)
+        if email and email in _USERS_DB:
+            return _USERS_DB[email]["id"]
+    return "usr_demo_01"
+
 @router.post("/signup", status_code=201)
 def signup(req: UserRegisterRequest):
     email = req.email.lower().strip()
