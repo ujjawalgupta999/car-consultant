@@ -1,0 +1,4952 @@
+[
+  {
+    "id": "CAR-001",
+    "brand": "Maruti Suzuki",
+    "model": "Swift ZXi",
+    "year": 2024,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2200,
+    "purchase_price": 850000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 31,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-002",
+    "brand": "Hyundai",
+    "model": "i20 Asta (O)",
+    "year": 2025,
+    "category": "Hatchback",
+    "condition": "new",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2500,
+    "purchase_price": 1100000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 34,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-003",
+    "brand": "Tata",
+    "model": "Altroz XZ Plus",
+    "year": 2023,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "manual",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 2100,
+    "purchase_price": 920000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 37,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 22000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-004",
+    "brand": "Volkswagen",
+    "model": "Polo GT TSI",
+    "year": 2022,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2700,
+    "purchase_price": 980000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 40,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 29000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-005",
+    "brand": "Toyota",
+    "model": "Glanza V",
+    "year": 2024,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2300,
+    "purchase_price": 990000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 43,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-006",
+    "brand": "Honda",
+    "model": "Jazz ZX",
+    "year": 2022,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2200,
+    "purchase_price": 880000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.4,
+    "review_count": 46,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 31000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-007",
+    "brand": "Renault",
+    "model": "Kwid Climber",
+    "year": 2024,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 1600,
+    "purchase_price": 620000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.2,
+    "review_count": 49,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-008",
+    "brand": "Mini",
+    "model": "Cooper 3-Door S",
+    "year": 2023,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 8500,
+    "purchase_price": 4200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 52,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 16000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-009",
+    "brand": "Fiat",
+    "model": "Abarth Punto",
+    "year": 2021,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "manual",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2900,
+    "purchase_price": 750000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 55,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 38000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-010",
+    "brand": "Ford",
+    "model": "Figo Titanium",
+    "year": 2021,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "manual",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 1800,
+    "purchase_price": 580000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.3,
+    "review_count": 58,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 42000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-011",
+    "brand": "Honda",
+    "model": "City ZX",
+    "year": 2025,
+    "category": "Sedan",
+    "condition": "new",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 2900,
+    "purchase_price": 1550000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 61,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 6000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-012",
+    "brand": "Hyundai",
+    "model": "Verna SX (O) Turbo",
+    "year": 2024,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3100,
+    "purchase_price": 1680000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 64,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-013",
+    "brand": "Skoda",
+    "model": "Slavia Style 1.5 TSI",
+    "year": 2024,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3300,
+    "purchase_price": 1750000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 67,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-014",
+    "brand": "Volkswagen",
+    "model": "Virtus GT Plus",
+    "year": 2025,
+    "category": "Sedan",
+    "condition": "new",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3400,
+    "purchase_price": 1820000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 70,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-015",
+    "brand": "Maruti Suzuki",
+    "model": "Ciaz Alpha",
+    "year": 2023,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 2400,
+    "purchase_price": 1120000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.4,
+    "review_count": 73,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 24000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-016",
+    "brand": "Toyota",
+    "model": "Camry Hybrid",
+    "year": 2023,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 7500,
+    "purchase_price": 4500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 76,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 19000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-017",
+    "brand": "Nissan",
+    "model": "Sunny XV",
+    "year": 2021,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "manual",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 1900,
+    "purchase_price": 650000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.2,
+    "review_count": 79,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 45000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-018",
+    "brand": "Mazda",
+    "model": "Mazda 3 SkyActiv",
+    "year": 2023,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3800,
+    "purchase_price": 2200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 82,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 18000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-019",
+    "brand": "Subaru",
+    "model": "Legacy Premium",
+    "year": 2023,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 4100,
+    "purchase_price": 2600000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 85,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 21000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-020",
+    "brand": "Kia",
+    "model": "K5 GT-Line",
+    "year": 2024,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 4200,
+    "purchase_price": 2800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 88,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-021",
+    "brand": "Hyundai",
+    "model": "Creta SX (O)",
+    "year": 2025,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2800,
+    "purchase_price": 1450000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 91,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12400,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-022",
+    "brand": "Tata",
+    "model": "Harrier Fearless Plus",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3600,
+    "purchase_price": 2400000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 94,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-023",
+    "brand": "Mahindra",
+    "model": "XUV700 AX7 Luxury",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Bangalore",
+    "rental_price_per_day": 3800,
+    "purchase_price": 2550000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 97,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 17000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-024",
+    "brand": "Kia",
+    "model": "Seltos GTX Plus",
+    "year": 2025,
+    "category": "SUV",
+    "condition": "new",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2900,
+    "purchase_price": 1950000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 100,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-025",
+    "brand": "Toyota",
+    "model": "Fortuner Legender",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 6500,
+    "purchase_price": 4400000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 103,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 19000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-026",
+    "brand": "MG",
+    "model": "Hector Sharp Pro",
+    "year": 2023,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2700,
+    "purchase_price": 1850000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.4,
+    "review_count": 106,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 21000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-027",
+    "brand": "Jeep",
+    "model": "Compass Model S",
+    "year": 2023,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 4200,
+    "purchase_price": 2700000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 109,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 18000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-028",
+    "brand": "Volkswagen",
+    "model": "Taigun Topline",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3000,
+    "purchase_price": 1750000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 112,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-029",
+    "brand": "Skoda",
+    "model": "Kushaq Monte Carlo",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3100,
+    "purchase_price": 1800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 115,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-030",
+    "brand": "Nissan",
+    "model": "Magnite XV Premium",
+    "year": 2023,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2000,
+    "purchase_price": 950000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.3,
+    "review_count": 118,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 26000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-031",
+    "brand": "Mercedes-Benz",
+    "model": "E-Class E 220d",
+    "year": 2024,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 11000,
+    "purchase_price": 7800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 26,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-032",
+    "brand": "BMW",
+    "model": "5 Series 530i M Sport",
+    "year": 2024,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 11500,
+    "purchase_price": 7500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 29,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 10000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-033",
+    "brand": "Audi",
+    "model": "A6 45 TFSI",
+    "year": 2024,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 9500,
+    "purchase_price": 6800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 32,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-034",
+    "brand": "Lexus",
+    "model": "ES 300h Luxury",
+    "year": 2023,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 10500,
+    "purchase_price": 6900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 35,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 16000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-035",
+    "brand": "Jaguar",
+    "model": "XF R-Dynamic",
+    "year": 2023,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 9800,
+    "purchase_price": 7100000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 38,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 18000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-036",
+    "brand": "Genesis",
+    "model": "G80 2.5T",
+    "year": 2024,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 10000,
+    "purchase_price": 7200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 41,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-037",
+    "brand": "Volvo",
+    "model": "S90 B5 Inscription",
+    "year": 2023,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 9200,
+    "purchase_price": 6700000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 44,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-038",
+    "brand": "Porsche",
+    "model": "Panamera 4",
+    "year": 2023,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 22000,
+    "purchase_price": 16500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 47,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-039",
+    "brand": "Maserati",
+    "model": "Ghibli Modena",
+    "year": 2022,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 19500,
+    "purchase_price": 12500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 50,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-040",
+    "brand": "Alfa Romeo",
+    "model": "Giulia Veloce",
+    "year": 2023,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 12000,
+    "purchase_price": 7900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 53,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-041",
+    "brand": "Land Rover",
+    "model": "Range Rover Sport Dynamic",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 18000,
+    "purchase_price": 17000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 56,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-042",
+    "brand": "Porsche",
+    "model": "Cayenne Base",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 21000,
+    "purchase_price": 14500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 59,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-043",
+    "brand": "Mercedes-Benz",
+    "model": "GLE 450 4MATIC",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 14000,
+    "purchase_price": 11000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 62,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-044",
+    "brand": "BMW",
+    "model": "X5 xDrive40i",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 13500,
+    "purchase_price": 10500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 65,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-045",
+    "brand": "Audi",
+    "model": "Q7 55 TFSI Quattro",
+    "year": 2023,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 12500,
+    "purchase_price": 9200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 68,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 19000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-046",
+    "brand": "Volvo",
+    "model": "XC90 Recharge Ultimate",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 13000,
+    "purchase_price": 10200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 71,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-047",
+    "brand": "Lexus",
+    "model": "RX 500h F-Sport",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 15000,
+    "purchase_price": 11800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 74,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 10000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-048",
+    "brand": "Maserati",
+    "model": "Levante GT",
+    "year": 2023,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 19000,
+    "purchase_price": 14900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 77,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-049",
+    "brand": "Aston Martin",
+    "model": "DBX 707",
+    "year": 2023,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 38000,
+    "purchase_price": 39000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 80,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 6000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-050",
+    "brand": "Bentley",
+    "model": "Bentayga V8",
+    "year": 2023,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 45000,
+    "purchase_price": 42000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 83,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 7000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-051",
+    "brand": "Tesla",
+    "model": "Model 3 Long Range",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 7500,
+    "purchase_price": 5200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 86,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-052",
+    "brand": "Tata",
+    "model": "Nexon EV Empowered",
+    "year": 2025,
+    "category": "Electric Vehicle",
+    "condition": "new",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2600,
+    "purchase_price": 1950000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 89,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 7000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-053",
+    "brand": "Hyundai",
+    "model": "Ioniq 5 AWD",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 6500,
+    "purchase_price": 4600000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 92,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-054",
+    "brand": "Kia",
+    "model": "EV6 GT-Line AWD",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 8200,
+    "purchase_price": 6100000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 95,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-055",
+    "brand": "BYD",
+    "model": "Seal Performance",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 7000,
+    "purchase_price": 5300000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 98,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-056",
+    "brand": "MG",
+    "model": "ZS EV Exclusive Plus",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3100,
+    "purchase_price": 2450000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 101,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-057",
+    "brand": "Mahindra",
+    "model": "XUV400 Pro",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2500,
+    "purchase_price": 1750000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.4,
+    "review_count": 104,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-058",
+    "brand": "Polestar",
+    "model": "Polestar 2 Dual Motor",
+    "year": 2023,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 8000,
+    "purchase_price": 5800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 107,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-059",
+    "brand": "BMW",
+    "model": "i4 eDrive40",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 11000,
+    "purchase_price": 7400000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 110,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-060",
+    "brand": "Audi",
+    "model": "e-tron GT Quattro",
+    "year": 2023,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 25000,
+    "purchase_price": 17000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 113,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 450,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-061",
+    "brand": "Toyota",
+    "model": "Urban Cruiser Hyryder Strong Hybrid",
+    "year": 2024,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2900,
+    "purchase_price": 1950000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 116,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-062",
+    "brand": "Honda",
+    "model": "City e:HEV ZX",
+    "year": 2024,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3200,
+    "purchase_price": 2050000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 119,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-063",
+    "brand": "Maruti Suzuki",
+    "model": "Grand Vitara Alpha+ Hybrid",
+    "year": 2024,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 2800,
+    "purchase_price": 1980000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 27,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-064",
+    "brand": "Lexus",
+    "model": "NX 350h Overtrail",
+    "year": 2024,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 11500,
+    "purchase_price": 7200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 30,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 7000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-065",
+    "brand": "Hyundai",
+    "model": "Tucson Hybrid AWD",
+    "year": 2024,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 4800,
+    "purchase_price": 3600000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 33,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 10000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-066",
+    "brand": "Kia",
+    "model": "Niro Hybrid EX",
+    "year": 2023,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3600,
+    "purchase_price": 2700000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 36,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 16000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-067",
+    "brand": "Ford",
+    "model": "Escape Hybrid Titanium",
+    "year": 2023,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Bangalore",
+    "rental_price_per_day": 4100,
+    "purchase_price": 3100000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 39,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 20000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-068",
+    "brand": "Subaru",
+    "model": "Crosstrek Hybrid",
+    "year": 2023,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 3900,
+    "purchase_price": 2900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 42,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 18000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-069",
+    "brand": "Nissan",
+    "model": "X-Trail e-POWER",
+    "year": 2024,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 5200,
+    "purchase_price": 4900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 45,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-070",
+    "brand": "Volvo",
+    "model": "XC60 Recharge T8",
+    "year": 2024,
+    "category": "Hybrid",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 12000,
+    "purchase_price": 6900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 48,
+    "image_url": "https://images.unsplash.com/photo-1590362891991-f776e747a588?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Sunroof",
+      "Wireless Phone Charging",
+      "Apple CarPlay & Android Auto",
+      "Hill Hold Assist"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-071",
+    "brand": "Toyota",
+    "model": "Innova Hycross ZX(O)",
+    "year": 2024,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Bangalore",
+    "rental_price_per_day": 4500,
+    "purchase_price": 3100000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 51,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-072",
+    "brand": "Maruti Suzuki",
+    "model": "Ertiga ZXi Plus",
+    "year": 2024,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 2400,
+    "purchase_price": 1150000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 54,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 19000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-073",
+    "brand": "Kia",
+    "model": "Carens Luxury Plus",
+    "year": 2024,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 2800,
+    "purchase_price": 1800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 57,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-074",
+    "brand": "Mahindra",
+    "model": "Marazzo M6 Plus",
+    "year": 2023,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "manual",
+    "seats": 8,
+    "location": "Delhi",
+    "rental_price_per_day": 2300,
+    "purchase_price": 1400000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.3,
+    "review_count": 60,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 28000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-075",
+    "brand": "Renault",
+    "model": "Triber RXZ",
+    "year": 2024,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "manual",
+    "seats": 7,
+    "location": "Bangalore",
+    "rental_price_per_day": 1700,
+    "purchase_price": 850000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.2,
+    "review_count": 63,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 16000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-076",
+    "brand": "Hyundai",
+    "model": "Staria Lounge",
+    "year": 2023,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 6800,
+    "purchase_price": 4800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 66,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-077",
+    "brand": "Honda",
+    "model": "Freed Hybrid",
+    "year": 2023,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 6,
+    "location": "Delhi",
+    "rental_price_per_day": 3200,
+    "purchase_price": 2100000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 69,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 22000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-078",
+    "brand": "Nissan",
+    "model": "Serena e-POWER",
+    "year": 2023,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 4100,
+    "purchase_price": 3200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 72,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 20000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-079",
+    "brand": "Mitsubishi",
+    "model": "Xpander Cross",
+    "year": 2023,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Bangalore",
+    "rental_price_per_day": 2600,
+    "purchase_price": 1700000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.4,
+    "review_count": 75,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 24000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-080",
+    "brand": "Mercedes-Benz",
+    "model": "V-Class Exclusive",
+    "year": 2023,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 6,
+    "location": "Delhi",
+    "rental_price_per_day": 22000,
+    "purchase_price": 14000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 78,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-081",
+    "brand": "Porsche",
+    "model": "911 Carrera S",
+    "year": 2024,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 32000,
+    "purchase_price": 21000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 81,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-082",
+    "brand": "Ford",
+    "model": "Mustang GT 5.0",
+    "year": 2023,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 16000,
+    "purchase_price": 7800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 84,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 17000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-083",
+    "brand": "Chevrolet",
+    "model": "Corvette Stingray 3LT",
+    "year": 2023,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Bangalore",
+    "rental_price_per_day": 21000,
+    "purchase_price": 13500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 87,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-084",
+    "brand": "Nissan",
+    "model": "GT-R Nismo",
+    "year": 2022,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 28000,
+    "purchase_price": 22500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 90,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-085",
+    "brand": "Toyota",
+    "model": "GR Supra 3.0",
+    "year": 2024,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Delhi",
+    "rental_price_per_day": 14000,
+    "purchase_price": 8500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 93,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-086",
+    "brand": "BMW",
+    "model": "M4 Competition",
+    "year": 2024,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 24000,
+    "purchase_price": 15500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 96,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 10000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-087",
+    "brand": "Jaguar",
+    "model": "F-Type R Dynamic P450",
+    "year": 2023,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Bangalore",
+    "rental_price_per_day": 19000,
+    "purchase_price": 14500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 99,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-088",
+    "brand": "Aston Martin",
+    "model": "Vantage V8",
+    "year": 2023,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Delhi",
+    "rental_price_per_day": 35000,
+    "purchase_price": 31000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 102,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 7000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-089",
+    "brand": "Audi",
+    "model": "R8 V10 Performance",
+    "year": 2022,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Delhi",
+    "rental_price_per_day": 39000,
+    "purchase_price": 28000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 105,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-090",
+    "brand": "Lotus",
+    "model": "Emira First Edition",
+    "year": 2024,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "manual",
+    "seats": 2,
+    "location": "Delhi",
+    "rental_price_per_day": 20000,
+    "purchase_price": 16000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 108,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Panoramic Sunroof",
+      "Ventilated Seats",
+      "360-Degree Camera",
+      "Harman Kardon Audio",
+      "Adaptive Cruise Control"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 5000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-091",
+    "brand": "Mazda",
+    "model": "MX-5 Miata Club",
+    "year": 2024,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "manual",
+    "seats": 2,
+    "location": "Bangalore",
+    "rental_price_per_day": 5800,
+    "purchase_price": 3900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 111,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-092",
+    "brand": "BMW",
+    "model": "Z4 M40i Roadster",
+    "year": 2024,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Delhi",
+    "rental_price_per_day": 13500,
+    "purchase_price": 9200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 114,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 10000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-093",
+    "brand": "Mercedes-Benz",
+    "model": "CLE 300 Cabriolet",
+    "year": 2024,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 15000,
+    "purchase_price": 10800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 117,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 7000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-094",
+    "brand": "Audi",
+    "model": "A5 Cabriolet 45 TFSI",
+    "year": 2023,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 12000,
+    "purchase_price": 8200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 25,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-095",
+    "brand": "Mini",
+    "model": "Cooper S Convertible",
+    "year": 2024,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Bangalore",
+    "rental_price_per_day": 9200,
+    "purchase_price": 4700000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 28,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-096",
+    "brand": "Porsche",
+    "model": "718 Boxster GTS 4.0",
+    "year": 2024,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Delhi",
+    "rental_price_per_day": 26000,
+    "purchase_price": 15800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 31,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 6000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-097",
+    "brand": "Ford",
+    "model": "Mustang Convertible EcoBoost",
+    "year": 2023,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 14000,
+    "purchase_price": 7400000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 34,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 16000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-098",
+    "brand": "Chevrolet",
+    "model": "Corvette Convertible 2LT",
+    "year": 2023,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Delhi",
+    "rental_price_per_day": 23000,
+    "purchase_price": 14800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 37,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-099",
+    "brand": "Jaguar",
+    "model": "F-Type Convertible R-Dynamic",
+    "year": 2023,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 2,
+    "location": "Bangalore",
+    "rental_price_per_day": 21000,
+    "purchase_price": 15800000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      },
+      {
+        "start_date": "2026-12-14",
+        "end_date": "2026-12-18",
+        "booking_id": "BK-CONFLICT-1"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 40,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-100",
+    "brand": "Lexus",
+    "model": "LC 500 Convertible",
+    "year": 2023,
+    "category": "Convertible",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 34000,
+    "purchase_price": 24000000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-01"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 43,
+    "image_url": "https://images.unsplash.com/photo-1508974239320-0a029497e820?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Rear Parking Sensors",
+      "Dual Airbags",
+      "Bluetooth Connectivity",
+      "Steering Mounted Controls",
+      "Power Windows"
+    ],
+    "mileage_kmpl": 16.5,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-101",
+    "brand": "Hyundai",
+    "model": "Venue SX",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2400,
+    "purchase_price": 1150000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 124,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-102",
+    "brand": "Tata",
+    "model": "Punch Creative",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 1900,
+    "purchase_price": 920000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 126,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-103",
+    "brand": "Kia",
+    "model": "Sonet HTX",
+    "year": 2025,
+    "category": "SUV",
+    "condition": "new",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2600,
+    "purchase_price": 1280000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 128,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 6000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-104",
+    "brand": "Maruti Suzuki",
+    "model": "Brezza ZXi",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2500,
+    "purchase_price": 1220000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 130,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-105",
+    "brand": "Mahindra",
+    "model": "Scorpio-N Z8L",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 3900,
+    "purchase_price": 2450000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 132,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-106",
+    "brand": "Toyota",
+    "model": "Innova Crysta VX",
+    "year": 2023,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 4200,
+    "purchase_price": 2350000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 134,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 29000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-107",
+    "brand": "Skoda",
+    "model": "Octavia L&K",
+    "year": 2023,
+    "category": "Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 5200,
+    "purchase_price": 2950000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 136,
+    "image_url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 21000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-108",
+    "brand": "Honda",
+    "model": "Elevate ZX",
+    "year": 2024,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2800,
+    "purchase_price": 1520000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.6,
+    "review_count": 138,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 9500,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-109",
+    "brand": "MG",
+    "model": "Astor Savvy",
+    "year": 2023,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2700,
+    "purchase_price": 1490000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 30,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 17000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-110",
+    "brand": "Volkswagen",
+    "model": "Tiguan Elegance",
+    "year": 2023,
+    "category": "SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 5800,
+    "purchase_price": 3600000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 32,
+    "image_url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 19000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-111",
+    "brand": "BMW",
+    "model": "3 Series Gran Limousine",
+    "year": 2024,
+    "category": "Luxury Sedan",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 10200,
+    "purchase_price": 6400000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 34,
+    "image_url": "https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 11000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-112",
+    "brand": "Mercedes-Benz",
+    "model": "GLA 220d 4MATIC",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "diesel",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 9200,
+    "purchase_price": 5400000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 36,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-113",
+    "brand": "Audi",
+    "model": "Q3 40 TFSI",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 8900,
+    "purchase_price": 5100000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.7,
+    "review_count": 38,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 14000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-114",
+    "brand": "Volvo",
+    "model": "XC40 Recharge",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 7900,
+    "purchase_price": 5600000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.8,
+    "review_count": 40,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 420,
+    "odometer_km": 10000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-115",
+    "brand": "Tata",
+    "model": "Tiago EV Tech LUX",
+    "year": 2024,
+    "category": "Electric Vehicle",
+    "condition": "used",
+    "fuel_type": "electric",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 1800,
+    "purchase_price": 1150000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 42,
+    "image_url": "https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": null,
+    "range_km": 420,
+    "odometer_km": 12000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-116",
+    "brand": "Maruti Suzuki",
+    "model": "Baleno Alpha AMT",
+    "year": 2024,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 2100,
+    "purchase_price": 940000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.5,
+    "review_count": 44,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 13000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-117",
+    "brand": "Hyundai",
+    "model": "Grand i10 Nios Asta",
+    "year": 2023,
+    "category": "Hatchback",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 1800,
+    "purchase_price": 810000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.4,
+    "review_count": 46,
+    "image_url": "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 20000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-118",
+    "brand": "Toyota",
+    "model": "Vellfire VIP",
+    "year": 2024,
+    "category": "MUV",
+    "condition": "used",
+    "fuel_type": "hybrid",
+    "transmission": "automatic",
+    "seats": 7,
+    "location": "Delhi",
+    "rental_price_per_day": 25000,
+    "purchase_price": 13500000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 5.0,
+    "review_count": 48,
+    "image_url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 8000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-119",
+    "brand": "Porsche",
+    "model": "Macan GTS",
+    "year": 2024,
+    "category": "Luxury SUV",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 5,
+    "location": "Delhi",
+    "rental_price_per_day": 17500,
+    "purchase_price": 11200000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 50,
+    "image_url": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 9000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  },
+  {
+    "id": "CAR-120",
+    "brand": "Ford",
+    "model": "Mustang Mach 1",
+    "year": 2022,
+    "category": "Sports Car",
+    "condition": "used",
+    "fuel_type": "petrol",
+    "transmission": "automatic",
+    "seats": 4,
+    "location": "Delhi",
+    "rental_price_per_day": 19500,
+    "purchase_price": 8900000,
+    "available_for_rent": true,
+    "available_for_purchase": true,
+    "rental_availability": [
+      {
+        "start_date": "2026-11-01",
+        "end_date": "2026-11-06",
+        "booking_id": "BK-PAST-02"
+      }
+    ],
+    "rating": 4.9,
+    "review_count": 52,
+    "image_url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80",
+    "features": [
+      "Sunroof",
+      "Touchscreen Infotainment",
+      "Keyless Entry",
+      "Apple CarPlay",
+      "Rear Camera"
+    ],
+    "mileage_kmpl": 17.2,
+    "range_km": null,
+    "odometer_km": 15000,
+    "source": "Mock Marketplace",
+    "listing_type": "mock"
+  }
+]

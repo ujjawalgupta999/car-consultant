@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP App: Mock Checkout & Payment</title>
+  <style>
+    :root {
+      --bg: #0d0f15;
+      --card-bg: #151824;
+      --border: #262b3d;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; font-size: 14px; }
+    .mcp-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .container { max-width: 580px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .title { font-size: 18px; font-weight: 700; color: #fff; }
+    .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .disclaimer-banner { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #fde68a; padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; font-size: 12px; display: flex; gap: 8px; align-items: center; }
+    .summary-card { background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .summary-row.total { border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 8px; font-size: 16px; font-weight: 700; color: #fff; }
+    .total-val { color: var(--emerald); }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .tab { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .tab.active { background: rgba(59, 130, 246, 0.15); border-color: var(--primary); color: #fff; }
+    .tab-content { margin-bottom: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    input { background: #0a0b10; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: #fff; font-size: 13px; outline: none; }
+    input:focus { border-color: var(--primary); }
+    .scenario-box { background: #0c0e14; border: 1px solid var(--border); border-radius: 8px; padding: 10px; margin-bottom: 16px; }
+    .scenario-title { font-size: 11px; font-weight: 600; color: var(--cyan); text-transform: uppercase; margin-bottom: 6px; }
+    .scenario-options { display: flex; gap: 8px; }
+    .scenario-btn { flex: 1; padding: 6px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); background: transparent; color: var(--text-muted); cursor: pointer; text-align: center; }
+    .scenario-btn.selected { background: rgba(59, 130, 246, 0.2); border-color: var(--primary); color: #fff; }
+    .actions { display: flex; justify-content: flex-end; gap: 10px; }
+    button.btn-pay { background: var(--emerald); color: #000; font-weight: 700; padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; transition: opacity 0.2s; }
+    button.btn-pay:hover { opacity: 0.9; }
+    button.btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+    .status-overlay { display: none; padding: 16px; border-radius: 8px; text-align: center; margin-bottom: 16px; font-size: 13px; }
+    .status-overlay.processing { display: block; background: rgba(6, 182, 212, 0.15); border: 1px solid var(--cyan); color: #a5f3fc; }
+    .status-overlay.failure { display: block; background: rgba(244, 63, 94, 0.15); border: 1px solid var(--rose); color: #fda4af; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <span class="mcp-badge">⚡ MCP App: ui://checkout-modal</span>
+        <h2 class="title">Mock Checkout & Authorization</h2>
+        <p class="subtitle" id="refSubtitle">Order Reference: BK-2026-90412</p>
+      </div>
+    </div>
+
+    <div class="disclaimer-banner">
+      <span>🛡️</span>
+      <div>
+        <strong>MOCK PAYMENT SIMULATOR:</strong> No real funds are transferred. Do not enter authentic banking credentials.
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-row">
+        <span>Vehicle</span>
+        <strong id="sumVehicle" style="color:#fff">Hyundai Creta SX (O)</strong>
+      </div>
+      <div class="summary-row">
+        <span>Service Type</span>
+        <span id="sumType">Self-Drive Rental (5 Days)</span>
+      </div>
+      <div class="summary-row total">
+        <span>Total Payable Amount</span>
+        <span class="total-val" id="sumAmount">₹18,290</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" id="tabUpi" onclick="selectTab('upi')">📱 UPI Simulation</div>
+      <div class="tab" id="tabCard" onclick="selectTab('card')">💳 Test Card Simulator</div>
+    </div>
+
+    <!-- UPI Content -->
+    <div class="tab-content" id="upiContent">
+      <div class="form-group">
+        <label>Virtual Payment Address (VPA) / UPI ID</label>
+        <input type="text" id="upiVpa" value="rohan.sharma@okhdfcbank" />
+      </div>
+      <p style="font-size: 11px; color: var(--text-muted);">Simulates instant authorization request via GPay / PhonePe / Paytm.</p>
+    </div>
+
+    <!-- Card Content -->
+    <div class="tab-content" id="cardContent" style="display: none;">
+      <div class="form-group">
+        <label>Mock Card Number</label>
+        <input type="text" id="cardNumber" value="4000 0000 0000 0001" readonly />
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <div class="form-group" style="flex:1;">
+          <label>Expiry Date</label>
+          <input type="text" value="12/28" readonly />
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label>CVV (Mock)</label>
+          <input type="text" value="888" readonly />
+        </div>
+      </div>
+    </div>
+
+    <!-- Test Scenario Picker -->
+    <div class="scenario-box">
+      <div class="scenario-title">Deterministic Test Scenarios:</div>
+      <div class="scenario-options">
+        <div class="scenario-btn selected" id="scenSuccess" onclick="selectScenario('success')">🟢 Instant Success</div>
+        <div class="scenario-btn" id="scenFailure" onclick="selectScenario('failure')">🔴 Simulated Decline</div>
+        <div class="scenario-btn" id="scenTimeout" onclick="selectScenario('timeout')">🟡 Gateway Timeout</div>
+      </div>
+    </div>
+
+    <div id="statusOverlay" class="status-overlay"></div>
+
+    <div class="actions">
+      <button type="button" class="btn-cancel" onclick="handleCancel()">Cancel</button>
+      <button type="button" class="btn-pay" id="btnPay" onclick="executeMockPayment()">Pay ₹18,290 (Mock) →</button>
+    </div>
+  </div>
+
+  <script>
+    let checkoutState = {
+      orderId: "BK-2026-90412",
+      amount: 18290,
+      currency: "INR",
+      method: "upi",
+      scenario: "success",
+      vehicle: "Hyundai Creta SX (O)"
+    };
+
+    function selectTab(tab) {
+      checkoutState.method = tab;
+      document.getElementById('tabUpi').classList.toggle('active', tab === 'upi');
+      document.getElementById('tabCard').classList.toggle('active', tab === 'card');
+      document.getElementById('upiContent').style.display = tab === 'upi' ? 'block' : 'none';
+      document.getElementById('cardContent').style.display = tab === 'card' ? 'block' : 'none';
+    }
+
+    function selectScenario(scen) {
+      checkoutState.scenario = scen;
+      document.getElementById('scenSuccess').classList.toggle('selected', scen === 'success');
+      document.getElementById('scenFailure').classList.toggle('selected', scen === 'failure');
+      document.getElementById('scenTimeout').classList.toggle('selected', scen === 'timeout');
+    }
+
+    // Protocol Handshake
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (!msg || typeof msg !== 'object') return;
+
+      if (msg.type === 'mcp-app:init') {
+        const ctx = msg.context || {};
+        checkoutState.orderId = ctx.bookingId || ctx.orderId || checkoutState.orderId;
+        checkoutState.amount = ctx.totalAmount || ctx.depositAmount || checkoutState.amount;
+        checkoutState.currency = ctx.currency || "INR";
+        checkoutState.vehicle = ctx.vehicleName || (ctx.vehicle ? `${ctx.vehicle.brand} ${ctx.vehicle.model}` : checkoutState.vehicle);
+
+        document.getElementById('refSubtitle').innerText = `Reference: ${checkoutState.orderId}`;
+        document.getElementById('sumVehicle').innerText = checkoutState.vehicle;
+        document.getElementById('sumType').innerText = ctx.intent === 'buy' ? "Purchase Reservation Token Deposit" : `Self-Drive Rental (${ctx.durationDays || 5} Days)`;
+        document.getElementById('sumAmount').innerText = `₹${checkoutState.amount.toLocaleString()}`;
+        document.getElementById('btnPay').innerText = `Pay ₹${checkoutState.amount.toLocaleString()} (Mock) →`;
+      }
+    });
+
+    window.parent.postMessage({ type: 'mcp-app:ready' }, '*');
+
+    async function executeMockPayment() {
+      const btn = document.getElementById('btnPay');
+      const overlay = document.getElementById('statusOverlay');
+      
+      btn.disabled = true;
+      btn.innerText = "Processing Simulation...";
+      overlay.className = "status-overlay processing";
+      overlay.innerText = "⏳ Contacting simulated banking network...";
+
+      // RPC call to host or directly to backend endpoint
+      const idempKey = "idemp_pay_" + Date.now();
+      
+      try {
+        const response = await fetch('/api/payments/mock', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Idempotency-Key': idempKey
+          },
+          body: JSON.stringify({
+            order_or_booking_id: checkoutState.orderId,
+            amount: checkoutState.amount,
+            currency: checkoutState.currency,
+            payment_method: checkoutState.method,
+            simulated_scenario: checkoutState.scenario,
+            idempotency_key: idempKey
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.status === 'SUCCESS') {
+          overlay.className = "status-overlay";
+          overlay.style.display = "block";
+          overlay.style.background = "rgba(16, 185, 129, 0.2)";
+          overlay.style.color = "#a7f3d0";
+          overlay.innerText = `✅ Payment Approved! Reference: ${data.payment.transaction_reference}`;
+
+          setTimeout(() => {
+            // Emit MCP App Finish
+            window.parent.postMessage({
+              type: 'mcp-app:finish',
+              status: 'paid',
+              payment: data.payment,
+              bookingId: checkoutState.orderId
+            }, '*');
+          }, 800);
+
+        } else {
+          // Failure scenario
+          overlay.className = "status-overlay failure";
+          overlay.innerText = `❌ ${data.payment?.error_message || 'Payment simulation declined. Please try again with another method or choose Instant Success.'}`;
+          btn.disabled = false;
+          btn.innerText = `Retry Payment (₹${checkoutState.amount.toLocaleString()})`;
+        }
+
+      } catch (err) {
+        overlay.className = "status-overlay failure";
+        overlay.innerText = "Network simulation error. Please retry.";
+        btn.disabled = false;
+        btn.innerText = `Retry Payment (₹${checkoutState.amount.toLocaleString()})`;
+      }
+    }
+
+    function handleCancel() {
+      window.parent.postMessage({
+        type: 'mcp-app:finish',
+        status: 'cancelled',
+        action: 'cancel'
+      }, '*');
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MCP App: Vehicle Booking Form</title>
+  <style>
+    :root {
+      --bg: #0d0f15;
+      --card-bg: #151824;
+      --border: #262b3d;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --radius: 10px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; font-size: 14px; }
+    .mcp-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(6, 182, 212, 0.12); color: var(--cyan); border: 1px solid rgba(6, 182, 212, 0.3); padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .container { max-width: 600px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
+    .title { font-size: 18px; font-weight: 700; color: #fff; }
+    .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .vehicle-strip { display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+    .v-img { width: 64px; height: 48px; border-radius: 6px; object-fit: cover; }
+    .v-details h4 { font-size: 14px; font-weight: 600; }
+    .v-details p { font-size: 12px; color: var(--cyan); font-weight: 500; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-group.full { grid-column: span 2; }
+    label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    input, select { background: #0a0b10; border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: #fff; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus { border-color: var(--primary); }
+    .addons-section { margin-bottom: 16px; }
+    .addon-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; background: #0b0d13; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: background 0.15s; }
+    .addon-item:hover { background: #131722; }
+    .addon-left { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .addon-price { font-weight: 600; color: var(--cyan); font-size: 12px; }
+    .price-summary { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+    .price-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); }
+    .price-row.total { border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 8px; font-size: 15px; font-weight: 700; color: #fff; }
+    .total-val { color: var(--emerald); }
+    .actions { display: flex; justify-content: flex-end; gap: 10px; }
+    button { padding: 9px 18px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+    .btn-secondary:hover { color: #fff; border-color: #4b5563; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .error-banner { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); color: #fda4af; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 12px; display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <span class="mcp-badge">⚡ MCP App: ui://booking-form</span>
+        <h2 class="title" id="formTitle">Vehicle Reservation</h2>
+        <p class="subtitle" id="formSubtitle">Secure and verified directly with backend authority</p>
+      </div>
+    </div>
+
+    <div id="errorBanner" class="error-banner"></div>
+
+    <div class="vehicle-strip">
+      <img id="vImg" src="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=200&q=80" alt="Vehicle" class="v-img" />
+      <div class="v-details">
+        <h4 id="vName">Hyundai Creta SX (O) (2025)</h4>
+        <p id="vRate">₹2,800 / day</p>
+      </div>
+    </div>
+
+    <form id="bookingForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="custName" value="Rohan Sharma" required />
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" id="custEmail" value="rohan.sharma@example.com" required />
+        </div>
+        <div class="form-group">
+          <label>Mobile Number *</label>
+          <input type="tel" id="custPhone" value="+91 98765 43210" required />
+        </div>
+        <div class="form-group" id="idFieldGroup">
+          <label id="idLabel">Driver's License *</label>
+          <input type="text" id="custIdField" value="DL-1420110012345" required />
+        </div>
+        <div class="form-group" id="startDateGroup">
+          <label>Pickup Date *</label>
+          <input type="date" id="pickupDate" value="2026-12-15" required />
+        </div>
+        <div class="form-group" id="durationGroup">
+          <label>Duration (Days) *</label>
+          <input type="number" id="durationDays" min="1" max="90" value="5" required />
+        </div>
+        <div class="form-group full">
+          <label>Pickup & Return Location</label>
+          <input type="text" id="pickupLoc" value="Delhi Airport T3" required />
+        </div>
+      </div>
+
+      <div class="addons-section" id="addonsSection">
+        <label style="margin-bottom: 6px; display: block;">Coverage & Options</label>
+        <div class="addon-item" onclick="toggleAddon('addon_insurance_zero_dep')">
+          <div class="addon-left">
+            <input type="checkbox" id="addon_insurance_zero_dep" checked />
+            <span>Zero Depreciation Protection (100% peace of mind)</span>
+          </div>
+          <span class="addon-price">+₹300/day</span>
+        </div>
+        <div class="addon-item" onclick="toggleAddon('addon_roadside_assist')">
+          <div class="addon-left">
+            <input type="checkbox" id="addon_roadside_assist" />
+            <span>24/7 Premium Roadside Assistance</span>
+          </div>
+          <span class="addon-price">+₹150/day</span>
+        </div>
+      </div>
+
+      <div class="price-summary">
+        <div class="price-row">
+          <span>Base Rate (<span id="calcDays">5</span> days)</span>
+          <span id="calcSubtotal">₹14,000</span>
+        </div>
+        <div class="price-row">
+          <span>Add-ons & Options</span>
+          <span id="calcAddons">₹1,500</span>
+        </div>
+        <div class="price-row">
+          <span>Taxes & GST (18%)</span>
+          <span id="calcTaxes">₹2,790</span>
+        </div>
+        <div class="price-row total">
+          <span>Total Authoritative Amount</span>
+          <span class="total-val" id="calcTotal">₹18,290</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn-secondary" onclick="handleCancel()">Cancel</button>
+        <button type="submit" class="btn-primary" id="btnSubmit">Proceed to Checkout →</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let appState = {
+      sessionId: "sess_default",
+      vehicleId: "CAR-001",
+      intent: "rent",
+      baseRate: 2800,
+      days: 5,
+      vehicle: null
+    };
+
+    function toggleAddon(id) {
+      const cb = document.getElementById(id);
+      cb.checked = !cb.checked;
+      recalculatePrices();
+    }
+
+    // Protocol Handshake: Listen for MCP App Init
+    window.addEventListener('message', (event) => {
+      const msg = event.data;
+      if (!msg || typeof msg !== 'object') return;
+
+      if (msg.type === 'mcp-app:init') {
+        const ctx = msg.context || {};
+        appState.sessionId = ctx.sessionId || appState.sessionId;
+        appState.intent = ctx.intent || appState.intent;
+        appState.vehicle = ctx.vehicle;
+        
+        if (ctx.vehicle) {
+          appState.vehicleId = ctx.vehicle.id;
+          appState.baseRate = ctx.intent === 'rent' ? ctx.vehicle.rental_price_per_day : ctx.vehicle.purchase_price;
+          document.getElementById('vName').innerText = `${ctx.vehicle.year} ${ctx.vehicle.brand} ${ctx.vehicle.model}`;
+          document.getElementById('vRate').innerText = ctx.intent === 'rent' ? `₹${ctx.vehicle.rental_price_per_day.toLocaleString()} / day` : `₹${ctx.vehicle.purchase_price.toLocaleString()} Ex-Showroom`;
+          if (ctx.vehicle.image_url) document.getElementById('vImg').src = ctx.vehicle.image_url;
+        }
+
+        if (ctx.intent === 'buy') {
+          document.getElementById('formTitle').innerText = "Vehicle Purchase Reservation";
+          document.getElementById('idLabel').innerText = "PAN Card Number *";
+          document.getElementById('custIdField').value = "ABCDE1234F";
+          document.getElementById('startDateGroup').style.display = "none";
+          document.getElementById('durationGroup').style.display = "none";
+          document.getElementById('addonsSection').style.display = "none";
+          document.getElementById('calcDays').innerText = "1";
+          document.getElementById('calcSubtotal').innerText = `₹${(appState.vehicle?.purchase_price || 1450000).toLocaleString()}`;
+          document.getElementById('calcAddons').innerText = "₹25,000 (Refundable Token)";
+          document.getElementById('calcTaxes').innerText = "Included";
+          document.getElementById('calcTotal').innerText = "₹25,000";
+        } else {
+          if (ctx.prefilled?.startDate) document.getElementById('pickupDate').value = ctx.prefilled.startDate;
+          if (ctx.prefilled?.durationDays) document.getElementById('durationDays').value = ctx.prefilled.durationDays;
+          if (ctx.prefilled?.location) document.getElementById('pickupLoc').value = ctx.prefilled.location;
+          recalculatePrices();
+        }
+      } else if (msg.type === 'mcp-app:update') {
+        // Backend sent updated price calculations
+        if (msg.pricing) {
+          updatePriceDisplay(msg.pricing);
+        }
+      }
+    });
+
+    // Notify Host that App is Mounted and Ready
+    window.parent.postMessage({ type: 'mcp-app:ready' }, '*');
+
+    document.getElementById('durationDays').addEventListener('input', recalculatePrices);
+
+    async function recalculatePrices() {
+      if (appState.intent === 'buy') return;
+      const days = parseInt(document.getElementById('durationDays').value) || 1;
+      const selectedAddons = [];
+      if (document.getElementById('addon_insurance_zero_dep')?.checked) selectedAddons.push('addon_insurance_zero_dep');
+      if (document.getElementById('addon_roadside_assist')?.checked) selectedAddons.push('addon_roadside_assist');
+
+      // RPC action to host/server
+      window.parent.postMessage({
+        type: 'mcp-app:action',
+        action: 'recalculate',
+        payload: {
+          vehicleId: appState.vehicleId,
+          durationDays: days,
+          addonIds: selectedAddons
+        }
+      }, '*');
+
+      // Local authoritative calculation fallback for smooth UI feedback
+      const baseSubtotal = appState.baseRate * days;
+      const addonsTotal = (selectedAddons.includes('addon_insurance_zero_dep') ? 300 * days : 0) +
+                          (selectedAddons.includes('addon_roadside_assist') ? 150 * days : 0);
+      const tax = Math.round((baseSubtotal + addonsTotal) * 0.18);
+      const total = baseSubtotal + addonsTotal + tax;
+
+      updatePriceDisplay({
+        duration_days: days,
+        subtotal: baseSubtotal,
+        addons_total: addonsTotal,
+        taxes: tax,
+        total_amount: total
+      });
+    }
+
+    function updatePriceDisplay(pricing) {
+      document.getElementById('calcDays').innerText = pricing.duration_days;
+      document.getElementById('calcSubtotal').innerText = `₹${pricing.subtotal.toLocaleString()}`;
+      document.getElementById('calcAddons').innerText = `₹${pricing.addons_total.toLocaleString()}`;
+      document.getElementById('calcTaxes').innerText = `₹${pricing.taxes.toLocaleString()}`;
+      document.getElementById('calcTotal').innerText = `₹${pricing.total_amount.toLocaleString()}`;
+    }
+
+    document.getElementById('bookingForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const selectedAddons = [];
+      if (document.getElementById('addon_insurance_zero_dep')?.checked) selectedAddons.push('addon_insurance_zero_dep');
+      if (document.getElementById('addon_roadside_assist')?.checked) selectedAddons.push('addon_roadside_assist');
+
+      const formData = {
+        sessionId: appState.sessionId,
+        vehicleId: appState.vehicleId,
+        customerName: document.getElementById('custName').value,
+        customerEmail: document.getElementById('custEmail').value,
+        customerPhone: document.getElementById('custPhone').value,
+        idNumber: document.getElementById('custIdField').value,
+        pickupDate: document.getElementById('pickupDate').value,
+        durationDays: parseInt(document.getElementById('durationDays').value) || 1,
+        location: document.getElementById('pickupLoc').value,
+        addonIds: selectedAddons,
+        intent: appState.intent
+      };
+
+      // Emit MCP App Finish with submitted data
+      window.parent.postMessage({
+        type: 'mcp-app:finish',
+        status: 'submitted',
+        action: 'proceed_checkout',
+        data: formData
+      }, '*');
+    });
+
+    function handleCancel() {
+      window.parent.postMessage({
+        type: 'mcp-app:finish',
+        status: 'cancelled',
+        action: 'cancel'
+      }, '*');
+    }
+  </script>
+</body>
+</html>
+
