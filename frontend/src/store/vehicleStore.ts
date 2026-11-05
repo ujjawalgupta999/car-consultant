@@ -12,6 +12,7 @@ export interface VehicleFilters {
   maxPrice: number;
   location: string;
   seats?: number;
+  seatsMatchType?: 'exact' | 'min' | 'max';
   sort: 'relevance' | 'price_asc' | 'price_desc' | 'rating' | 'year';
 }
 
@@ -26,6 +27,7 @@ const DEFAULT_FILTERS: VehicleFilters = {
   maxPrice: 50000000,
   location: '',
   seats: undefined,
+  seatsMatchType: undefined,
   sort: 'relevance',
 };
 
@@ -116,7 +118,21 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
         }
 
         // 8. Seating
-        if (filters.seats && v.seats < filters.seats) return false;
+        if (filters.seats !== undefined && filters.seats > 0) {
+          const matchType = filters.seatsMatchType || 'exact';
+          if (matchType === 'exact' && v.seats !== filters.seats) return false;
+          if (matchType === 'min' && v.seats < filters.seats) return false;
+          if (matchType === 'max' && v.seats > filters.seats) return false;
+        }
+
+        // 8.5 Minimum Price
+        if (filters.minPrice !== undefined && filters.minPrice > 0) {
+          if (filters.intent === 'rent') {
+            if (v.rental_price_per_day < filters.minPrice) return false;
+          } else if (filters.intent === 'buy') {
+            if (v.purchase_price < filters.minPrice) return false;
+          }
+        }
 
         // 9. Price Ceiling
         if (filters.maxPrice && filters.maxPrice > 0) {

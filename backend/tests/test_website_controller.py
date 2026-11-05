@@ -78,3 +78,4 @@ def test_comparison_prompt_navigates_to_compare():
 
     assert "Tata Harrier Fearless Plus" in data["message"]["content"]
     assert "Toyota Fortuner Legender" in data["message"]["content"]
+

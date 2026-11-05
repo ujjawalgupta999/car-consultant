@@ -148,26 +148,30 @@ class OrchestrationEngine:
             followup_text = AdaptiveInterviewAgent.generate_followup_question(session.preferences)
 
             # Determine appropriate website navigation route
-            if session.preferences.intent == IntentType.BUY:
+            is_rent = (session.preferences.intent == "RENT" or session.preferences.intent == IntentType.RENT)
+            if not is_rent:
                 target_path = "/buy"
                 portal_label = "Buy Cars"
-            elif session.preferences.intent == IntentType.RENT:
+            else:
                 target_path = "/rent"
                 portal_label = "Rent a Car"
-            else:
-                target_path = "/explore"
-                portal_label = "Explore Cars"
 
             # Build website filter payload
             filter_payload = {
-                "intent": "buy" if session.preferences.intent == IntentType.BUY else ("rent" if session.preferences.intent == IntentType.RENT else "all"),
+                "intent": "rent" if is_rent else "buy",
                 "category": session.preferences.category.value if session.preferences.category else "",
-                "transmission": session.preferences.transmission if session.preferences.transmission != "any" else "",
+                "transmission": session.preferences.transmission if session.preferences.transmission not in ["any", None] else "",
                 "location": session.preferences.location or "",
                 "brand": session.preferences.preferred_brands[0] if session.preferences.preferred_brands else "",
             }
-            if session.preferences.budget and session.preferences.budget.amount > 0:
+            if session.preferences.seating_capacity:
+                filter_payload["seats"] = session.preferences.seating_capacity
+            if session.preferences.budget_max and session.preferences.budget_max > 0:
+                filter_payload["maxPrice"] = session.preferences.budget_max
+            elif session.preferences.budget and session.preferences.budget.amount > 0:
                 filter_payload["maxPrice"] = session.preferences.budget.amount
+            if session.preferences.budget_min and session.preferences.budget_min > 0:
+                filter_payload["minPrice"] = session.preferences.budget_min
 
             actions = [
                 {
@@ -181,20 +185,29 @@ class OrchestrationEngine:
             ]
 
             # Query matching vehicles for live preview
+            max_b = session.preferences.budget_max or (session.preferences.budget.amount if session.preferences.budget else None)
+            min_b = session.preferences.budget_min
             preview_matches = marketplace_repo.search_vehicles(
-                intent=session.preferences.intent.value if session.preferences.intent else "all",
+                intent="rent" if is_rent else "buy",
                 category=session.preferences.category.value if session.preferences.category else None,
                 location=session.preferences.location,
-                transmission=session.preferences.transmission if session.preferences.transmission != "any" else None,
+                min_price=min_b,
+                max_price=max_b,
+                transmission=session.preferences.transmission if session.preferences.transmission not in ["any", None] else None,
+                fuel_type=session.preferences.fuel_type if session.preferences.fuel_type not in ["any", None] else None,
+                seats=session.preferences.seating_capacity,
+                seats_match_type=session.preferences.seating_match_type or "exact",
             )
+
+            is_direct_query = any(q in text_lower for q in ["show me", "search for", "find me", "list all", "filter for"])
 
             preview_ranked = []
             a2ui_surfaces_list = []
-            if preview_matches and session.preferences.category:
+            if preview_matches and (session.preferences.category or session.preferences.seating_capacity):
                 preview_ranked = RankingEngine.rank_vehicles(preview_matches, session.preferences, limit=3)
                 surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
                 rec_components = self._build_recommendations_a2ui_components(
-                    preview_ranked, session.preferences.intent == IntentType.RENT
+                    preview_ranked, is_rent
                 )
                 a2ui_surfaces_list.append(surface_id)
                 await self.emit_event(session_id, "a2ui", {
@@ -203,12 +216,35 @@ class OrchestrationEngine:
                     "components": [c.model_dump() for c in rec_components]
                 })
 
-                cat_name = f"**{session.preferences.category.value}s**"
+                if session.preferences.seating_capacity and not session.preferences.category:
+                    bot_text = followup_text
+                else:
+                    if session.preferences.seating_capacity:
+                        words = {2: "two-seater", 3: "three-seater", 4: "four-seater", 5: "five-seater", 7: "seven-seater"}
+                        seat_word = words.get(session.preferences.seating_capacity, f"{session.preferences.seating_capacity}-seater")
+                        cat_label = f"**{seat_word}** {session.preferences.category.value if session.preferences.category else 'vehicles'}"
+                    else:
+                        cat_label = f"**{session.preferences.category.value}s**"
+
+                    bot_text = (
+                        f"I've updated the website to navigate to our **{portal_label}** portal and filtered our catalogue for {cat_label} ({len(preview_matches)} models found)!\n\n"
+                        f"{followup_text}"
+                    )
+            elif not preview_matches and (session.preferences.seating_capacity or session.preferences.category) and is_direct_query:
+                # Direct search query with zero results: provide diagnostic explanation
+                all_v = marketplace_repo.get_all_vehicles()
+                diag = RankingEngine.diagnose_zero_results(all_v, session.preferences)
+                diag_reasons = " ".join(diag["binding_constraints"])
+                diag_sugg = " ".join(diag["recommended_relaxations"])
+
                 bot_text = (
-                    f"I've updated the website to navigate to our **{portal_label}** portal and filtered our catalogue for {cat_name} ({len(preview_matches)} models found)!\n\n"
-                    f"{followup_text}"
+                    f"I checked our inventory for {session.preferences.seating_capacity or ''}-seater options within your criteria.\n\n"
+                    f"**Inventory Note:** {diag_reasons}\n\n"
+                    f"{diag_sugg}\n\n"
+                    f"Would you like me to search for alternatives or adjust your criteria?"
                 )
             else:
+                bot_text = followup_text
                 surface_id = f"surf_pref_{uuid.uuid4().hex[:6]}"
                 a2ui_components = self._build_interview_a2ui_components(session.preferences, missing)
                 a2ui_surfaces_list.append(surface_id)
@@ -218,11 +254,7 @@ class OrchestrationEngine:
                     "components": [c.model_dump() for c in a2ui_components]
                 })
 
-                if extracted_fields:
-                    ack = f"Got it: {', '.join(extracted_fields)}. I've navigated you to **{portal_label}**.\n\n"
-                    bot_text = ack + followup_text
-                else:
-                    bot_text = followup_text
+                bot_text = followup_text
 
             bot_msg = ChatMessage(
                 id=f"msg_{uuid.uuid4().hex[:8]}",
@@ -262,19 +294,25 @@ class OrchestrationEngine:
         session.workflow_state = WorkflowState.SEARCHING
 
         # Execute repository search
-        is_rent = (session.preferences.intent == IntentType.RENT)
+        is_rent = (session.preferences.intent == "RENT" or session.preferences.intent == IntentType.RENT)
         start_d = session.preferences.rental_details.pickup_date if (is_rent and session.preferences.rental_details) else None
         end_d = session.preferences.rental_details.return_date if (is_rent and session.preferences.rental_details) else None
-        max_p = session.preferences.budget.amount if session.preferences.budget else None
+        max_p = session.preferences.budget_max or (session.preferences.budget.amount if session.preferences.budget else None)
+        min_p = session.preferences.budget_min
+        trans = session.preferences.transmission if session.preferences.transmission not in ["any", None] else None
+        fuel = session.preferences.fuel_type if session.preferences.fuel_type not in ["any", None] else None
 
         filtered_vehicles = marketplace_repo.search_vehicles(
-            intent=session.preferences.intent.value,
+            intent="rent" if is_rent else "buy",
             location=session.preferences.location,
             category=session.preferences.category.value if session.preferences.category else None,
+            min_price=min_p,
             max_price=max_p,
-            transmission=session.preferences.transmission,
-            fuel_type=session.preferences.fuel_type,
+            transmission=trans,
+            fuel_type=fuel,
             seats=session.preferences.seating_capacity,
+            seats_match_type=session.preferences.seating_match_type or "exact",
+            brands=session.preferences.preferred_brands if session.preferences.preferred_brands else None,
             start_date=start_d,
             end_date=end_d
         )

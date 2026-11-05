@@ -15,10 +15,14 @@ def tool_search_vehicles(
     intent: str = "rent",
     location: Optional[str] = None,
     category: Optional[str] = None,
+    min_price: Optional[float] = None,
     max_price: Optional[float] = None,
     transmission: Optional[str] = None,
     fuel_type: Optional[str] = None,
     seats: Optional[int] = None,
+    seats_min: Optional[int] = None,
+    seats_max: Optional[int] = None,
+    seats_match_type: Optional[str] = "exact",
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
 ) -> Dict[str, Any]:
@@ -26,10 +30,14 @@ def tool_search_vehicles(
         intent=intent,
         location=location,
         category=category,
+        min_price=min_price,
         max_price=max_price,
         transmission=transmission,
         fuel_type=fuel_type,
         seats=seats,
+        seats_min=seats_min,
+        seats_max=seats_max,
+        seats_match_type=seats_match_type,
         start_date=start_date,
         end_date=end_date
     )

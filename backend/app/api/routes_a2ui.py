@@ -30,7 +30,9 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
         session.selected_vehicle_id = vehicle_id
 
         # Trigger MCP App event
-        is_rent = (session.preferences.intent.value == "rent")
+        raw_intent = session.preferences.intent
+        intent_str = raw_intent.value.lower() if hasattr(raw_intent, "value") else str(raw_intent or "buy").lower()
+        is_rent = (intent_str == "rent")
         app_name = "booking"
 
         action_msg = ChatMessage(
@@ -43,7 +45,7 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
             mcp_app="booking",
             data={
                 "vehicle": vehicle.model_dump(),
-                "intent": session.preferences.intent.value,
+                "intent": intent_str,
                 "preferences": session.preferences.model_dump()
             }
         )
@@ -54,7 +56,7 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
             "app": "booking",
             "uri": "ui://booking-form",
             "vehicle_id": vehicle_id,
-            "intent": session.preferences.intent.value
+            "intent": intent_str
         })
 
         return {

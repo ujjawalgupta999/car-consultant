@@ -43,13 +43,17 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
 
     def search_vehicles(
         self,
-        intent: str = "rent", # "rent" or "buy"
+        intent: str = "rent", # "rent", "buy", or "all"
         location: Optional[str] = None,
         category: Optional[str] = None,
+        min_price: Optional[float] = None,
         max_price: Optional[float] = None,
         transmission: Optional[str] = None,
         fuel_type: Optional[str] = None,
         seats: Optional[int] = None,
+        seats_min: Optional[int] = None,
+        seats_max: Optional[int] = None,
+        seats_match_type: Optional[str] = "exact",
         brands: Optional[List[str]] = None,
         start_date: Optional[str] = None,
         end_date: Optional[str] = None
@@ -59,10 +63,11 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
 
         for v in self._vehicles.values():
             # 1. Intent check
-            if is_rent and not v.available_for_rent:
-                continue
-            if not is_rent and not v.available_for_purchase:
-                continue
+            if intent.lower() != "all":
+                if is_rent and not v.available_for_rent:
+                    continue
+                if not is_rent and not v.available_for_purchase:
+                    continue
 
             # 2. Location check (case-insensitive substring or match)
             if location and location.lower() not in ["any", "all", ""]:
@@ -71,17 +76,22 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
 
             # 3. Category check
             if category and category.lower() not in ["any", "all", ""]:
-                if v.category.value.lower() != category.lower():
+                cat_match = (v.category.value.lower() == category.lower())
+                # Cross-category match for electric SUVs in Electric Vehicle category
+                if not cat_match and category.lower() in ["suv", "luxury suv"]:
+                    is_elec = (fuel_type and fuel_type.lower() == "electric") or (v.fuel_type.value.lower() == "electric")
+                    if is_elec and v.category.value == "Electric Vehicle":
+                        if any(k in v.model.lower() for k in ["nexon", "ioniq", "ev6", "zs", "xuv", "xc40", "model y"]):
+                            cat_match = True
+                if not cat_match:
                     continue
 
-            # 4. Budget check (daily for rent, total for purchase)
-            if max_price and max_price > 0:
-                if is_rent:
-                    if v.rental_price_per_day > max_price:
-                        continue
-                else:
-                    if v.purchase_price > max_price:
-                        continue
+            # 4. Budget check (min and max price)
+            price = v.rental_price_per_day if is_rent else v.purchase_price
+            if min_price and min_price > 0 and price < min_price:
+                continue
+            if max_price and max_price > 0 and price > max_price:
+                continue
 
             # 5. Transmission check
             if transmission and transmission.lower() not in ["any", "all", ""]:
@@ -93,12 +103,28 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
                 if v.fuel_type.value.lower() != fuel_type.lower():
                     continue
 
-            # 7. Seating capacity check
-            if seats and seats > 0:
-                if v.seats < seats:
+            # 7. Brand check
+            if brands and len(brands) > 0:
+                if not any(v.brand.lower() == b.lower() for b in brands):
                     continue
 
-            # 8. Date Availability (for rent)
+            # 8. Seating capacity check (Exact / Min / Max)
+            if seats_match_type == "exact" and seats and seats > 0:
+                if v.seats != seats:
+                    continue
+            elif seats_match_type == "min" or (seats_min and seats_min > 0):
+                target_min = seats_min or seats
+                if target_min and v.seats < target_min:
+                    continue
+            elif seats_match_type == "max" or (seats_max and seats_max > 0):
+                target_max = seats_max or seats
+                if target_max and v.seats > target_max:
+                    continue
+            elif seats and seats > 0:
+                if v.seats != seats:
+                    continue
+
+            # 9. Date Availability (for rent)
             if is_rent and start_date and end_date:
                 available, _ = is_vehicle_available_for_dates(v, start_date, end_date)
                 if not available:

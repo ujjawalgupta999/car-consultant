@@ -158,11 +158,44 @@ export const RentCars: React.FC = () => {
           </div>
         </div>
 
-        {/* Results Header */}
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-xs text-gray-400">
-            Found <span className="font-bold text-white">{rentalListings.length}</span> eligible self-drive rental vehicles
-          </p>
+        {/* Results Header & Active Filters */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs text-gray-400">
+              Found <span className="font-bold text-white">{rentalListings.length}</span> eligible self-drive rental vehicles
+            </p>
+            {filters.category && (
+              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-xs font-semibold">
+                Category: {filters.category}
+              </span>
+            )}
+            {filters.seats && (
+              <span className="px-2.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-primary-accent text-xs font-semibold">
+                {filters.seats}-Seater
+              </span>
+            )}
+            {filters.fuelType && (
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-semibold">
+                {filters.fuelType}
+              </span>
+            )}
+            {filters.transmission && (
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-400 text-xs font-semibold">
+                {filters.transmission}
+              </span>
+            )}
+          </div>
+          {(filters.category || filters.seats || filters.fuelType || filters.transmission) && (
+            <button
+              onClick={() => {
+                setCategory('');
+                setFilters({ category: '', seats: undefined, fuelType: '', transmission: '' });
+              }}
+              className="text-xs text-gray-400 hover:text-white underline cursor-pointer"
+            >
+              Clear AI Filters
+            </button>
+          )}
         </div>
 
         {/* Listings Grid */}

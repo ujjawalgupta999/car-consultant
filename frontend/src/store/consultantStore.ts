@@ -91,6 +91,9 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
         if (payload.brand !== undefined) filterUpdates.brand = payload.brand;
         if (payload.intent !== undefined) filterUpdates.intent = payload.intent;
         if (payload.maxPrice !== undefined && payload.maxPrice > 0) filterUpdates.maxPrice = payload.maxPrice;
+        if (payload.minPrice !== undefined && payload.minPrice > 0) filterUpdates.minPrice = payload.minPrice;
+        if (payload.seats !== undefined) filterUpdates.seats = payload.seats;
+        if (payload.seatsMatchType !== undefined) filterUpdates.seatsMatchType = payload.seatsMatchType;
         vehicleStore.setFilters(filterUpdates);
         break;
 

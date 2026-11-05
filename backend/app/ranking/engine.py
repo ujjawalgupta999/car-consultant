@@ -123,9 +123,15 @@ class RankingEngine:
                 pref_points += 1.0
 
             # Seats
-            if preferences.seating_capacity:
-                if v.seats >= preferences.seating_capacity:
+            if preferences.seating_capacity and preferences.seating_capacity > 0:
+                if v.seats == preferences.seating_capacity:
                     pref_points += 1.0
+                elif preferences.seating_match_type == "min" and v.seats >= preferences.seating_capacity:
+                    pref_points += 0.8
+                elif preferences.seating_match_type == "max" and v.seats <= preferences.seating_capacity:
+                    pref_points += 0.8
+                else:
+                    pref_points += 0.0 # penalty for seating mismatch
             else:
                 pref_points += 1.0
 
@@ -166,6 +172,8 @@ class RankingEngine:
                 positives.append(f"{v.transmission.value.capitalize()} transmission as specified")
             if preferences.fuel_type and preferences.fuel_type.lower() == v.fuel_type.value.lower():
                 positives.append(f"{v.fuel_type.value.capitalize()} powertrain as requested")
+            if preferences.seating_capacity and v.seats == preferences.seating_capacity:
+                positives.append(f"Exact {v.seats}-seater capacity match")
             if has_brand_pref and any(v.brand.lower() == b.lower() for b in preferences.preferred_brands):
                 positives.append(f"Preferred brand ({v.brand}) match")
             if v.rating >= 4.7:
@@ -173,6 +181,8 @@ class RankingEngine:
 
             # Trade-offs / Compromises
             trade_offs: List[str] = []
+            if preferences.seating_capacity and v.seats != preferences.seating_capacity:
+                trade_offs.append(f"{v.seats}-seater vehicle (Requested {preferences.seating_capacity} seats)")
             if v.condition.value == "used":
                 trade_offs.append(f"Pre-owned vehicle ({v.odometer_km:,.0f} km on odometer)")
             if is_rent and price > (user_budget_amount or 0):
@@ -261,6 +271,26 @@ class RankingEngine:
             if not matching_trans:
                 reasons.append(f"No vehicles found with {preferences.transmission} transmission.")
                 suggestions.append("Consider selecting 'any' transmission.")
+
+        # 4. Seating capacity check
+        if preferences.seating_capacity:
+            matching_seats = [v for v in all_vehicles if v.seats == preferences.seating_capacity]
+            if not matching_seats:
+                reasons.append(f"No vehicles found with exactly {preferences.seating_capacity} seats.")
+                suggestions.append(f"Would you be open to a 4-seater or 5-seater alternative?")
+            else:
+                budget_ceiling = preferences.budget_max or (preferences.budget.amount if preferences.budget else 0)
+                if budget_ceiling > 0:
+                    price_attr = "rental_price_per_day" if is_rent else "purchase_price"
+                    min_seat_p = min(getattr(v, price_attr) for v in matching_seats)
+                    if budget_ceiling < min_seat_p:
+                        unit_str = "/day" if is_rent else ""
+                        reasons.append(
+                            f"Your budget of ₹{budget_ceiling:,.0f}{unit_str} is below the entry price for a {preferences.seating_capacity}-seater (₹{min_seat_p:,.0f}{unit_str})."
+                        )
+                        suggestions.append(
+                            f"Most {preferences.seating_capacity}-seater cars start at ₹{min_seat_p:,.0f}{unit_str}. Consider increasing your budget or exploring a 4-seater/5-seater model."
+                        )
 
         if not reasons:
             reasons.append("No vehicles currently meet your combined location, date, and budget filters.")
