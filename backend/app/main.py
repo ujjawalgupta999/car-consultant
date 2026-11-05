@@ -1,10 +1,12 @@
 import logging
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from pathlib import Path
 
 from .config import settings
+from .orchestration.state_machine import InvalidStateTransitionError
 from .api import (
     routes_health,
     routes_sessions,
@@ -35,6 +37,19 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+@app.exception_handler(InvalidStateTransitionError)
+async def invalid_state_transition_handler(request: Request, exc: InvalidStateTransitionError):
+    logger.warning(f"Invalid state transition caught gracefully: {exc}")
+    return JSONResponse(
+        status_code=400,
+        content={
+            "error": "invalid_state_transition",
+            "message": str(exc),
+            "current_state": exc.current_state.value if hasattr(exc, "current_state") else str(exc.current_state),
+            "target_state": exc.target_state.value if hasattr(exc, "target_state") else str(exc.target_state),
+        }
+    )
 
 # CORS Middleware
 app.add_middleware(

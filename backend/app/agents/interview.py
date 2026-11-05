@@ -79,7 +79,20 @@ class AdaptiveInterviewAgent:
             r'\bstarting\s+\d{1,2}\b'
         ]
 
-        if any(re.search(pat, text_lower) for pat in buy_patterns):
+        # Check negated intents: "instead of buying", "rather than renting", etc.
+        negated_buy = bool(re.search(r'(?:instead\s+of|rather\s+than|not)\s+(?:buying|buy|purchase)', text_lower))
+        negated_rent = bool(re.search(r'(?:instead\s+of|rather\s+than|not)\s+(?:renting|rent|hire|lease)', text_lower))
+
+        has_buy_signal = any(re.search(pat, text_lower) for pat in buy_patterns) and not negated_buy
+        has_rent_signal = any(re.search(pat, text_lower) for pat in rent_patterns) and not negated_rent
+
+        if has_rent_signal and (not has_buy_signal or negated_buy):
+            current_prefs.intent = IntentType.RENT
+            current_prefs.purchase_details = None
+            if not current_prefs.rental_details:
+                current_prefs.rental_details = RentalDetails()
+            extracted_fields.append("intent: RENT")
+        elif has_buy_signal and (not has_rent_signal or negated_rent):
             current_prefs.intent = IntentType.BUY
             current_prefs.rental_details = None
             current_prefs.rental_start_date = None
@@ -87,12 +100,6 @@ class AdaptiveInterviewAgent:
             if not current_prefs.purchase_details:
                 current_prefs.purchase_details = PurchaseDetails()
             extracted_fields.append("intent: BUY")
-        elif any(re.search(pat, text_lower) for pat in rent_patterns):
-            current_prefs.intent = IntentType.RENT
-            current_prefs.purchase_details = None
-            if not current_prefs.rental_details:
-                current_prefs.rental_details = RentalDetails()
-            extracted_fields.append("intent: RENT")
 
         # ---------------------------------------------------------
         # 2. Seating Capacity Semantic Extraction
@@ -353,17 +360,23 @@ class AdaptiveInterviewAgent:
         Never demands category if seating capacity is already specified.
         """
         missing = []
-        if not prefs.location:
-            missing.append("location")
-
-        # If user specified seating capacity, category is not strictly required
-        if not prefs.category and not prefs.seating_capacity:
-            missing.append("category")
-
+        is_buy = (prefs.intent == IntentType.BUY or prefs.intent == "BUY")
+        has_cat_or_seats = bool(prefs.category or prefs.seating_capacity)
         has_budget = bool(
             (prefs.budget_max and prefs.budget_max > 0) or
             (prefs.budget and prefs.budget.amount > 0)
         )
+
+        if not prefs.location:
+            # Rental strictly requires pickup location.
+            # Purchase requires location during early interview if specific category and budget are not yet both provided.
+            if not is_buy or not (prefs.category and has_budget):
+                missing.append("location")
+
+        # If user specified seating capacity, category is not strictly required
+        if not has_cat_or_seats:
+            missing.append("category")
+
         if not has_budget:
             missing.append("budget")
 

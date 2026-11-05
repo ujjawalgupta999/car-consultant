@@ -140,10 +140,14 @@ class OrchestrationEngine:
         missing = AdaptiveInterviewAgent.check_missing_fields(session.preferences)
 
         if missing:
-            # Need more details: stay in INTERVIEWING
-            if session.workflow_state == WorkflowState.NEW:
+            # Need more details: stay in or return to INTERVIEWING
+            if session.workflow_state != WorkflowState.INTERVIEWING:
                 StateMachine.validate_transition(session.workflow_state, WorkflowState.INTERVIEWING)
                 session.workflow_state = WorkflowState.INTERVIEWING
+
+            # Invalidate stale recommendations since requirements are incomplete
+            session.search_results = []
+            session.selected_vehicle_id = None
 
             followup_text = AdaptiveInterviewAgent.generate_followup_question(session.preferences)
 
@@ -277,7 +281,11 @@ class OrchestrationEngine:
                 "website_actions": actions
             }
 
-        # 5. Interview complete! Transition through SEARCHING and RANKING
+        # 5. Interview complete or requirement updated! Transition through SEARCHING and RANKING
+        # Invalidate stale recommendations before performing a new search
+        session.search_results = []
+        session.selected_vehicle_id = None
+
         # Validate state transition: -> READY_TO_SEARCH -> SEARCHING
         if session.workflow_state in [WorkflowState.NEW, WorkflowState.INTERVIEWING]:
             StateMachine.validate_transition(session.workflow_state, WorkflowState.READY_TO_SEARCH)
@@ -349,6 +357,7 @@ class OrchestrationEngine:
                 content=bot_text,
                 a2ui_surfaces=[surface_id]
             )
+            StateMachine.validate_transition(session.workflow_state, WorkflowState.RECOMMENDATIONS_READY)
             session.workflow_state = WorkflowState.RECOMMENDATIONS_READY
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
@@ -379,8 +388,9 @@ class OrchestrationEngine:
 
         intent_word = "rental" if is_rent else "purchase"
         top_name = f"{ranked_items[0].vehicle.brand} {ranked_items[0].vehicle.model}"
+        loc_str = f" in {session.preferences.location}" if session.preferences.location else ""
         bot_text = (
-            f"I have found {len(ranked_items)} verified {intent_word} options for you in {session.preferences.location}. "
+            f"I have found {len(ranked_items)} verified {intent_word} options for you{loc_str}. "
             f"My top recommendation is the **{top_name}** with a {ranked_items[0].match_score}% match score.\n\n"
             f"Review the options below and click **'Select'** to launch the booking details."
         )
@@ -405,6 +415,21 @@ class OrchestrationEngine:
 
         # Generate Website Actions to dynamically control the frontend
         target_path = "/rent" if is_rent else "/buy"
+        filter_payload = {
+            "intent": "rent" if is_rent else "buy",
+            "category": session.preferences.category.value if session.preferences.category else "",
+            "transmission": session.preferences.transmission if session.preferences.transmission not in ["any", None] else "",
+            "location": session.preferences.location or "",
+            "brand": session.preferences.preferred_brands[0] if session.preferences.preferred_brands else "",
+            "fuelType": session.preferences.fuel_type if session.preferences.fuel_type not in ["any", None] else "",
+        }
+        if session.preferences.seating_capacity:
+            filter_payload["seats"] = session.preferences.seating_capacity
+        if max_p and max_p > 0:
+            filter_payload["maxPrice"] = max_p
+        if min_p and min_p > 0:
+            filter_payload["minPrice"] = min_p
+
         website_actions = [
             {
                 "type": "NAVIGATE_TO_PAGE",
@@ -412,13 +437,7 @@ class OrchestrationEngine:
             },
             {
                 "type": "APPLY_FILTERS",
-                "payload": {
-                    "category": session.preferences.category.value if session.preferences.category else "",
-                    "transmission": session.preferences.transmission or "",
-                    "location": session.preferences.location or "",
-                    "maxPrice": max_p,
-                    "intent": "rent" if is_rent else "buy"
-                }
+                "payload": filter_payload
             }
         ]
 

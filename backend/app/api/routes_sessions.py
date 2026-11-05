@@ -4,6 +4,10 @@ from typing import Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+import logging
+from ..orchestration.state_machine import InvalidStateTransitionError
+
+logger = logging.getLogger("car_consultant.sessions")
 from ..repositories.session import session_repo
 from ..orchestration.orchestrator import orchestration_engine
 from ..models.session import Session, WorkflowState
@@ -64,8 +68,20 @@ def delete_session(session_id: str):
 async def send_message(session_id: str, req: SendMessageRequest):
     if not req.content or not req.content.strip():
         raise HTTPException(status_code=400, detail="Message content cannot be empty.")
-    result = await orchestration_engine.process_user_turn(session_id, req.content.strip())
-    return result
+    try:
+        result = await orchestration_engine.process_user_turn(session_id, req.content.strip())
+        return result
+    except InvalidStateTransitionError as exc:
+        logger.warning(f"Invalid state transition in session {session_id}: {exc}")
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "invalid_state_transition",
+                "message": str(exc),
+                "current_state": exc.current_state.value if hasattr(exc, "current_state") else str(exc.current_state),
+                "target_state": exc.target_state.value if hasattr(exc, "target_state") else str(exc.target_state),
+            }
+        )
 
 @router.get("/{session_id}/events")
 async def sse_events(session_id: str):

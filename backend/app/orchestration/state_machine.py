@@ -11,11 +11,13 @@ class InvalidStateTransitionError(Exception):
 VALID_TRANSITIONS: Dict[WorkflowState, Set[WorkflowState]] = {
     WorkflowState.NEW: {
         WorkflowState.INTERVIEWING,
-        WorkflowState.READY_TO_SEARCH
+        WorkflowState.READY_TO_SEARCH,
+        WorkflowState.SEARCHING
     },
     WorkflowState.INTERVIEWING: {
         WorkflowState.INTERVIEWING,
         WorkflowState.READY_TO_SEARCH,
+        WorkflowState.SEARCHING,
         WorkflowState.CANCELLED
     },
     WorkflowState.READY_TO_SEARCH: {
@@ -25,24 +27,29 @@ VALID_TRANSITIONS: Dict[WorkflowState, Set[WorkflowState]] = {
     },
     WorkflowState.SEARCHING: {
         WorkflowState.RANKING,
+        WorkflowState.RECOMMENDATIONS_READY,
         WorkflowState.INTERVIEWING,
         WorkflowState.CANCELLED
     },
     WorkflowState.RANKING: {
         WorkflowState.RECOMMENDATIONS_READY,
+        WorkflowState.SEARCHING,
         WorkflowState.INTERVIEWING,
         WorkflowState.CANCELLED
     },
     WorkflowState.RECOMMENDATIONS_READY: {
-        WorkflowState.VEHICLE_SELECTED,
-        WorkflowState.INTERVIEWING,
+        WorkflowState.SEARCHING,
         WorkflowState.READY_TO_SEARCH,
+        WorkflowState.INTERVIEWING,
+        WorkflowState.RECOMMENDATIONS_READY,
+        WorkflowState.VEHICLE_SELECTED,
         WorkflowState.CANCELLED
     },
     WorkflowState.VEHICLE_SELECTED: {
         WorkflowState.BOOKING_IN_PROGRESS,
         WorkflowState.CHECKOUT_READY,
         WorkflowState.RECOMMENDATIONS_READY,
+        WorkflowState.SEARCHING,
         WorkflowState.INTERVIEWING,
         WorkflowState.CANCELLED
     },
@@ -70,11 +77,14 @@ VALID_TRANSITIONS: Dict[WorkflowState, Set[WorkflowState]] = {
     },
     WorkflowState.CONFIRMED: {
         WorkflowState.NEW,
-        WorkflowState.READY_TO_SEARCH
+        WorkflowState.READY_TO_SEARCH,
+        WorkflowState.SEARCHING,
+        WorkflowState.INTERVIEWING
     },
     WorkflowState.CANCELLED: {
         WorkflowState.NEW,
-        WorkflowState.INTERVIEWING
+        WorkflowState.INTERVIEWING,
+        WorkflowState.SEARCHING
     }
 }
 
