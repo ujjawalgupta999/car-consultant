@@ -83,14 +83,15 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
 
       case 'APPLY_FILTERS':
         const vehicleStore = useVehicleStore.getState();
-        vehicleStore.setFilters({
-          category: payload.category || '',
-          transmission: payload.transmission || '',
-          fuelType: payload.fuelType || '',
-          location: payload.location || '',
-          intent: payload.intent || 'all',
-          maxPrice: payload.maxPrice || 50000000,
-        });
+        const filterUpdates: Record<string, any> = {};
+        if (payload.category !== undefined) filterUpdates.category = payload.category;
+        if (payload.transmission !== undefined) filterUpdates.transmission = payload.transmission;
+        if (payload.fuelType !== undefined) filterUpdates.fuelType = payload.fuelType;
+        if (payload.location !== undefined) filterUpdates.location = payload.location;
+        if (payload.brand !== undefined) filterUpdates.brand = payload.brand;
+        if (payload.intent !== undefined) filterUpdates.intent = payload.intent;
+        if (payload.maxPrice !== undefined && payload.maxPrice > 0) filterUpdates.maxPrice = payload.maxPrice;
+        vehicleStore.setFilters(filterUpdates);
         break;
 
       case 'CLEAR_FILTERS':
@@ -156,3 +157,4 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
     });
   },
 }));
+

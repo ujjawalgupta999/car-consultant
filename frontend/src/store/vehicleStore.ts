@@ -150,3 +150,4 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
       });
   },
 }));
+

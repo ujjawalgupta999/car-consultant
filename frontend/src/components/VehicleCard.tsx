@@ -182,3 +182,4 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
     </div>
   );
 };
+

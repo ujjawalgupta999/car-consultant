@@ -160,3 +160,4 @@ export interface WebsiteAction {
 - **MCP App Sandboxing**: Iframes run with `sandbox="allow-scripts allow-forms allow-same-origin"` and Content Security Policy (CSP).
 - **Authoritative Price Calculation**: Totals, deposits, and GST are always recalculated by the backend `/api/bookings/calculate`.
 - **Mock Safety**: Payment simulations prominently display test disclaimers; no real card or banking credentials are ever accepted.
+

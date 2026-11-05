@@ -82,3 +82,4 @@
 - [ ] Run backend pytest suite.
 - [ ] Run frontend TypeScript compilation & build (`npm run build`).
 - [ ] Update `README.md` with complete architecture, commands, and screenshots.
+

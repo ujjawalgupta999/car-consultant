@@ -23,6 +23,13 @@ export const RentCars: React.FC = () => {
     }
   }, [vehicles.length, fetchVehicles, setFilters]);
 
+  // Synchronize with external AI Consultant filter actions
+  useEffect(() => {
+    if (filters.category !== undefined) setCategory(filters.category);
+    if (filters.location) setPickupCity(filters.location);
+    if (filters.maxPrice && filters.maxPrice < 50000) setDailyBudget(filters.maxPrice);
+  }, [filters.category, filters.location, filters.maxPrice]);
+
   const handleApplyRentalSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setFilters({
@@ -30,6 +37,14 @@ export const RentCars: React.FC = () => {
       location: pickupCity,
       category: category,
       maxPrice: dailyBudget,
+    });
+  };
+
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    setFilters({
+      intent: 'rent',
+      category: newCat,
     });
   };
 
@@ -108,7 +123,7 @@ export const RentCars: React.FC = () => {
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full rounded-xl bg-background border border-surface-border px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
               >
                 <option value="">All Categories</option>
@@ -160,3 +175,4 @@ export const RentCars: React.FC = () => {
     </div>
   );
 };
+

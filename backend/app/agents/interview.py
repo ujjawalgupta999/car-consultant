@@ -8,19 +8,31 @@ from ..models.vehicle import VehicleCategory
 
 CATEGORY_KEYWORD_MAP = {
     "hatchback": VehicleCategory.HATCHBACK,
+    "hatchbacks": VehicleCategory.HATCHBACK,
     "sedan": VehicleCategory.SEDAN,
+    "sedans": VehicleCategory.SEDAN,
     "suv": VehicleCategory.SUV,
+    "suvs": VehicleCategory.SUV,
     "luxury sedan": VehicleCategory.LUXURY_SEDAN,
+    "luxury sedans": VehicleCategory.LUXURY_SEDAN,
     "luxury suv": VehicleCategory.LUXURY_SUV,
+    "luxury suvs": VehicleCategory.LUXURY_SUV,
     "electric": VehicleCategory.ELECTRIC_VEHICLE,
     "ev": VehicleCategory.ELECTRIC_VEHICLE,
+    "evs": VehicleCategory.ELECTRIC_VEHICLE,
     "electric vehicle": VehicleCategory.ELECTRIC_VEHICLE,
+    "electric vehicles": VehicleCategory.ELECTRIC_VEHICLE,
     "hybrid": VehicleCategory.HYBRID,
+    "hybrids": VehicleCategory.HYBRID,
     "muv": VehicleCategory.MUV,
+    "muvs": VehicleCategory.MUV,
     "mpv": VehicleCategory.MUV,
+    "mpvs": VehicleCategory.MUV,
     "sports car": VehicleCategory.SPORTS_CAR,
+    "sports cars": VehicleCategory.SPORTS_CAR,
     "sports": VehicleCategory.SPORTS_CAR,
     "convertible": VehicleCategory.CONVERTIBLE,
+    "convertibles": VehicleCategory.CONVERTIBLE,
     "cabriolet": VehicleCategory.CONVERTIBLE,
     "roadster": VehicleCategory.CONVERTIBLE,
 }
@@ -44,14 +56,26 @@ class AdaptiveInterviewAgent:
         extracted_fields = []
 
         # 1. Intent Detection
-        if any(w in text_lower for w in ["buy", "purchase", "own", "buying", "second hand"]):
+        buy_patterns = [
+            r'\b(buy|buying|purchase|purchasing|acquire|ordering)\b',
+            r'\b(second\s*hand|pre-?owned|preowned)\b',
+            r'\b(want\s+to\s+own|looking\s+to\s+own)\b',
+            r'\b(want\s+to\s+but|looking\s+to\s+but)\b', # typo "but" for "buy"
+            r'\b(?:but|by)\s+(?:an?\s+)?(?:car|vehicle|sedan|suv|hatchback|ev|convertible)\b',
+            r'\bi\s+want\s+to\s+but\b'
+        ]
+        rent_patterns = [
+            r'\b(rent|rental|renting|hire|hiring|lease|leasing)\b'
+        ]
+
+        if any(re.search(pat, text_lower) for pat in buy_patterns):
             if current_prefs.intent != IntentType.BUY:
                 current_prefs.intent = IntentType.BUY
                 current_prefs.rental_details = None
                 if not current_prefs.purchase_details:
                     current_prefs.purchase_details = PurchaseDetails()
                 extracted_fields.append("intent: BUY")
-        elif any(w in text_lower for w in ["rent", "hire", "rental", "renting"]):
+        elif any(re.search(pat, text_lower) for pat in rent_patterns):
             if current_prefs.intent != IntentType.RENT:
                 current_prefs.intent = IntentType.RENT
                 current_prefs.purchase_details = None
@@ -60,8 +84,18 @@ class AdaptiveInterviewAgent:
                 extracted_fields.append("intent: RENT")
 
         # 2. Category Detection
-        # Check longer phrases first
+        # Handle negation phrases like "instead of <category>" or "not <category>"
+        negated_categories = set()
+        for neg_match in re.finditer(r'(?:instead\s+of|rather\s+than|not)\s+([a-z\s]+)', text_lower):
+            negated_phrase = neg_match.group(1)
+            for k in CATEGORY_KEYWORD_MAP.keys():
+                if k in negated_phrase:
+                    negated_categories.add(k)
+
+        # Check positive matches, sorted by length descending
         for key, cat_enum in sorted(CATEGORY_KEYWORD_MAP.items(), key=lambda x: -len(x[0])):
+            if key in negated_categories:
+                continue
             if re.search(r'\b' + re.escape(key) + r'\b', text_lower):
                 current_prefs.category = cat_enum
                 extracted_fields.append(f"category: {cat_enum.value}")

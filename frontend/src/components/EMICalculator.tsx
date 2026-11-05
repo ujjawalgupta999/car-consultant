@@ -116,3 +116,4 @@ export const EMICalculator: React.FC<EMICalculatorProps> = ({ vehiclePrice }) =>
     </div>
   );
 };
+

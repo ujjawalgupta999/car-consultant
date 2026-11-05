@@ -133,3 +133,4 @@ def toggle_saved_vehicle(payload: Dict[str, str], authorization: Optional[str] =
         "total_saved": len(saved),
         "saved_vehicles": saved
     }
+

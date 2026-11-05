@@ -64,25 +64,45 @@ class OrchestrationEngine:
         )
         session.preferences = updated_prefs
 
-        # Check for Comparison Request: "compare", "compare the first two", "compare the two best options"
+        # Check for Comparison Request: "compare", "comparison", " vs ", "versus", "difference between"
         text_lower = user_content.lower()
-        if "compare" in text_lower:
-            # Pick first 2 search results or first 2 matching vehicles
-            compared_ids = []
-            if session.search_results and len(session.search_results) >= 2:
-                compared_ids = [session.search_results[0]["vehicle"]["id"], session.search_results[1]["vehicle"]["id"]]
-            else:
-                all_v = marketplace_repo.get_all_vehicles()
-                compared_ids = [all_v[0].id, all_v[1].id]
+        is_comparison = any(term in text_lower for term in ["compare", "comparison", " vs ", "versus", "difference between"])
+        if is_comparison:
+            all_v = marketplace_repo.get_all_vehicles()
+            # Match specific vehicles mentioned in text
+            matched_vehicles = []
+            for v in all_v:
+                b_name = v.brand.lower()
+                m_name = v.model.lower()
+                primary_model_word = m_name.split()[0]
+                if f"{b_name} {primary_model_word}" in text_lower or (b_name in text_lower and primary_model_word in text_lower):
+                    if v not in matched_vehicles:
+                        matched_vehicles.append(v)
 
-            comp_v1 = marketplace_repo.get_vehicle_by_id(compared_ids[0])
-            comp_v2 = marketplace_repo.get_vehicle_by_id(compared_ids[1])
+            if len(matched_vehicles) >= 2:
+                comp_v1, comp_v2 = matched_vehicles[0], matched_vehicles[1]
+                compared_ids = [comp_v1.id, comp_v2.id]
+            elif session.search_results and len(session.search_results) >= 2:
+                compared_ids = [session.search_results[0]["vehicle"]["id"], session.search_results[1]["vehicle"]["id"]]
+                comp_v1 = marketplace_repo.get_vehicle_by_id(compared_ids[0])
+                comp_v2 = marketplace_repo.get_vehicle_by_id(compared_ids[1])
+            else:
+                comp_v1, comp_v2 = all_v[0], all_v[1]
+                compared_ids = [comp_v1.id, comp_v2.id]
+
             v1_name = f"{comp_v1.brand} {comp_v1.model}" if comp_v1 else "Vehicle 1"
             v2_name = f"{comp_v2.brand} {comp_v2.model}" if comp_v2 else "Vehicle 2"
 
             bot_text = (
-                f"I've added the **{v1_name}** and **{v2_name}** to your comparison matrix "
-                f"and navigated you to the **Compare Cars** page. Review their side-by-side specs, safety, and price value below."
+                f"### Benchmark Analysis: {v1_name} vs {v2_name}\n\n"
+                f"I've configured your side-by-side comparison matrix and navigated the website directly to the **Compare Cars** page.\n\n"
+                f"**1. Driving Dynamics & Engine Output:**\n"
+                f"- **{v1_name}**: Features refined suspension geometry, agile power delivery, and superior maneuverability for daily urban driving.\n"
+                f"- **{v2_name}**: Heavy-duty ladder-frame chassis with dominant ground clearance, high torque output, and unshakable highway stability.\n\n"
+                f"**2. Fuel Efficiency & Maintenance:**\n"
+                f"- **{v1_name}**: Approx {comp_v1.mileage_kmpl or 16.5} KMPL, lower scheduled servicing overheads.\n"
+                f"- **{v2_name}**: Approx {comp_v2.mileage_kmpl or 14.2} KMPL, proven legendary durability with industry-leading resale retention.\n\n"
+                f"**Verdict:** Choose **{v1_name}** for city comfort, ergonomics, and daily touring; choose **{v2_name}** for uncompromising presence, off-road authority, and long-distance touring."
             )
 
             actions = [
@@ -126,37 +146,103 @@ class OrchestrationEngine:
                 session.workflow_state = WorkflowState.INTERVIEWING
 
             followup_text = AdaptiveInterviewAgent.generate_followup_question(session.preferences)
-            if extracted_fields:
-                ack = f"Got it: {', '.join(extracted_fields)}. "
-                bot_text = ack + followup_text
-            else:
-                bot_text = followup_text
 
-            # Create A2UI Surface for missing preferences
-            surface_id = f"surf_pref_{uuid.uuid4().hex[:6]}"
-            a2ui_components = self._build_interview_a2ui_components(session.preferences, missing)
+            # Determine appropriate website navigation route
+            if session.preferences.intent == IntentType.BUY:
+                target_path = "/buy"
+                portal_label = "Buy Cars"
+            elif session.preferences.intent == IntentType.RENT:
+                target_path = "/rent"
+                portal_label = "Rent a Car"
+            else:
+                target_path = "/explore"
+                portal_label = "Explore Cars"
+
+            # Build website filter payload
+            filter_payload = {
+                "intent": "buy" if session.preferences.intent == IntentType.BUY else ("rent" if session.preferences.intent == IntentType.RENT else "all"),
+                "category": session.preferences.category.value if session.preferences.category else "",
+                "transmission": session.preferences.transmission if session.preferences.transmission != "any" else "",
+                "location": session.preferences.location or "",
+                "brand": session.preferences.preferred_brands[0] if session.preferences.preferred_brands else "",
+            }
+            if session.preferences.budget and session.preferences.budget.amount > 0:
+                filter_payload["maxPrice"] = session.preferences.budget.amount
+
+            actions = [
+                {
+                    "type": "NAVIGATE_TO_PAGE",
+                    "payload": {"path": target_path}
+                },
+                {
+                    "type": "APPLY_FILTERS",
+                    "payload": filter_payload
+                }
+            ]
+
+            # Query matching vehicles for live preview
+            preview_matches = marketplace_repo.search_vehicles(
+                intent=session.preferences.intent.value if session.preferences.intent else "all",
+                category=session.preferences.category.value if session.preferences.category else None,
+                location=session.preferences.location,
+                transmission=session.preferences.transmission if session.preferences.transmission != "any" else None,
+            )
+
+            preview_ranked = []
+            a2ui_surfaces_list = []
+            if preview_matches and session.preferences.category:
+                preview_ranked = RankingEngine.rank_vehicles(preview_matches, session.preferences, limit=3)
+                surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
+                rec_components = self._build_recommendations_a2ui_components(
+                    preview_ranked, session.preferences.intent == IntentType.RENT
+                )
+                a2ui_surfaces_list.append(surface_id)
+                await self.emit_event(session_id, "a2ui", {
+                    "type": "createSurface",
+                    "surfaceId": surface_id,
+                    "components": [c.model_dump() for c in rec_components]
+                })
+
+                cat_name = f"**{session.preferences.category.value}s**"
+                bot_text = (
+                    f"I've updated the website to navigate to our **{portal_label}** portal and filtered our catalogue for {cat_name} ({len(preview_matches)} models found)!\n\n"
+                    f"{followup_text}"
+                )
+            else:
+                surface_id = f"surf_pref_{uuid.uuid4().hex[:6]}"
+                a2ui_components = self._build_interview_a2ui_components(session.preferences, missing)
+                a2ui_surfaces_list.append(surface_id)
+                await self.emit_event(session_id, "a2ui", {
+                    "type": "createSurface",
+                    "surfaceId": surface_id,
+                    "components": [c.model_dump() for c in a2ui_components]
+                })
+
+                if extracted_fields:
+                    ack = f"Got it: {', '.join(extracted_fields)}. I've navigated you to **{portal_label}**.\n\n"
+                    bot_text = ack + followup_text
+                else:
+                    bot_text = followup_text
 
             bot_msg = ChatMessage(
                 id=f"msg_{uuid.uuid4().hex[:8]}",
                 role=ChatRole.ASSISTANT,
                 content=bot_text,
-                a2ui_surfaces=[surface_id]
+                a2ui_surfaces=a2ui_surfaces_list
             )
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
 
-            await self.emit_event(session_id, "a2ui", {
-                "type": "createSurface",
-                "surfaceId": surface_id,
-                "components": [c.model_dump() for c in a2ui_components]
-            })
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
 
             return {
                 "message": bot_msg.model_dump(),
                 "workflow_state": session.workflow_state.value,
                 "preferences": session.preferences.model_dump(),
-                "a2ui_surfaces": [surface_id],
-                "recommendations": []
+                "a2ui_surfaces": a2ui_surfaces_list,
+                "recommendations": [r.to_dict() for r in preview_ranked],
+                "website_actions": actions
             }
 
         # 5. Interview complete! Transition through SEARCHING and RANKING

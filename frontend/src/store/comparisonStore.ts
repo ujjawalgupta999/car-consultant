@@ -38,3 +38,4 @@ export const useComparisonStore = create<ComparisonStore>((set, get) => ({
     return get().comparedVehicles.some((v) => v.id === vehicleId);
   },
 }));
+

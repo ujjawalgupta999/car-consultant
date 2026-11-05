@@ -16,12 +16,30 @@ export const BuyCars: React.FC = () => {
     }
   }, [vehicles.length, fetchVehicles, setFilters]);
 
+  // Synchronize with external AI Consultant filter actions
+  useEffect(() => {
+    if (filters.category !== undefined) {
+      setCategory(filters.category);
+    }
+    if (filters.maxPrice && filters.maxPrice > 100000) {
+      setMaxBudget(filters.maxPrice);
+    }
+  }, [filters.category, filters.maxPrice]);
+
   const handleApplyBuySearch = (e: React.FormEvent) => {
     e.preventDefault();
     setFilters({
       intent: 'buy',
       category: category,
       maxPrice: maxBudget,
+    });
+  };
+
+  const handleCategoryChange = (newCat: string) => {
+    setCategory(newCat);
+    setFilters({
+      intent: 'buy',
+      category: newCat,
     });
   };
 
@@ -91,7 +109,7 @@ export const BuyCars: React.FC = () => {
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => handleCategoryChange(e.target.value)}
                 className="w-full rounded-xl bg-background border border-surface-border px-3 py-2.5 text-xs text-white outline-none cursor-pointer"
               >
                 <option value="">All Categories</option>
@@ -158,3 +176,4 @@ export const BuyCars: React.FC = () => {
     </div>
   );
 };
+

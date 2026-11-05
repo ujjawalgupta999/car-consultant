@@ -350,3 +350,4 @@ export const VehicleDetails: React.FC = () => {
     </div>
   );
 };
+

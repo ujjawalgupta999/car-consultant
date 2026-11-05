@@ -113,3 +113,4 @@ Creates purchase order reservation with token deposit (`Idempotency-Key`).
 Executes simulated payment via UPI or Card simulator.
 - **Scenarios**: `success`, `failure`, `timeout`.
 - **Response**: Updates booking status to `CONFIRMED` upon success.
+

@@ -56,3 +56,4 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     return user.saved_vehicles.includes(vehicleId);
   },
 }));
+
