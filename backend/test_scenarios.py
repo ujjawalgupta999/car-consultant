@@ -80,3 +80,4 @@ async def test_scenarios():
     assert "/dashboard/payments" in paths_g
     assert len(r_g.get("cards", [])) > 0
     print("[PASS] Scenario G: Show my previous payments opens /dashboard/payments")
+

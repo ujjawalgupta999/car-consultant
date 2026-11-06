@@ -265,3 +265,4 @@ class WebsiteActionRegistry:
         ))
 
 action_registry = WebsiteActionRegistry()
+

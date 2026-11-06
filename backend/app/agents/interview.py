@@ -494,7 +494,8 @@ class AdaptiveInterviewAgent:
             (prefs.budget and prefs.budget.amount > 0)
         )
 
-        if not prefs.location:
+        # For buying, if user has provided category/seats and budget, location is optional
+        if not prefs.location and (not is_buy or not (has_cat_or_seats and has_budget)):
             missing.append("location")
 
         # If user specified seating capacity, category is not strictly required
