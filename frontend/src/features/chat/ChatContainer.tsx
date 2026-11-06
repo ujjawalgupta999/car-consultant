@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChatMessage, A2UIComponent } from '../../types';
 import { A2UIRenderer } from '../../a2ui/A2UIRenderer';
 import { MCPAppHost } from '../../mcp-apps/MCPAppHost';
-import { Bot, User, CheckCircle2, Ticket } from 'lucide-react';
+import { Bot, User, CheckCircle2, Ticket, ArrowUpRight } from 'lucide-react';
 
 /** Render a markdown string as JSX (supports **bold**, *italic*, ### headers, \n, `code`) */
 function renderMarkdown(text: string): React.ReactNode {
@@ -61,6 +62,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onMcpAppCancel,
   confirmedBooking,
 }) => {
+  const navigate = useNavigate();
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -110,6 +112,38 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                       />
                     );
                   })}
+                </div>
+              )}
+
+              {/* Render quick navigation actions from metadata if present */}
+              {isAssistant && (msg as any).data?.actions && Array.isArray((msg as any).data.actions) && (
+                <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-surface-border/40">
+                  {(msg as any).data.actions
+                    .filter((a: any) => a.type === 'NAVIGATE_TO_PAGE' && a.payload?.path)
+                    .map((a: any, aIdx: number) => {
+                      const path: string = a.payload.path;
+                      let label = 'Open Page';
+                      if (path.includes('/dashboard/purchases')) label = 'View My Purchases';
+                      else if (path.includes('/dashboard/rentals')) label = 'View My Rentals';
+                      else if (path.includes('/dashboard/payments')) label = 'Payment History';
+                      else if (path.includes('/dashboard/listings')) label = 'My Listings';
+                      else if (path.includes('/buy')) label = 'Explore Buy Cars';
+                      else if (path.includes('/rent')) label = 'Explore Rental Fleet';
+                      else if (path.includes('/compare')) label = 'View Comparison Matrix';
+                      else if (path.includes('/sell')) label = 'Sell a Car Portal';
+
+                      return (
+                        <button
+                          key={aIdx}
+                          type="button"
+                          onClick={() => navigate(path)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/20 hover:bg-primary/30 text-cyan-300 hover:text-cyan-200 border border-cyan-500/30 text-xs font-medium transition cursor-pointer"
+                        >
+                          <span>{label}</span>
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </button>
+                      );
+                    })}
                 </div>
               )}
             </div>

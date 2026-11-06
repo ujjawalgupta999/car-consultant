@@ -135,4 +135,88 @@ export async function getMe(token?: string) {
   return res.json();
 }
 
+export async function initiateCheckout(payload: {
+  order_type: 'BUY' | 'RENT';
+  vehicle_id: string;
+  user_id?: string;
+  total_amount: number;
+  currency?: string;
+  metadata?: Record<string, any>;
+}) {
+  const res = await fetch(`${API_BASE}/api/checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('Failed to initiate checkout');
+  return res.json();
+}
+
+export async function getCheckoutDetails(orderId: string) {
+  const res = await fetch(`${API_BASE}/api/checkout/${orderId}`);
+  if (!res.ok) throw new Error('Failed to load checkout details');
+  return res.json();
+}
+
+export async function confirmMockPayment(payload: {
+  order_id: string;
+  amount: number;
+  payment_method: string;
+  user_id?: string;
+  idempotency_key?: string;
+  simulate_scenario?: 'SUCCESS' | 'DECLINED' | 'TIMEOUT';
+}) {
+  const res = await fetch(`${API_BASE}/api/payments/mock/confirm`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Idempotency-Key': payload.idempotency_key || `idemp_${Date.now()}`
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: 'Payment failed' }));
+    throw new Error(err.detail || 'Payment confirmation failed');
+  }
+  return res.json();
+}
+
+export async function getPayments(params?: { status?: string; transaction_type?: string; search?: string; sort?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.append('status', params.status);
+  if (params?.transaction_type) query.append('transaction_type', params.transaction_type);
+  if (params?.search) query.append('search', params.search);
+  if (params?.sort) query.append('sort', params.sort);
+  const qStr = query.toString();
+  const res = await fetch(`${API_BASE}/api/payments${qStr ? `?${qStr}` : ''}`);
+  if (!res.ok) throw new Error('Failed to fetch payments');
+  return res.json();
+}
+
+export async function getPaymentById(paymentId: string) {
+  const res = await fetch(`${API_BASE}/api/payments/${paymentId}`);
+  if (!res.ok) throw new Error('Failed to fetch payment details');
+  return res.json();
+}
+
+export async function getRentals(params?: { status?: string; search?: string }) {
+  const query = new URLSearchParams();
+  if (params?.status) query.append('status', params.status);
+  if (params?.search) query.append('search', params.search);
+  const qStr = query.toString();
+  const res = await fetch(`${API_BASE}/api/rentals${qStr ? `?${qStr}` : ''}`);
+  if (!res.ok) throw new Error('Failed to fetch rentals');
+  return res.json();
+}
+
+export async function recheckPayment(paymentId: string) {
+  const res = await fetch(`${API_BASE}/api/payments/${paymentId}/recheck`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error('Failed to recheck payment');
+  return res.json();
+}
+
+
 

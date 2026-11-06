@@ -40,6 +40,18 @@ class OrchestrationEngine:
             for q in self._event_subscribers[session_id]:
                 await q.put(payload)
 
+    async def broadcast_event(self, event_type: str, data: Dict[str, Any]):
+        payload = {
+            "event": event_type,
+            "data": json.dumps(data)
+        }
+        for session_id, queues in list(self._event_subscribers.items()):
+            for q in queues:
+                try:
+                    await q.put(payload)
+                except Exception:
+                    pass
+
     async def process_user_turn(self, session_id: str, user_content: str) -> Dict[str, Any]:
         session = session_repo.get_or_create_session(session_id)
 
@@ -365,20 +377,7 @@ class OrchestrationEngine:
                     "components": [c.model_dump() for c in rec_components]
                 })
 
-                if session.preferences.seating_capacity and not session.preferences.category:
-                    bot_text = followup_text
-                else:
-                    if session.preferences.seating_capacity:
-                        words = {2: "two-seater", 3: "three-seater", 4: "four-seater", 5: "five-seater", 7: "seven-seater"}
-                        seat_word = words.get(session.preferences.seating_capacity, f"{session.preferences.seating_capacity}-seater")
-                        cat_label = f"**{seat_word}** {session.preferences.category.value if session.preferences.category else 'vehicles'}"
-                    else:
-                        cat_label = f"**{session.preferences.category.value}s**"
-
-                    bot_text = (
-                        f"I've updated the website to navigate to our **{portal_label}** portal and filtered our catalogue for {cat_label} ({len(preview_matches)} models found)!\n\n"
-                        f"{followup_text}"
-                    )
+                bot_text = followup_text
             elif not preview_matches and (session.preferences.seating_capacity or session.preferences.category) and is_direct_query:
                 # Direct search query with zero results: provide diagnostic explanation
                 all_v = marketplace_repo.get_all_vehicles()
@@ -403,13 +402,24 @@ class OrchestrationEngine:
                     "components": [c.model_dump() for c in a2ui_components]
                 })
 
-                bot_text = followup_text
+            structured_data = {
+                "messageType": "INTERVIEW",
+                "intent": session.preferences.intent.value if hasattr(session.preferences.intent, "value") else str(session.preferences.intent or "buy"),
+                "title": f"Finding your {session.preferences.category.value if session.preferences.category else 'car'}",
+                "summary": f"{session.preferences.category.value if session.preferences.category else 'Vehicle'} in {session.preferences.location or 'requested location'}",
+                "message": bot_text,
+                "collectedPreferences": session.preferences.model_dump(),
+                "missingFields": missing,
+                "nextStep": f"COLLECT_{missing[0].upper()}" if missing else "SEARCH",
+                "actions": actions
+            }
 
             bot_msg = ChatMessage(
                 id=f"msg_{uuid.uuid4().hex[:8]}",
                 role=ChatRole.ASSISTANT,
                 content=bot_text,
-                a2ui_surfaces=a2ui_surfaces_list
+                a2ui_surfaces=a2ui_surfaces_list,
+                data=structured_data
             )
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
@@ -423,7 +433,8 @@ class OrchestrationEngine:
                 "preferences": session.preferences.model_dump(),
                 "a2ui_surfaces": a2ui_surfaces_list,
                 "recommendations": [r.to_dict() for r in preview_ranked],
-                "website_actions": actions
+                "website_actions": actions,
+                "structured_response": structured_data
             }
 
         # 5. Interview complete or requirement updated! Transition through SEARCHING and RANKING
@@ -543,11 +554,24 @@ class OrchestrationEngine:
         surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
         rec_components = self._build_recommendations_a2ui_components(ranked_items, is_rent)
 
+        structured_data = {
+            "messageType": "VEHICLE_RECOMMENDATIONS",
+            "intent": session.preferences.intent.value if hasattr(session.preferences.intent, "value") else str(session.preferences.intent or "buy"),
+            "title": f"Verified {intent_word.capitalize()} Recommendations",
+            "summary": f"{len(ranked_items)} options identified{loc_str}",
+            "message": bot_text,
+            "collectedPreferences": session.preferences.model_dump(),
+            "missingFields": [],
+            "nextStep": "VEHICLE_SELECTION",
+            "actions": []
+        }
+
         bot_msg = ChatMessage(
             id=f"msg_{uuid.uuid4().hex[:8]}",
             role=ChatRole.ASSISTANT,
             content=bot_text,
-            a2ui_surfaces=[surface_id]
+            a2ui_surfaces=[surface_id],
+            data=structured_data
         )
         session_repo.add_message(session_id, bot_msg)
         session_repo.save_session(session)

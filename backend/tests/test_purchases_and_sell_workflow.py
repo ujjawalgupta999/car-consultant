@@ -19,7 +19,8 @@ def reset_demo_state():
     user_data_repo._owned_vehicles.clear()
     user_data_repo._seed_initial_demo_data()
 
-def test_complete_purchases_sell_and_context_isolation_journey():
+@pytest.mark.asyncio
+async def test_complete_purchases_sell_and_context_isolation_journey():
     session_id = "sess_journey_test_01"
     user_id = "usr_demo_01"
     session_repo.get_or_create_session(session_id)
@@ -97,7 +98,7 @@ def test_complete_purchases_sell_and_context_isolation_journey():
     assert session.workflow_state == WorkflowState.CONFIRMED
 
     # User initiates new intent: "I want to sell a sedan"
-    turn_1 = asyncio.run(orchestration_engine.process_user_turn(session_id, "I want to sell a sedan"))
+    turn_1 = await orchestration_engine.process_user_turn(session_id, "I want to sell a sedan")
     
     # Verify no purchase confirmation text repeated
     assert "🎉" not in turn_1["message"]["content"]
@@ -114,10 +115,10 @@ def test_complete_purchases_sell_and_context_isolation_journey():
     # =========================================================================
     # STEP 3: User provides vehicle details -> AI pre-fills Sell Form & navigates
     # =========================================================================
-    turn_2 = asyncio.run(orchestration_engine.process_user_turn(
+    turn_2 = await orchestration_engine.process_user_turn(
         session_id,
         "Yes, it is a 2021 Honda City, petrol, automatic, 32,000 km, asking 11.8 Lakh in Delhi"
-    ))
+    )
 
     # Verify AI responses
     content_2 = turn_2["message"]["content"]
@@ -181,7 +182,7 @@ def test_complete_purchases_sell_and_context_isolation_journey():
     # =========================================================================
     # STEP 5: User says "Show my purchased cars" -> AI summarizes & navigates
     # =========================================================================
-    turn_3 = asyncio.run(orchestration_engine.process_user_turn(session_id, "Show my purchased cars"))
+    turn_3 = await orchestration_engine.process_user_turn(session_id, "Show my purchased cars")
     assert turn_3["preferences"]["intent"] == "PURCHASE_HISTORY"
     assert "My Purchases" in turn_3["message"]["content"]
     assert order_id in turn_3["message"]["content"] or "purchases" in turn_3["message"]["content"].lower()

@@ -27,10 +27,13 @@ import { DashboardLayout } from './pages/dashboard/DashboardLayout';
 import { OverviewPage } from './pages/dashboard/OverviewPage';
 import { PurchasesPage } from './pages/dashboard/PurchasesPage';
 import { RentalsPage } from './pages/dashboard/RentalsPage';
+import { PaymentsPage } from './pages/dashboard/PaymentsPage';
 import { VehiclesPage } from './pages/dashboard/VehiclesPage';
 import { ListingsPage } from './pages/dashboard/ListingsPage';
 import { SavedPage } from './pages/dashboard/SavedPage';
 import { ProfilePage } from './pages/dashboard/ProfilePage';
+import { PaymentProcessingPage } from './pages/PaymentProcessingPage';
+import { PaymentResultPage } from './pages/PaymentResultPage';
 
 // Scroll to top and synchronize route context
 const ScrollToTop: React.FC = () => {
@@ -71,6 +74,8 @@ export const App: React.FC = () => {
             <Route path="/booking/:vehicleId" element={<Booking />} />
             <Route path="/checkout/:id" element={<Checkout />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/payment/processing/:orderId" element={<PaymentProcessingPage />} />
+            <Route path="/payment/result/:orderId" element={<PaymentResultPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
@@ -79,6 +84,7 @@ export const App: React.FC = () => {
               <Route index element={<OverviewPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="rentals" element={<RentalsPage />} />
+              <Route path="payments" element={<PaymentsPage />} />
               <Route path="vehicles" element={<VehiclesPage />} />
               <Route path="listings" element={<ListingsPage />} />
               <Route path="saved" element={<SavedPage />} />

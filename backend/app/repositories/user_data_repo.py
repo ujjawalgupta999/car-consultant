@@ -1,8 +1,10 @@
 import uuid
 import logging
 from typing import Dict, List, Optional, Any
-from datetime import datetime
+from datetime import datetime, timedelta
+from ..models.payment import PaymentRecord, PaymentStatus, TransactionType
 from ..models.purchase import PurchaseRecord, VehicleSnapshot, PurchaseStatus
+from ..models.rental import RentalRecord, RentalStatus
 from ..models.listing import VehicleListing, ListingStatus, ApprovalStatus
 from ..models.owned_vehicle import OwnedVehicle, OwnershipSource
 from ..models.booking import RentalBooking, BookingStatus
@@ -15,8 +17,13 @@ logger = logging.getLogger("car_consultant.user_data")
 
 class UserDataRepository:
     def __init__(self):
+        self._payments: Dict[str, PaymentRecord] = {}
+        self._payments_by_order: Dict[str, PaymentRecord] = {}
+        self._payments_by_idemp: Dict[str, PaymentRecord] = {}
         self._purchases: Dict[str, PurchaseRecord] = {}
         self._purchases_by_order: Dict[str, PurchaseRecord] = {}
+        self._rentals: Dict[str, RentalRecord] = {}
+        self._rentals_by_order: Dict[str, RentalRecord] = {}
         self._listings: Dict[str, VehicleListing] = {}
         self._owned_vehicles: Dict[str, OwnedVehicle] = {}
         self._demo_user_id = "usr_demo_01"
@@ -27,9 +34,20 @@ class UserDataRepository:
 
     def _init_mongo(self):
         """Attempt MongoDB connection if available; fallback gracefully to in-memory/JSON."""
+        import os
+        if getattr(settings, "storage_backend", "auto") in ["inmemory", "json"] or os.environ.get("STORAGE_BACKEND") == "inmemory":
+            self._mongo_client = None
+            self._mongo_db = None
+            return
+
         try:
             import pymongo
-            client = pymongo.MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=800)
+            client = pymongo.MongoClient(
+                settings.mongodb_uri,
+                serverSelectionTimeoutMS=300,
+                connectTimeoutMS=300,
+                socketTimeoutMS=500
+            )
             client.admin.command('ping')
             self._mongo_client = client
             self._mongo_db = client.get_database()
@@ -106,6 +124,152 @@ class UserDataRepository:
         )
         self._owned_vehicles[owned_city.id] = owned_city
 
+        # 3. Seed initial historical rental booking for demo user
+        rental_snap = VehicleSnapshot(
+            id="CAR-001",
+            brand="Hyundai",
+            model="Creta SX (O)",
+            variant="1.5 Petrol IVT",
+            year=2024,
+            category="SUV",
+            image="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80",
+            transmission="Automatic",
+            fuel_type="Petrol",
+            location="Delhi NCR",
+            specs={"seats": 5, "mileage_kmpl": 17.0}
+        )
+        seed_rental_id = "RNT-2026-INIT01"
+        seed_booking_id = "BK-2026-90412"
+        seed_rental_pay_id = "PAY-20260401-INIT01"
+        seed_rental_txn = "TXN-MOCK-INIT90412"
+
+        seed_payment = PaymentRecord(
+            id=seed_rental_pay_id,
+            userId=self._demo_user_id,
+            orderId=seed_booking_id,
+            transactionId=seed_rental_txn,
+            vehicleId="CAR-001",
+            transactionType=TransactionType.RENT,
+            amount=18290.0,
+            currency="INR",
+            paymentMethod="upi",
+            paymentStatus=PaymentStatus.SUCCESS,
+            paymentProvider="MOCK_PAYMENT",
+            paymentReference=seed_rental_txn,
+            createdAt="2026-04-01T10:00:00Z",
+            updatedAt="2026-04-01T10:00:00Z"
+        )
+        self._payments[seed_payment.id] = seed_payment
+        self._payments_by_order[seed_booking_id] = seed_payment
+
+        seed_rental = RentalRecord(
+            id=seed_rental_id,
+            userId=self._demo_user_id,
+            vehicleId="CAR-001",
+            paymentId=seed_rental_pay_id,
+            orderId=seed_booking_id,
+            vehicleSnapshot=rental_snap,
+            pickupDate="2026-04-10",
+            returnDate="2026-04-15",
+            durationDays=5,
+            pickupLocation="Delhi NCR",
+            returnLocation="Delhi NCR",
+            dailyRentalPrice=3200.0,
+            rentalAmount=18290.0,
+            securityDeposit=5000.0,
+            rentalStatus=RentalStatus.CONFIRMED,
+            paymentStatus="SUCCESS",
+            transactionReference=seed_rental_txn,
+            createdAt="2026-04-01T10:00:00Z",
+            updatedAt="2026-04-01T10:00:00Z"
+        )
+        self._rentals[seed_rental.id] = seed_rental
+        self._rentals_by_order[seed_booking_id] = seed_rental
+
+    # -------------------------------------------------------------
+    # UNIFIED PAYMENTS & IDEMPOTENCY
+    # -------------------------------------------------------------
+    def record_payment(
+        self,
+        payment: PaymentRecord,
+        idempotency_key: Optional[str] = None
+    ) -> PaymentRecord:
+        """
+        Stores payment record and indexes by ID, orderId, and idempotency key.
+        Prevents duplicate charges.
+        """
+        if idempotency_key:
+            if idempotency_key in self._payments_by_idemp:
+                logger.info(f"Idempotency hit: Payment for key '{idempotency_key}' already recorded.")
+                return self._payments_by_idemp[idempotency_key]
+            self._payments_by_idemp[idempotency_key] = payment
+
+        self._payments[payment.id] = payment
+        self._payments_by_order[payment.orderId] = payment
+
+        if self._mongo_db is not None:
+            try:
+                self._mongo_db["payments"].update_one(
+                    {"id": payment.id},
+                    {"$set": payment.model_dump()},
+                    upsert=True
+                )
+            except Exception as e:
+                logger.warning(f"MongoDB payment write failed: {e}")
+
+        logger.info(f"Payment recorded: {payment.id} for order '{payment.orderId}', status: {payment.paymentStatus.value}")
+        return payment
+
+    def get_payment_by_id(self, payment_id: str, user_id: Optional[str] = None) -> Optional[PaymentRecord]:
+        p = self._payments.get(payment_id)
+        if p and (user_id is None or p.userId == user_id):
+            return p
+        return None
+
+    def get_payment_by_order(self, order_id: str, user_id: Optional[str] = None) -> Optional[PaymentRecord]:
+        p = self._payments_by_order.get(order_id)
+        if p and (user_id is None or p.userId == user_id):
+            return p
+        return None
+
+    def get_user_payments(
+        self,
+        user_id: str,
+        status: Optional[str] = None,
+        transaction_type: Optional[str] = None,
+        search: Optional[str] = None,
+        sort_by: Optional[str] = "date_desc"
+    ) -> List[PaymentRecord]:
+        records = [p for p in self._payments.values() if p.userId == user_id]
+
+        if status and status.upper() != "ALL":
+            records = [p for p in records if p.paymentStatus.value.upper() == status.upper()]
+
+        if transaction_type and transaction_type.upper() != "ALL":
+            records = [p for p in records if p.transactionType.value.upper() == transaction_type.upper()]
+
+        if search:
+            q = search.lower().strip()
+            records = [
+                p for p in records
+                if q in p.id.lower() or
+                   q in p.orderId.lower() or
+                   q in p.transactionId.lower() or
+                   q in p.vehicleId.lower() or
+                   q in p.paymentMethod.lower()
+            ]
+
+        if sort_by == "date_desc":
+            records.sort(key=lambda x: x.createdAt, reverse=True)
+        elif sort_by == "date_asc":
+            records.sort(key=lambda x: x.createdAt)
+        elif sort_by == "amount_desc":
+            records.sort(key=lambda x: x.amount, reverse=True)
+        elif sort_by == "amount_asc":
+            records.sort(key=lambda x: x.amount)
+
+        return records
+
     # -------------------------------------------------------------
     # PURCHASES & IDEMPOTENCY
     # -------------------------------------------------------------
@@ -113,13 +277,13 @@ class UserDataRepository:
         self,
         order_id: str,
         transaction_reference: str,
-        user_id: Optional[str] = None
+        user_id: Optional[str] = None,
+        payment_id: Optional[str] = None
     ) -> PurchaseRecord:
         """
         Creates an immutable, snapshot-backed purchase record.
         Strictly idempotent: retries/refreshes return the existing record.
         """
-        # Idempotency check
         if order_id in self._purchases_by_order:
             logger.info(f"Idempotency hit: Purchase for order '{order_id}' already recorded.")
             return self._purchases_by_order[order_id]
@@ -129,12 +293,26 @@ class UserDataRepository:
         # Retrieve order
         order = session_repo.get_order(order_id)
         if not order:
-            raise ValueError(f"Order '{order_id}' not found in repository.")
+            order = PurchaseOrder(
+                id=order_id,
+                session_id=f"sess_{uuid.uuid4().hex[:6]}",
+                vehicle_id="CAR-001",
+                customer_name="Valued Customer",
+                customer_email="customer@auramotors.com",
+                customer_phone="+91 98765 43210",
+                pan_or_id="ABCDE1234F",
+                delivery_city="Delhi NCR",
+                purchase_price=1450000.0,
+                deposit_amount=25000.0,
+                status=OrderStatus.CONFIRMED,
+                payment_reference=transaction_reference,
+                idempotency_key=f"idemp_{order_id}"
+            )
+            session_repo.create_order(order)
 
         # Retrieve vehicle for snapshot
         vehicle = marketplace_repo.get_vehicle_by_id(order.vehicle_id)
         if not vehicle:
-            # Fallback snapshot if vehicle unlisted
             snapshot = VehicleSnapshot(
                 id=order.vehicle_id,
                 brand="Aura",
@@ -177,6 +355,7 @@ class UserDataRepository:
             id=purchase_id,
             userId=target_user,
             vehicleId=order.vehicle_id,
+            paymentId=payment_id or f"PAY-{datetime.utcnow().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}",
             orderId=order_id,
             vehicleSnapshot=snapshot,
             purchasePrice=order.purchase_price,
@@ -186,7 +365,9 @@ class UserDataRepository:
             purchaseDate=datetime.utcnow().isoformat() + "Z",
             transactionReference=transaction_reference,
             deliveryCity=order.delivery_city,
-            demo_mode=True
+            demo_mode=True,
+            createdAt=datetime.utcnow().isoformat() + "Z",
+            updatedAt=datetime.utcnow().isoformat() + "Z"
         )
 
         self._purchases[purchase.id] = purchase
@@ -238,7 +419,6 @@ class UserDataRepository:
         sort_by: Optional[str] = "date_desc",
         status: Optional[str] = None
     ) -> List[PurchaseRecord]:
-        """Returns purchases belonging to the authenticated user."""
         records = [p for p in self._purchases.values() if p.userId == user_id]
 
         if search:
@@ -266,11 +446,146 @@ class UserDataRepository:
 
         return records
 
-    def get_purchase_by_id(self, purchase_id: str, user_id: str) -> Optional[PurchaseRecord]:
+    def get_purchase_by_id(self, purchase_id: str, user_id: Optional[str] = None) -> Optional[PurchaseRecord]:
         p = self._purchases.get(purchase_id)
-        if p and p.userId == user_id:
+        if p and (user_id is None or p.userId == user_id):
             return p
         return None
+
+    def get_purchase_by_order(self, order_id: str) -> Optional[PurchaseRecord]:
+        return self._purchases_by_order.get(order_id)
+
+    # -------------------------------------------------------------
+    # RENTALS & IDEMPOTENCY
+    # -------------------------------------------------------------
+    def record_rental(
+        self,
+        booking_id: str,
+        transaction_reference: str,
+        user_id: Optional[str] = None,
+        payment_id: Optional[str] = None
+    ) -> RentalRecord:
+        """
+        Creates an immutable, snapshot-backed rental record.
+        Strictly idempotent: retries/refreshes return the existing record.
+        """
+        if booking_id in self._rentals_by_order:
+            logger.info(f"Idempotency hit: Rental for booking '{booking_id}' already recorded.")
+            return self._rentals_by_order[booking_id]
+
+        target_user = user_id or self._demo_user_id
+
+        booking = session_repo.get_booking(booking_id)
+        vehicle = marketplace_repo.get_vehicle_by_id(booking.vehicle_id) if booking else None
+
+        if not vehicle:
+            snapshot = VehicleSnapshot(
+                id=booking.vehicle_id if booking else "CAR-001",
+                brand="Aura",
+                model="Rental Fleet Unit",
+                variant="Self-Drive",
+                year=2024,
+                category="Sedan",
+                image="https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80",
+                transmission="Automatic",
+                fuel_type="Petrol",
+                location=booking.pickup_location if booking else "Delhi NCR"
+            )
+        else:
+            img_val = (
+                getattr(vehicle, "image_url", None)
+                or (vehicle.images[0] if hasattr(vehicle, "images") and getattr(vehicle, "images") else None)
+                or "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=800&q=80"
+            )
+            snapshot = VehicleSnapshot(
+                id=vehicle.id,
+                brand=vehicle.brand,
+                model=vehicle.model,
+                variant=getattr(vehicle, "variant", "Self-Drive Edition"),
+                year=vehicle.year,
+                category=vehicle.category.value if hasattr(vehicle.category, "value") else str(vehicle.category),
+                image=img_val,
+                transmission=vehicle.transmission.value if hasattr(vehicle.transmission, "value") else str(vehicle.transmission),
+                fuel_type=vehicle.fuel_type.value if hasattr(vehicle.fuel_type, "value") else str(vehicle.fuel_type),
+                location=vehicle.location,
+                specs={
+                    "seats": getattr(vehicle, "seats", 5),
+                    "mileage_kmpl": getattr(vehicle, "mileage_kmpl", 18.0)
+                }
+            )
+
+        rental_id = f"RNT-{datetime.utcnow().strftime('%Y')}-{uuid.uuid4().hex[:6].upper()}"
+        rental = RentalRecord(
+            id=rental_id,
+            userId=target_user,
+            vehicleId=booking.vehicle_id if booking else snapshot.id,
+            paymentId=payment_id or f"PAY-{datetime.utcnow().strftime('%Y%m%d')}-{uuid.uuid4().hex[:6].upper()}",
+            orderId=booking_id,
+            vehicleSnapshot=snapshot,
+            pickupDate=booking.pickup_date if booking else datetime.utcnow().strftime("%Y-%m-%d"),
+            returnDate=booking.return_date if booking else datetime.utcnow().strftime("%Y-%m-%d"),
+            durationDays=booking.duration_days if booking else 5,
+            pickupLocation=booking.pickup_location if booking else "Delhi NCR",
+            returnLocation=booking.return_location if booking else "Delhi NCR",
+            dailyRentalPrice=booking.base_rate if booking else 3000.0,
+            rentalAmount=booking.total_amount if booking else 18290.0,
+            securityDeposit=5000.0,
+            rentalStatus=RentalStatus.CONFIRMED,
+            paymentStatus="SUCCESS",
+            transactionReference=transaction_reference,
+            createdAt=datetime.utcnow().isoformat() + "Z",
+            updatedAt=datetime.utcnow().isoformat() + "Z"
+        )
+
+        self._rentals[rental.id] = rental
+        self._rentals_by_order[booking_id] = rental
+
+        if self._mongo_db is not None:
+            try:
+                self._mongo_db["rentals"].update_one(
+                    {"orderId": booking_id},
+                    {"$set": rental.model_dump()},
+                    upsert=True
+                )
+            except Exception as e:
+                logger.warning(f"MongoDB rental write failed: {e}")
+
+        logger.info(f"Rental successfully recorded: {rental.id} for user '{target_user}'.")
+        return rental
+
+    def get_user_rentals(
+        self,
+        user_id: str,
+        search: Optional[str] = None,
+        status: Optional[str] = None
+    ) -> List[RentalRecord]:
+        records = [r for r in self._rentals.values() if r.userId == user_id]
+
+        if status and status.upper() != "ALL":
+            records = [r for r in records if r.rentalStatus.value.upper() == status.upper() or r.paymentStatus == status]
+
+        if search:
+            q = search.lower().strip()
+            records = [
+                r for r in records
+                if q in r.vehicleSnapshot.brand.lower() or
+                   q in r.vehicleSnapshot.model.lower() or
+                   q in r.orderId.lower() or
+                   q in r.id.lower() or
+                   q in r.pickupLocation.lower()
+            ]
+
+        records.sort(key=lambda x: x.createdAt, reverse=True)
+        return records
+
+    def get_rental_by_id(self, rental_id: str, user_id: Optional[str] = None) -> Optional[RentalRecord]:
+        r = self._rentals.get(rental_id)
+        if r and (user_id is None or r.userId == user_id):
+            return r
+        return None
+
+    def get_rental_by_order(self, order_id: str) -> Optional[RentalRecord]:
+        return self._rentals_by_order.get(order_id)
 
     # -------------------------------------------------------------
     # OWNED VEHICLES
@@ -284,7 +599,6 @@ class UserDataRepository:
     def create_listing(self, listing: VehicleListing) -> VehicleListing:
         self._listings[listing.id] = listing
 
-        # Add to owned vehicles as LISTED_FOR_SALE
         owned_id = f"own_{uuid.uuid4().hex[:8]}"
         owned = OwnedVehicle(
             id=owned_id,
@@ -350,28 +664,28 @@ class UserDataRepository:
         return True
 
     # -------------------------------------------------------------
-    # RENTALS & SUMMARY
+    # DASHBOARD SUMMARY
     # -------------------------------------------------------------
-    def get_user_rentals(self, user_id: str) -> List[RentalBooking]:
-        """Returns rental bookings belonging to the user session."""
-        all_b = list(session_repo._bookings.values())
-        # Filter confirmed bookings
-        return [b for b in all_b if b.status == BookingStatus.CONFIRMED]
-
     def get_dashboard_summary(self, user_id: str) -> Dict[str, Any]:
         """Returns real computed counts from persistent records."""
         purchases = self.get_user_purchases(user_id)
         rentals = self.get_user_rentals(user_id)
+        payments = self.get_user_payments(user_id)
         owned = self.get_user_owned_vehicles(user_id)
         active_listings = [l for l in self.get_user_listings(user_id) if l.status == ListingStatus.ACTIVE]
+
+        total_spent = sum(p.purchasePrice for p in purchases) + sum(r.rentalAmount for r in rentals)
+        total_payment_volume = sum(p.amount for p in payments if p.paymentStatus == PaymentStatus.SUCCESS)
 
         return {
             "total_purchases": len(purchases),
             "total_rentals": len(rentals),
-            "active_rentals": len(rentals), # In mock demo mode, confirmed rentals are active
+            "active_rentals": len([r for r in rentals if r.rentalStatus in [RentalStatus.CONFIRMED, RentalStatus.ACTIVE]]),
+            "total_payments": len(payments),
             "vehicles_owned": len([v for v in owned if v.status != "Sold"]),
             "active_selling_listings": len(active_listings),
-            "total_spent_inr": sum(p.purchasePrice for p in purchases),
+            "total_spent_inr": total_spent,
+            "total_settled_payments_inr": total_payment_volume,
             "portfolio_valuation_inr": sum(v.currentEstimatedValue or 0 for v in owned)
         }
 

@@ -1,113 +1,109 @@
 from typing import Optional
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Query
 from pydantic import BaseModel
-from ..services.payment_simulator import payment_simulator
-from ..repositories.session import session_repo
-from ..repositories.user_data_repo import user_data_repo
+from ..services.transaction_service import transaction_service
 from ..api.routes_auth import resolve_user_id
-from ..models.payment import PaymentMethod, SimulatedScenario, PaymentStatus
-from ..models.booking import BookingStatus
-from ..models.order import OrderStatus
-from ..models.session import WorkflowState
 
-router = APIRouter(prefix="/api/payments", tags=["Mock Payments"])
+router = APIRouter(prefix="/api/payments", tags=["Unified Payments"])
 
 class MockPaymentRequest(BaseModel):
-    order_or_booking_id: str
+    order_or_booking_id: Optional[str] = None
+    orderId: Optional[str] = None
     amount: float
     currency: str = "INR"
     payment_method: str = "upi"
+    paymentMethod: Optional[str] = None
     simulated_scenario: str = "success"
+    simScenario: Optional[str] = None
     idempotency_key: Optional[str] = None
+    idempotencyKey: Optional[str] = None
 
-@router.post("/mock")
-def execute_mock_payment(
+@router.get("")
+def get_user_payments(
+    status: Optional[str] = Query(None, description="Filter: SUCCESS, FAILED, PENDING, CANCELLED, REFUNDED"),
+    transaction_type: Optional[str] = Query(None, description="Filter: BUY or RENT"),
+    search: Optional[str] = Query(None, description="Search by transaction ID, order ID, or vehicle ID"),
+    sort: Optional[str] = Query("date_desc", description="Sort: date_desc, date_asc, amount_desc, amount_asc"),
+    authorization: Optional[str] = Header(None)
+):
+    user_id = resolve_user_id(authorization)
+    payments = transaction_service.get_user_payments(
+        user_id=user_id,
+        status=status,
+        transaction_type=transaction_type,
+        search=search,
+        sort_by=sort
+    )
+    return {
+        "userId": user_id,
+        "total": len(payments),
+        "payments": [p.model_dump() for p in payments]
+    }
+
+@router.get("/order/{order_id}")
+def get_payment_by_order(order_id: str, authorization: Optional[str] = Header(None)):
+    user_id = resolve_user_id(authorization)
+    payment = transaction_service.get_payment_by_order(order_id, user_id=user_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="No payment found for specified order")
+    return payment.model_dump()
+
+@router.get("/{payment_id}")
+def get_payment_by_id(payment_id: str, authorization: Optional[str] = Header(None)):
+    user_id = resolve_user_id(authorization)
+    payment = transaction_service.get_payment(payment_id, user_id=user_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment record not found")
+    return payment.model_dump()
+
+@router.post("/mock/confirm")
+async def confirm_mock_payment_endpoint(
     req: MockPaymentRequest,
     idempotency_header: Optional[str] = Header(None, alias="Idempotency-Key"),
     authorization: Optional[str] = Header(None)
 ):
-    key = idempotency_header or req.idempotency_key or f"idemp_pay_{req.order_or_booking_id}"
     user_id = resolve_user_id(authorization)
-    
-    method_enum = PaymentMethod.UPI_SIMULATOR
-    if req.payment_method == "card":
-        method_enum = PaymentMethod.CARD_SIMULATOR
-    elif req.payment_method == "netbanking":
-        method_enum = PaymentMethod.NETBANKING_SIMULATOR
+    order_id = req.orderId or req.order_or_booking_id
+    if not order_id:
+        raise HTTPException(status_code=400, detail="orderId is required.")
 
-    scen_enum = SimulatedScenario.SUCCESS
-    if req.simulated_scenario == "failure":
-        scen_enum = SimulatedScenario.FAILURE
-    elif req.simulated_scenario == "timeout":
-        scen_enum = SimulatedScenario.TIMEOUT
+    method = req.paymentMethod or req.payment_method or "upi"
+    scenario = req.simScenario or req.simulated_scenario or "success"
+    key = idempotency_header or req.idempotencyKey or req.idempotency_key or f"idemp_pay_{order_id}"
 
-    success, payment = payment_simulator.process_mock_payment(
-        order_or_booking_id=req.order_or_booking_id,
+    success, payment, linked_entity = await transaction_service.confirm_mock_payment(
+        order_or_booking_id=order_id,
         amount=req.amount,
-        payment_method=method_enum,
-        simulated_scenario=scen_enum,
+        payment_method=method,
+        simulated_scenario=scenario,
         idempotency_key=key,
+        user_id=user_id,
         currency=req.currency
     )
-
-    # Determine target session if possible
-    # Update entity status
-    if req.order_or_booking_id.startswith("BK-"):
-        booking = session_repo.get_booking(req.order_or_booking_id)
-        if booking:
-            session = session_repo.get_session(booking.session_id)
-            if success:
-                session_repo.update_booking_status(
-                    req.order_or_booking_id,
-                    BookingStatus.CONFIRMED,
-                    payment.transaction_reference
-                )
-                if session:
-                    session.workflow_state = WorkflowState.CONFIRMED
-                    session_repo.save_session(session)
-            else:
-                if session:
-                    session.workflow_state = WorkflowState.PAYMENT_FAILED
-                    session_repo.save_session(session)
-
-    elif req.order_or_booking_id.startswith("ORD-"):
-        order = session_repo.get_order(req.order_or_booking_id)
-        if order:
-            session = session_repo.get_session(order.session_id)
-            if success:
-                session_repo.update_order_status(
-                    req.order_or_booking_id,
-                    OrderStatus.CONFIRMED,
-                    payment.transaction_reference
-                )
-                # Persist immutable purchase record and add to user ownership portfolio
-                try:
-                    user_data_repo.record_purchase(
-                        order_id=req.order_or_booking_id,
-                        transaction_reference=payment.transaction_reference,
-                        user_id=user_id
-                    )
-                except Exception as e:
-                    print(f"Error persisting purchase record: {e}")
-
-                if session:
-                    session.workflow_state = WorkflowState.CONFIRMED
-                    session_repo.save_session(session)
-            else:
-                if session:
-                    session.workflow_state = WorkflowState.PAYMENT_FAILED
-                    session_repo.save_session(session)
 
     return {
         "status": "SUCCESS" if success else "FAILED",
         "payment": payment.model_dump(),
-        "workflow_state": WorkflowState.CONFIRMED.value if success else WorkflowState.PAYMENT_FAILED.value
+        "workflow_state": "CONFIRMED" if success else "PAYMENT_FAILED",
+        "linked_entity": linked_entity.model_dump() if linked_entity else None
     }
 
-@router.get("/{payment_id}")
-def get_payment(payment_id: str):
-    p = payment_simulator.get_payment(payment_id)
-    if not p:
-        raise HTTPException(status_code=404, detail="Payment record not found")
-    return p.model_dump()
+# Backward compatibility alias
+@router.post("/mock")
+async def execute_mock_payment_legacy(
+    req: MockPaymentRequest,
+    idempotency_header: Optional[str] = Header(None, alias="Idempotency-Key"),
+    authorization: Optional[str] = Header(None)
+):
+    return await confirm_mock_payment_endpoint(req, idempotency_header, authorization)
 
+@router.post("/{payment_id}/recheck")
+def recheck_payment_status(payment_id: str, authorization: Optional[str] = Header(None)):
+    user_id = resolve_user_id(authorization)
+    payment = transaction_service.recheck_payment(payment_id, user_id=user_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment record not found.")
+    return {
+        "status": payment.paymentStatus.value,
+        "payment": payment.model_dump()
+    }

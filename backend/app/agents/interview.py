@@ -495,10 +495,7 @@ class AdaptiveInterviewAgent:
         )
 
         if not prefs.location:
-            # Rental strictly requires pickup location.
-            # Purchase requires location during early interview if specific category and budget are not yet both provided.
-            if not is_buy or not (prefs.category and has_budget):
-                missing.append("location")
+            missing.append("location")
 
         # If user specified seating capacity, category is not strictly required
         if not has_cat_or_seats:
@@ -526,6 +523,7 @@ class AdaptiveInterviewAgent:
     def generate_followup_question(prefs: UserPreferences) -> str:
         """
         Generates contextual, conversational questions requesting ONLY information that is genuinely missing.
+        Prioritizes asking one important question at a time to maintain natural conversational flow.
         """
         missing = AdaptiveInterviewAgent.check_missing_fields(prefs)
         if not missing:
@@ -534,7 +532,7 @@ class AdaptiveInterviewAgent:
         if prefs.intent == IntentType.SELL or prefs.intent == "SELL":
             if "is_registered_in_user_name" in missing:
                 cat_desc = prefs.category.value.lower() if prefs.category else "car"
-                return f"Sure! I can help you sell your {cat_desc}. Is it already registered in your name?"
+                return f"I can certainly help you list your {cat_desc} for sale on Aura Motors.\n\nIs the vehicle currently registered in your name?"
             return "Could you provide details about your car — such as make, model, year, kilometers driven, and expected selling price?"
 
         is_rent = (prefs.intent == "RENT" or prefs.intent == IntentType.RENT)
@@ -545,42 +543,39 @@ class AdaptiveInterviewAgent:
             words = {2: "two people", 3: "three people", 4: "four people", 5: "five passengers", 7: "seven passengers"}
             cap_desc = words.get(prefs.seating_capacity, f"{prefs.seating_capacity} passengers")
             fuel_desc = f"{prefs.fuel_type.lower()} " if prefs.fuel_type and prefs.fuel_type not in ["any", None] else ""
-            if fuel_desc.startswith("e") or fuel_desc.startswith("a"):
-                article = "an"
-            else:
-                article = "a"
-            ack_prefix = f"Got it! You're looking for {article} {fuel_desc}{prefs.category.value} for {cap_desc}. "
-        elif prefs.seating_capacity:
+            article = "an" if fuel_desc.startswith("e") or fuel_desc.startswith("a") else "a"
+            ack_prefix = f"Great! Let's find {article} {fuel_desc}{prefs.category.value} for {cap_desc}.\n\n"
+        elif prefs.seating_capacity and not prefs.location and not (prefs.budget and prefs.budget.amount > 0):
             words = {2: "two people", 3: "three people", 4: "four people", 5: "five passengers", 7: "seven passengers"}
             cap_desc = words.get(prefs.seating_capacity, f"{prefs.seating_capacity} people")
-            ack_prefix = f"Got it! You're looking for a car for {cap_desc}. "
-        elif prefs.category:
-            ack_prefix = f"Got it! You're exploring {prefs.category.value}s. "
+            # If both city and budget are missing and user specified seating capacity, ask both concisely
+            if "location" in missing and "budget" in missing:
+                budget_phrase = "what's your approximate purchase budget" if not is_rent else "what's your daily rental budget"
+                return f"Got it! Let's find a car for {cap_desc}.\n\nWhich city will you be driving in, and {budget_phrase}?"
+            ack_prefix = f"Got it! Let's find a car for {cap_desc}.\n\n"
+        elif prefs.category and not prefs.location:
+            intent_word = "rental" if is_rent else "purchase"
+            ack_prefix = f"Great! Let's find a {prefs.category.value.lower()} for your {intent_word}.\n\n"
+        elif prefs.location and (prefs.category or prefs.seating_capacity):
+            ack_prefix = f"Perfect, {prefs.location}. "
 
-        questions = []
+        # Prioritize one question at a time
         if "location" in missing:
-            questions.append("Which city will you be driving in (e.g., Delhi, Mumbai, Bangalore)?")
-
-        if "category" in missing and not prefs.seating_capacity:
-            questions.append("What style of vehicle are you looking for (e.g., SUV, Sedan, EV, Hatchback)?")
+            return (ack_prefix + "Which city will you be driving in (e.g., Delhi, Mumbai, Bangalore)?").strip()
 
         if "budget" in missing:
             if is_rent:
-                questions.append("What is your approximate daily budget in ₹?")
+                return (ack_prefix + "What is your approximate daily rental budget?").strip()
             else:
-                questions.append("What's your approximate purchase budget (e.g., ₹10–15 Lakh)?")
+                return (ack_prefix + "What is your target purchase budget (e.g., ₹15 Lakh)?").strip()
 
         if "pickup_date" in missing and is_rent:
-            questions.append("What is your intended pickup date (e.g., 15 December 2026)?")
-        elif "rental_duration" in missing and is_rent:
-            questions.append("How many days will you need the vehicle for?")
+            return (ack_prefix + "When would you like to pick up the car (e.g., 15 December 2026)?").strip()
 
-        # Format questions naturally
-        if len(questions) == 2 and "location" in missing and "budget" in missing:
-            if is_rent:
-                q_text = "Which city will you be driving in, and what's your approximate daily rental budget?"
-            else:
-                q_text = "Which city will you be driving in, and what's your approximate purchase budget?"
-            return (ack_prefix + q_text).strip()
+        if "rental_duration" in missing and is_rent:
+            return (ack_prefix + "How many days will you need the vehicle for?").strip()
 
-        return (ack_prefix + " ".join(questions)).strip()
+        if "category" in missing and not prefs.seating_capacity:
+            return (ack_prefix + "What style of vehicle are you looking for (e.g., SUV, Sedan, EV, Hatchback)?").strip()
+
+        return (ack_prefix + "What other preferences do you have in mind?").strip()

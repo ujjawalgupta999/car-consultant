@@ -163,6 +163,49 @@ export const FloatingConsultantDrawer: React.FC = () => {
       } catch {}
     });
 
+    es.addEventListener('payment_status_updated', (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.status === 'SUCCESS') {
+          setWorkflowState('CONFIRMED');
+          setActiveMcpApp(null);
+          const isBuy = data.transactionType === 'BUY';
+          const title = isBuy ? 'Vehicle Purchase Confirmed' : 'Rental Reservation Confirmed';
+          const targetDashboard = isBuy ? '/dashboard/purchases' : '/dashboard/rentals';
+
+          addMessage({
+            id: `msg_sync_confirm_${data.orderId || Date.now()}`,
+            role: 'assistant',
+            content: `### 🎉 ${title}!\n\n**Order Reference:** \`${data.orderId}\`\n**Transaction Reference:** \`${data.transactionReference}\`\n**Amount Settled:** ₹${(data.amount || 25000).toLocaleString()} *(Simulated Mock Rail)*\n**Status:** Authoritative Ledger Confirmed\n\nYour transaction has been recorded in our database and synchronized with your account dashboard.`,
+            timestamp: new Date().toISOString(),
+            data: {
+              messageType: 'PAYMENT_SUCCESS',
+              transaction: data,
+              actions: [
+                { label: isBuy ? 'View Purchase Details' : 'View Rental Details', path: targetDashboard },
+                { label: 'Payment History', path: '/dashboard/payments' },
+                { label: 'Explore More Cars', path: '/explore' }
+              ]
+            }
+          });
+        } else if (data.status === 'FAILED') {
+          setWorkflowState('PAYMENT_FAILED');
+          addMessage({
+            id: `msg_sync_fail_${data.orderId || Date.now()}`,
+            role: 'assistant',
+            content: `### ❌ Payment Declined\n\n**Order ID:** \`${data.orderId}\`\n**Reason:** ${data.errorMessage || 'Simulated bank decline'}\n\nPlease retry checkout using another payment method or switch to Instant Success scenario.`,
+            timestamp: new Date().toISOString(),
+            data: {
+              messageType: 'PAYMENT_FAILED',
+              transaction: data
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error in payment_status_updated SSE:', err);
+      }
+    });
+
     return () => es.close();
   }, [sessionId, navigate, executeWebsiteAction, setCurrentEvent, setWorkflowState, setA2uiSurfaces, a2uiSurfaces]);
 

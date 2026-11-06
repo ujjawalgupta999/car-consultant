@@ -23,19 +23,22 @@ class VehicleSnapshot(BaseModel):
     specs: Dict[str, Any] = Field(default_factory=dict)
 
 class PurchaseRecord(BaseModel):
-    id: str = Field(..., description="Unique purchase record ID")
+    id: str = Field(..., description="Unique purchase record ID (e.g., PUR-2026-XXXXXX)")
     userId: str = Field(..., description="Authenticated user ID")
-    vehicleId: str = Field(..., description="Vehicle ID")
-    orderId: str = Field(..., description="Unique order ID from checkout")
-    vehicleSnapshot: VehicleSnapshot
-    purchasePrice: float
-    depositAmount: float = 25000.0
-    paymentStatus: str = "SUCCESS" # SUCCESS, PENDING, FAILED
-    purchaseStatus: PurchaseStatus = PurchaseStatus.CONFIRMED
+    vehicleId: str = Field(..., description="Target vehicle ID")
+    paymentId: str = Field(default="", description="Linked PaymentRecord ID")
+    orderId: str = Field(..., description="Unique purchase order ID from checkout")
+    vehicleSnapshot: VehicleSnapshot = Field(..., description="Immutable snapshot of vehicle specs and media")
+    purchasePrice: float = Field(..., description="Vehicle purchase price in INR")
+    depositAmount: float = Field(default=25000.0, description="Token deposit paid during checkout")
+    paymentStatus: str = Field(default="SUCCESS", description="SUCCESS, PENDING, FAILED")
+    purchaseStatus: PurchaseStatus = Field(default=PurchaseStatus.CONFIRMED, description="Fulfillment state")
     purchaseDate: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
-    transactionReference: str
-    deliveryCity: Optional[str] = None
-    demo_mode: bool = True
-    created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
-    updated_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
-
+    transactionReference: str = Field(..., description="Payment transaction reference code")
+    deliveryCity: Optional[str] = Field(default=None, description="Destination city for delivery")
+    demo_mode: bool = Field(default=True, description="Indicates simulated hackathon transaction")
+    createdAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    updatedAt: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+    # Legacy alias
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
