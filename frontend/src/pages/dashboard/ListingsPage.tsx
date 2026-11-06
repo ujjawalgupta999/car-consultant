@@ -249,3 +249,4 @@ export const ListingsPage: React.FC = () => {
     </div>
   );
 };
+

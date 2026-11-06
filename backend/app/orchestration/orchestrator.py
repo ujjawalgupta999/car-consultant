@@ -602,6 +602,23 @@ class OrchestrationEngine:
         comps: List[A2UIComponent] = []
         root_children = []
 
+        if "intent" in missing or not prefs.intent:
+            root_children.append("intent_picker")
+            comps.append(A2UIComponent(
+                id="intent_picker",
+                component="RadioGroup",
+                properties={
+                    "label": "What do you want to do?",
+                    "options": [
+                        {"label": "🛒 Buy a Car", "value": "BUY"},
+                        {"label": "🔑 Rent a Car", "value": "RENT"},
+                        {"label": "💰 Sell My Car", "value": "SELL"},
+                    ],
+                    "actionId": "update_intent",
+                    "field": "intent"
+                }
+            ))
+
         if "category" in missing:
             root_children.append("cat_picker")
             comps.append(A2UIComponent(
@@ -614,9 +631,11 @@ class OrchestrationEngine:
                         {"label": "🚗 Sedan", "value": "Sedan"},
                         {"label": "⚡ Electric Vehicle", "value": "Electric Vehicle"},
                         {"label": "🚘 Hatchback", "value": "Hatchback"},
-                        {"label": "🏎️ Convertible", "value": "Convertible"}
+                        {"label": "🏎️ Convertible", "value": "Convertible"},
+                        {"label": "🚐 MUV", "value": "MUV"},
                     ],
-                    "actionId": "update_category"
+                    "actionId": "update_category",
+                    "field": "category"
                 }
             ))
 
@@ -628,20 +647,59 @@ class OrchestrationEngine:
                 properties={
                     "label": "Select Location",
                     "options": [
-                        {"label": "Delhi NCR", "value": "Delhi"},
-                        {"label": "Mumbai", "value": "Mumbai"},
-                        {"label": "Bangalore", "value": "Bangalore"}
+                        {"label": "🏙️ Delhi NCR", "value": "Delhi"},
+                        {"label": "🌊 Mumbai", "value": "Mumbai"},
+                        {"label": "🌿 Bangalore", "value": "Bangalore"},
+                        {"label": "🌴 Hyderabad", "value": "Hyderabad"},
+                        {"label": "🏖️ Chennai", "value": "Chennai"},
                     ],
-                    "actionId": "update_location"
+                    "actionId": "update_location",
+                    "field": "location"
                 }
             ))
 
-        comps.insert(0, A2UIComponent(
-            id="root_interview_card",
-            component="Card",
-            properties={"variant": "glass", "title": "Quick Preferences Form"},
-            children=root_children
-        ))
+        if "fuel_type" in missing:
+            root_children.append("fuel_picker")
+            comps.append(A2UIComponent(
+                id="fuel_picker",
+                component="RadioGroup",
+                properties={
+                    "label": "Preferred Fuel Type",
+                    "options": [
+                        {"label": "⛽ Petrol", "value": "petrol"},
+                        {"label": "🛢️ Diesel", "value": "diesel"},
+                        {"label": "⚡ Electric", "value": "electric"},
+                        {"label": "🌿 Hybrid", "value": "hybrid"},
+                        {"label": "🔵 CNG", "value": "cng"},
+                    ],
+                    "actionId": "update_fuel",
+                    "field": "fuel_type"
+                }
+            ))
+
+        if "transmission" in missing:
+            root_children.append("trans_picker")
+            comps.append(A2UIComponent(
+                id="trans_picker",
+                component="RadioGroup",
+                properties={
+                    "label": "Transmission Preference",
+                    "options": [
+                        {"label": "🤖 Automatic", "value": "automatic"},
+                        {"label": "🖐️ Manual", "value": "manual"},
+                    ],
+                    "actionId": "update_transmission",
+                    "field": "transmission"
+                }
+            ))
+
+        if root_children:
+            comps.insert(0, A2UIComponent(
+                id="root_interview_card",
+                component="Card",
+                properties={"variant": "glass", "title": "Quick Preferences"},
+                children=root_children
+            ))
         return comps
 
     def _build_recommendations_a2ui_components(self, items: List[Any], is_rent: bool) -> List[A2UIComponent]:

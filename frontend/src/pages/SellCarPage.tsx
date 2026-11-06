@@ -499,3 +499,4 @@ export const SellCarPage: React.FC = () => {
     </div>
   );
 };
+

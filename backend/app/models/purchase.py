@@ -38,3 +38,4 @@ class PurchaseRecord(BaseModel):
     demo_mode: bool = True
     created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
     updated_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
+

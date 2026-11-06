@@ -2,7 +2,45 @@ import React, { useEffect, useRef } from 'react';
 import { ChatMessage, A2UIComponent } from '../../types';
 import { A2UIRenderer } from '../../a2ui/A2UIRenderer';
 import { MCPAppHost } from '../../mcp-apps/MCPAppHost';
-import { Bot, User, CheckCircle2, ShieldCheck, Ticket } from 'lucide-react';
+import { Bot, User, CheckCircle2, Ticket } from 'lucide-react';
+
+/** Render a markdown string as JSX (supports **bold**, *italic*, ### headers, \n, `code`) */
+function renderMarkdown(text: string): React.ReactNode {
+  const lines = text.split('\n');
+  return lines.map((line, lineIdx) => {
+    // Heading levels ### and ##
+    const h3Match = line.match(/^###\s+(.*)/);
+    const h2Match = line.match(/^##\s+(.*)/);
+    if (h3Match) return <p key={lineIdx} className="font-bold text-white text-sm mt-2">{inlineMarkdown(h3Match[1])}</p>;
+    if (h2Match) return <p key={lineIdx} className="font-bold text-white text-base mt-2">{inlineMarkdown(h2Match[1])}</p>;
+    // Bullet points
+    const bulletMatch = line.match(/^[-•]\s+(.*)/);
+    if (bulletMatch) return <div key={lineIdx} className="flex gap-2"><span className="text-primary-accent">•</span><span>{inlineMarkdown(bulletMatch[1])}</span></div>;
+    // Numbered points
+    const numMatch = line.match(/^(\d+)\.\s+(.*)/);
+    if (numMatch) return <div key={lineIdx} className="flex gap-2"><span className="text-primary-accent font-bold">{numMatch[1]}.</span><span>{inlineMarkdown(numMatch[2])}</span></div>;
+    // Empty line → spacing
+    if (line.trim() === '') return <div key={lineIdx} className="h-1" />;
+    return <p key={lineIdx}>{inlineMarkdown(line)}</p>;
+  });
+}
+
+function inlineMarkdown(text: string): React.ReactNode {
+  // Split on **bold**, *italic*, `code`
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i} className="font-bold text-white">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('*') && part.endsWith('*') && !part.startsWith('**')) {
+      return <em key={i} className="italic text-gray-200">{part.slice(1, -1)}</em>;
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code key={i} className="bg-surface-muted px-1 py-0.5 rounded text-cyan-300 font-mono text-[11px]">{part.slice(1, -1)}</code>;
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>;
+  });
+}
 
 interface ChatContainerProps {
   messages: ChatMessage[];
@@ -53,7 +91,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               }`}
             >
               {/* Message text content */}
-              <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+              <div className="leading-relaxed space-y-0.5 text-sm">
+                {isAssistant ? renderMarkdown(msg.content) : msg.content}
+              </div>
 
               {/* Render associated A2UI Surfaces */}
               {isAssistant && msg.a2ui_surfaces && msg.a2ui_surfaces.length > 0 && (

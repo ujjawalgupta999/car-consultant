@@ -439,3 +439,4 @@ export const PurchasesPage: React.FC = () => {
     </div>
   );
 };
+

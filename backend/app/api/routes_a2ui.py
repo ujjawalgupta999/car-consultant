@@ -70,9 +70,11 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
         cat = payload.data.get("category")
         if cat:
             from ..models.vehicle import VehicleCategory
-            session.preferences.category = VehicleCategory(cat)
+            try:
+                session.preferences.category = VehicleCategory(cat)
+            except ValueError:
+                pass
             session_repo.save_session(session)
-            # Re-process turn
             return await orchestration_engine.process_user_turn(
                 payload.session_id, f"I prefer the {cat} category."
             )
@@ -83,7 +85,66 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
             session.preferences.location = loc
             session_repo.save_session(session)
             return await orchestration_engine.process_user_turn(
-                payload.session_id, f"Location is {loc}."
+                payload.session_id, f"My location is {loc}."
+            )
+
+    elif payload.action_id == "update_fuel":
+        fuel = payload.data.get("fuel_type")
+        if fuel:
+            session.preferences.fuel_type = fuel.lower()
+            session_repo.save_session(session)
+            return await orchestration_engine.process_user_turn(
+                payload.session_id, f"I want {fuel} fuel type."
+            )
+
+    elif payload.action_id == "update_transmission":
+        trans = payload.data.get("transmission")
+        if trans:
+            session.preferences.transmission = trans.lower()
+            session_repo.save_session(session)
+            return await orchestration_engine.process_user_turn(
+                payload.session_id, f"I prefer {trans} transmission."
+            )
+
+    elif payload.action_id == "update_intent":
+        intent_val = payload.data.get("intent")
+        if intent_val:
+            from ..models.preferences import IntentType
+            try:
+                session.preferences.intent = IntentType(intent_val.upper())
+            except ValueError:
+                pass
+            session_repo.save_session(session)
+            return await orchestration_engine.process_user_turn(
+                payload.session_id, f"I want to {intent_val.lower()} a car."
+            )
+
+    elif payload.action_id == "update_preference":
+        # Generic preference update: handles any field=value pair
+        field = payload.data.get("field")
+        value = payload.data.get("value")
+        if field and value is not None:
+            if field == "category":
+                from ..models.vehicle import VehicleCategory
+                try:
+                    session.preferences.category = VehicleCategory(value)
+                except ValueError:
+                    pass
+            elif field == "location":
+                session.preferences.location = str(value)
+            elif field == "fuel_type":
+                session.preferences.fuel_type = str(value).lower()
+            elif field == "transmission":
+                session.preferences.transmission = str(value).lower()
+            elif field == "intent":
+                from ..models.preferences import IntentType
+                try:
+                    session.preferences.intent = IntentType(str(value).upper())
+                except ValueError:
+                    pass
+            session_repo.save_session(session)
+            return await orchestration_engine.process_user_turn(
+                payload.session_id, f"Update {field} to {value}."
             )
 
     return {"status": "unhandled_action", "action_id": payload.action_id}

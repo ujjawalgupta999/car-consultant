@@ -35,3 +35,4 @@ def get_purchase_details(
     if not purchase:
         raise HTTPException(status_code=404, detail="Purchase record not found.")
     return purchase.model_dump()
+

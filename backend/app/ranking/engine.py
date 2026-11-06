@@ -185,8 +185,10 @@ class RankingEngine:
                 trade_offs.append(f"{v.seats}-seater vehicle (Requested {preferences.seating_capacity} seats)")
             if v.condition.value == "used":
                 trade_offs.append(f"Pre-owned vehicle ({v.odometer_km:,.0f} km on odometer)")
-            if is_rent and price > (user_budget_amount or 0):
+            if is_rent and user_budget_amount is not None and user_budget_amount > 0 and price > user_budget_amount:
                 trade_offs.append(f"Exceeds daily budget by ₹{(price - user_budget_amount):,.0f}/day")
+            elif not is_rent and user_budget_amount is not None and user_budget_amount > 0 and price > user_budget_amount:
+                trade_offs.append(f"Exceeds purchase budget by ₹{(price - user_budget_amount):,.0f}")
             if v.fuel_type.value == "petrol" and not preferences.fuel_type:
                 trade_offs.append("Petrol fuel economy (~16-17 kmpl) compared to hybrid/EV alternatives")
 

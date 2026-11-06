@@ -240,3 +240,4 @@ export const VehiclesPage: React.FC = () => {
     </div>
   );
 };
+

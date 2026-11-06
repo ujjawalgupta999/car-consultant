@@ -149,3 +149,4 @@ export const RentalsPage: React.FC = () => {
     </div>
   );
 };
+

@@ -46,3 +46,4 @@ def get_dashboard_rentals(authorization: Optional[str] = Header(None)):
         "total": len(rentals),
         "rentals": [r.model_dump() for r in rentals]
     }
+
