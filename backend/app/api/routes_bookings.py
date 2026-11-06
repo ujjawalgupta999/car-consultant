@@ -166,3 +166,26 @@ def get_order(order_id: str):
         raise HTTPException(status_code=404, detail="Order not found")
     return o.model_dump()
 
+@router.post("/api/bookings/{booking_id}/cancel")
+def cancel_booking(booking_id: str):
+    b = session_repo.get_booking(booking_id)
+    if not b:
+        # Check user data repo rentals
+        from ..repositories.user_data_repo import user_data_repo
+        rental = user_data_repo.get_rental_by_order(booking_id)
+        if rental:
+            from ..models.rental import RentalStatus
+            rental.rentalStatus = RentalStatus.CANCELLED
+            return {"status": "CANCELLED", "message": f"Rental booking {booking_id} has been cancelled."}
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    b.status = BookingStatus.CANCELLED
+    b.updated_at = datetime.utcnow().isoformat() + "Z"
+    session_repo._bookings[booking_id] = b
+    return {
+        "booking_id": booking_id,
+        "status": "CANCELLED",
+        "message": f"Booking {booking_id} has been cancelled successfully."
+    }
+
+

@@ -43,6 +43,10 @@ class Session(BaseModel):
     selected_vehicle_id: Optional[str] = None
     active_booking_id: Optional[str] = None
     active_order_id: Optional[str] = None
+    active_workflow: Optional[str] = None
+    pending_question: Optional[str] = None
+    workflow_data: Dict[str, Any] = Field(default_factory=dict)
+    last_intent: Optional[str] = None
     created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
     updated_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 

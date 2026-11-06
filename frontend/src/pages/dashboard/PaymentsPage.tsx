@@ -73,6 +73,13 @@ export const PaymentsPage: React.FC = () => {
 
   useEffect(() => {
     fetchPayments();
+    const handleRefresh = (e: any) => {
+      if (!e.detail?.resource || e.detail.resource === 'myPayments') {
+        fetchPayments();
+      }
+    };
+    window.addEventListener('aura_data_refresh', handleRefresh);
+    return () => window.removeEventListener('aura_data_refresh', handleRefresh);
   }, [filterType, sortBy, token]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChatMessage, A2UIComponent } from '../../types';
 import { A2UIRenderer } from '../../a2ui/A2UIRenderer';
 import { MCPAppHost } from '../../mcp-apps/MCPAppHost';
-import { Bot, User, CheckCircle2, Ticket, ArrowUpRight } from 'lucide-react';
+import { Bot, User, CheckCircle2, Ticket, ArrowUpRight, Car, Calendar, CreditCard, Tag } from 'lucide-react';
 
 /** Render a markdown string as JSX (supports **bold**, *italic*, ### headers, \n, `code`) */
 function renderMarkdown(text: string): React.ReactNode {
@@ -110,6 +110,75 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                         components={comps}
                         onAction={(actionId, data) => onA2uiAction(surfId, actionId, data)}
                       />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Render dynamic structured cards from assistant metadata if present */}
+              {isAssistant && (msg as any).data?.cards && Array.isArray((msg as any).data.cards) && (msg as any).data.cards.length > 0 && (
+                <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-surface-border/40">
+                  {(msg as any).data.cards.map((card: any, cIdx: number) => {
+                    return (
+                      <div
+                        key={card.id || cIdx}
+                        className="rounded-xl border border-surface-border/80 bg-background/80 hover:border-primary/50 transition p-2.5 flex flex-col justify-between text-xs shadow-sm"
+                      >
+                        {card.image && (
+                          <div className="h-24 w-full rounded-lg overflow-hidden mb-2 bg-surface">
+                            <img src={card.image} alt={card.model || card.brand || 'Vehicle'} className="h-full w-full object-cover" />
+                          </div>
+                        )}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-white text-xs truncate">
+                              {card.brand ? `${card.brand} ${card.model}` : (card.vehicleName || `Ref: ${card.orderId || card.id}`)}
+                            </span>
+                            {card.status && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                                {card.status}
+                              </span>
+                            )}
+                          </div>
+
+                          {card.currentEstimatedValue && (
+                            <p className="text-gray-400 text-[11px]">Est. Value: <span className="font-semibold text-emerald-400">₹{card.currentEstimatedValue.toLocaleString()}</span></p>
+                          )}
+                          {card.purchasePrice && (
+                            <p className="text-gray-400 text-[11px]">Paid: <span className="font-semibold text-emerald-400">₹{card.purchasePrice.toLocaleString()}</span></p>
+                          )}
+                          {card.totalAmount && (
+                            <p className="text-gray-400 text-[11px]">Rental: <span className="font-semibold text-cyan-300">₹{card.totalAmount.toLocaleString()}</span></p>
+                          )}
+                          {card.expectedPrice && (
+                            <p className="text-gray-400 text-[11px]">Asking: <span className="font-semibold text-emerald-400">₹{card.expectedPrice.toLocaleString()}</span></p>
+                          )}
+                          {card.amount && (
+                            <p className="text-gray-400 text-[11px]">Amount: <span className="font-semibold text-emerald-400">₹{card.amount.toLocaleString()}</span> ({card.paymentMethod})</p>
+                          )}
+                          {card.variant && (
+                            <p className="text-gray-400 text-[11px]">Variant: <span className="text-gray-200">{card.variant}</span> ({card.year})</p>
+                          )}
+                        </div>
+
+                        {card.actions && Array.isArray(card.actions) && card.actions.length > 0 && (
+                          <div className="mt-2.5 flex items-center gap-1.5 border-t border-surface-border/40 pt-2">
+                            {card.actions.map((act: any, actIdx: number) => (
+                              <button
+                                key={actIdx}
+                                type="button"
+                                onClick={() => {
+                                  if (act.path) navigate(act.path);
+                                  else if (act.action === 'SELL_VEHICLE') navigate('/sell-car');
+                                }}
+                                className="flex-1 text-center py-1 px-2 rounded-md bg-surface-muted hover:bg-primary/30 text-[11px] font-medium text-gray-200 hover:text-white border border-surface-border transition cursor-pointer"
+                              >
+                                {act.label || 'View'}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     );
                   })}
                 </div>

@@ -112,6 +112,36 @@ def get_current_user(authorization: Optional[str] = Header(None)):
         "user": safe_user
     }
 
+class UpdateProfileRequest(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    city: Optional[str] = None
+
+@router.put("/profile")
+def update_profile(req: UpdateProfileRequest, authorization: Optional[str] = Header(None)):
+    email = "demo@auramotors.com"
+    if authorization:
+        token = authorization.replace("Bearer ", "").strip()
+        if token in _TOKENS_DB:
+            email = _TOKENS_DB[token]
+
+    user = _USERS_DB.get(email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if req.name:
+        user["name"] = req.name.strip()
+    if req.phone:
+        user["phone"] = req.phone.strip()
+    if req.city:
+        user["city"] = req.city.strip()
+
+    safe_user = {k: v for k, v in user.items() if k != "password_hash"}
+    return {
+        "user": safe_user,
+        "message": "Profile updated successfully."
+    }
+
 @router.post("/saved-vehicles/toggle")
 def toggle_saved_vehicle(payload: Dict[str, str], authorization: Optional[str] = Header(None)):
     vehicle_id = payload.get("vehicle_id")

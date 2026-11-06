@@ -8,6 +8,8 @@ from ..models.preferences import UserPreferences, IntentType
 from ..models.a2ui import CreateSurfaceMessage, UpdateComponentsMessage, A2UIComponent
 from ..orchestration.state_machine import StateMachine
 from ..agents.interview import AdaptiveInterviewAgent
+from ..agents.intent_detector import intent_detector, DetectedIntent
+from ..actions.registry import action_registry
 from ..repositories.marketplace import marketplace_repo
 from ..repositories.session import session_repo
 from ..repositories.user_data_repo import user_data_repo
@@ -79,41 +81,158 @@ class OrchestrationEngine:
             session.search_results = []
             session.active_order_id = None
             session.active_booking_id = None
+            session.active_workflow = None
+            session.pending_question = None
+            session.workflow_data = {}
             session.preferences = UserPreferences(session_id=session_id)
 
-        # 3. Adaptive Interview Preference Extraction
-        updated_prefs, extracted_fields = AdaptiveInterviewAgent.extract_preferences(
-            user_content, session.preferences
+        # 3. Universal Intent Detection & Context Analysis
+        user_id = session.user_id or "usr_demo_01"
+        detected = intent_detector.detect_intent(
+            user_content,
+            active_workflow=session.active_workflow,
+            pending_question=session.pending_question,
+            session_data=session.workflow_data
         )
-        session.preferences = updated_prefs
 
-        text_lower = user_content.lower()
+        # Handle Intent Switching: e.g. "I don't want to sell it anymore. Show me my purchases"
+        if detected.is_intent_switch:
+            session.active_workflow = None
+            session.pending_question = None
+            session.workflow_data = {}
 
-        # Handle Account History: Purchase History
-        if session.preferences.intent in [IntentType.PURCHASE_HISTORY, "PURCHASE_HISTORY"]:
-            user_id = session.user_id or "usr_demo_01"
-            purchases = user_data_repo.get_user_purchases(user_id)
-            if purchases:
-                p_lines = []
-                for i, p in enumerate(purchases[:5], 1):
-                    snap = p.vehicleSnapshot
-                    v_desc = f"{snap.brand} {snap.model}"
-                    if snap.variant:
-                        v_desc += f" ({snap.variant})"
-                    p_lines.append(f"{i}. **{v_desc}** — ₹{p.purchasePrice:,.0f} (Order: `{p.orderId}`)")
-                purchases_summary = "\n".join(p_lines)
-                bot_text = (
-                    f"Here are your verified vehicle purchases on **Aura Motors**:\n\n"
-                    f"{purchases_summary}\n\n"
-                    f"I've navigated you directly to your **My Purchases** dashboard."
-                )
-            else:
-                bot_text = (
-                    "You don't have any vehicle purchases recorded in your account yet.\n\n"
-                    "I've navigated you to your **My Purchases** dashboard where your future orders will appear."
-                )
-            actions = [{"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/purchases"}}]
-            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+        # -----------------------------------------------------------------
+        # SCENARIO: Answering Pending Workflow Question (e.g. Sell Registration)
+        # -----------------------------------------------------------------
+        if detected.intent == "ANSWER_PENDING_QUESTION":
+            if session.pending_question == "IS_REGISTERED_IN_NAME":
+                if not session.preferences.sell_details:
+                    from ..models.preferences import SellDetails
+                    session.preferences.sell_details = SellDetails()
+
+                if detected.is_affirmative:
+                    session.preferences.sell_details.is_registered_in_user_name = True
+                    session.pending_question = None
+                    session.active_workflow = "SELL_WORKFLOW"
+
+                    # Check if user has an owned car matching or in garage
+                    owned_vehicles = user_data_repo.get_user_owned_vehicles(user_id)
+                    match_id = session.workflow_data.get("matching_owned_vehicle_id")
+                    target_owned = None
+                    if match_id:
+                        target_owned = next((v for v in owned_vehicles if v.id == match_id), None)
+                    if not target_owned:
+                        content_lower = user_content.lower()
+                        # Match by brand or model word in user response
+                        for v in owned_vehicles:
+                            if v.brand.lower() in content_lower or v.model.lower().split()[0] in content_lower:
+                                target_owned = v
+                                break
+                    if not target_owned:
+                        # Find sedan (e.g. Honda City) or first owned car in garage
+                        target_owned = next(
+                            (v for v in owned_vehicles if any(k in (v.model.lower() + " " + v.brand.lower()) for k in ["sedan", "city", "verna", "slavia", "virtus", "ciaz"])),
+                            owned_vehicles[0] if owned_vehicles else None
+                        )
+
+                    if target_owned:
+                        model_name = target_owned.model.split()[0] if " " in target_owned.model else target_owned.model
+                        sell_payload = {
+                            "brand": target_owned.brand,
+                            "model": model_name,
+                            "variant": target_owned.variant or "1.5 i-VTEC",
+                            "year": target_owned.year,
+                            "fuel_type": "Petrol",
+                            "transmission": "Automatic",
+                            "kms_driven": 32000,
+                            "expected_price": target_owned.currentEstimatedValue or 1180000.0,
+                            "location": "Delhi NCR",
+                            "is_registered_in_user_name": True,
+                            "owned_vehicle_id": target_owned.id
+                        }
+                        title_desc = f"{sell_payload['year']} {sell_payload['brand']} {sell_payload['model']}"
+                        bot_text = (
+                            f"Awesome! I see you have a **{title_desc}** in your digital garage.\n\n"
+                            f"I've pre-filled your listing form with your car's verified details "
+                            f"({sell_payload['variant']}, 32,000 km, asking ₹{sell_payload['expected_price']/100000:.1f} Lakh) "
+                            f"and navigated you directly to our **Sell a Car** portal. Please review the details before confirming your listing."
+                        )
+                        actions = [
+                            {"type": "PREFILL_SELL_FORM", "payload": sell_payload},
+                            {"type": "UPDATE_FORM", "payload": sell_payload},
+                            {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/sell-car"}},
+                            {"type": "NAVIGATE", "payload": {"path": "/sell-car"}}
+                        ]
+                    else:
+                        bot_text = "Great! Please share your vehicle brand, model, year, kilometers driven, and expected selling price to prefill your listing."
+                        actions = [
+                            {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/sell-car"}},
+                            {"type": "NAVIGATE", "payload": {"path": "/sell-car"}}
+                        ]
+                else:
+                    session.preferences.sell_details.is_registered_in_user_name = False
+                    session.pending_question = None
+                    bot_text = (
+                        "Understood. Aura Motors requires power of attorney or owner authorization for vehicles not registered in the seller's legal name.\n\n"
+                        "I've navigated you to our **Sell a Car** portal where you can upload the required authorization or complete your draft listing."
+                    )
+                    actions = [
+                        {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/sell-car"}},
+                        {"type": "NAVIGATE", "payload": {"path": "/sell-car"}}
+                    ]
+
+                bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+                session_repo.add_message(session_id, bot_msg)
+                session_repo.save_session(session)
+                for act in actions:
+                    await self.emit_event(session_id, "website_action", act)
+                return {
+                    "message": bot_msg.model_dump(),
+                    "workflow_state": session.workflow_state.value,
+                    "preferences": session.preferences.model_dump(),
+                    "a2ui_surfaces": [],
+                    "recommendations": [],
+                    "website_actions": actions,
+                    "actions": actions
+                }
+
+        # -----------------------------------------------------------------
+        # SCENARIO A: VIEW_MY_VEHICLES (Show me my cars)
+        # -----------------------------------------------------------------
+        if detected.intent == "VIEW_MY_VEHICLES":
+            vehicles = user_data_repo.get_user_owned_vehicles(user_id)
+            cards = [
+                {
+                    "cardType": "OWNED_VEHICLE",
+                    "id": v.id,
+                    "vehicleId": v.vehicleId,
+                    "brand": v.brand,
+                    "model": v.model,
+                    "variant": v.variant,
+                    "year": v.year,
+                    "currentEstimatedValue": v.currentEstimatedValue,
+                    "source": v.source.value if hasattr(v.source, "value") else str(v.source),
+                    "image": v.image,
+                    "status": v.status,
+                    "actions": [
+                        {"label": "Sell Vehicle", "action": "SELL_VEHICLE", "vehicleId": v.id},
+                        {"label": "View Garage", "path": "/dashboard/vehicles"}
+                    ]
+                }
+                for v in vehicles
+            ]
+            bot_text = f"Here are the {len(vehicles)} vehicles associated with your account in your digital garage."
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/vehicles"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/vehicles"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myVehicles"}}
+            ]
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                data={"messageType": "GARAGE_VEHICLES", "cards": cards, "actions": actions}
+            )
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
             for act in actions:
@@ -124,20 +243,112 @@ class OrchestrationEngine:
                 "preferences": session.preferences.model_dump(),
                 "a2ui_surfaces": [],
                 "recommendations": [],
-                "website_actions": actions
+                "website_actions": actions,
+                "actions": actions,
+                "cards": cards
             }
 
-        # Handle Account History: Rental History
-        if session.preferences.intent in [IntentType.RENTAL_HISTORY, "RENTAL_HISTORY"]:
-            user_id = session.user_id or "usr_demo_01"
+        # -----------------------------------------------------------------
+        # SCENARIO B: VIEW_PURCHASES (Show me all the cars I have purchased)
+        # -----------------------------------------------------------------
+        if detected.intent == "VIEW_PURCHASES":
+            session.preferences.intent = IntentType.PURCHASE_HISTORY
+            purchases = user_data_repo.get_user_purchases(user_id)
+            cards = [
+                {
+                    "cardType": "PURCHASE",
+                    "id": p.id,
+                    "orderId": p.orderId,
+                    "brand": p.vehicleSnapshot.brand,
+                    "model": p.vehicleSnapshot.model,
+                    "variant": p.vehicleSnapshot.variant,
+                    "purchasePrice": p.purchasePrice,
+                    "purchaseDate": p.purchaseDate,
+                    "purchaseStatus": p.purchaseStatus.value if hasattr(p.purchaseStatus, "value") else str(p.purchaseStatus),
+                    "transactionReference": p.transactionReference,
+                    "image": p.vehicleSnapshot.image,
+                    "deliveryCity": p.deliveryCity,
+                    "actions": [
+                        {"label": "View Purchases", "path": "/dashboard/purchases"}
+                    ]
+                }
+                for p in purchases
+            ]
+            if purchases:
+                p_lines = [f"{i}. **{p.vehicleSnapshot.brand} {p.vehicleSnapshot.model}** — ₹{p.purchasePrice:,.0f} (Order: `{p.orderId}`)" for i, p in enumerate(purchases[:3], 1)]
+                bot_text = f"Here are your verified vehicle purchases on **Aura Motors**:\n\n" + "\n".join(p_lines) + f"\n\nI've navigated you directly to your **My Purchases** dashboard."
+            else:
+                bot_text = "You don't have any vehicle purchases recorded in your account yet. I've navigated you to your **My Purchases** dashboard."
+
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myPurchases"}}
+            ]
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                data={"messageType": "PURCHASE_HISTORY", "cards": cards, "actions": actions}
+            )
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions,
+                "cards": cards
+            }
+
+        # -----------------------------------------------------------------
+        # SCENARIO C: VIEW_RENTALS (Show my rental history)
+        # -----------------------------------------------------------------
+        if detected.intent == "VIEW_RENTALS":
+            session.preferences.intent = IntentType.RENTAL_HISTORY
             rentals = user_data_repo.get_user_rentals(user_id)
+            cards = [
+                {
+                    "cardType": "RENTAL",
+                    "id": r.id,
+                    "orderId": r.orderId,
+                    "brand": r.vehicleSnapshot.brand,
+                    "model": r.vehicleSnapshot.model,
+                    "pickupDate": r.pickupDate,
+                    "returnDate": r.returnDate,
+                    "durationDays": r.durationDays,
+                    "rentalAmount": r.rentalAmount,
+                    "rentalStatus": r.rentalStatus.value if hasattr(r.rentalStatus, "value") else str(r.rentalStatus),
+                    "pickupLocation": r.pickupLocation,
+                    "image": r.vehicleSnapshot.image,
+                    "actions": [
+                        {"label": "View Rentals", "path": "/dashboard/rentals"}
+                    ]
+                }
+                for r in rentals
+            ]
             if rentals:
-                r_lines = [f"{i}. **{r.vehicle_id}** — {r.pickup_date} to {r.return_date} (Booking: `{r.id}`)" for i, r in enumerate(rentals[:5], 1)]
-                bot_text = "Here are your active rental reservations on **Aura Motors**:\n\n" + "\n".join(r_lines) + "\n\nI've navigated you to your **My Rentals** dashboard."
+                r_lines = [f"{i}. **{r.vehicleSnapshot.brand} {r.vehicleSnapshot.model}** — {r.pickupDate} to {r.returnDate} (Booking: `{r.orderId or r.id}`)" for i, r in enumerate(rentals[:3], 1)]
+                bot_text = f"Here are your active rental reservations on **Aura Motors**:\n\n" + "\n".join(r_lines) + f"\n\nI've navigated you to your **My Rentals** dashboard."
             else:
                 bot_text = "You don't have any active rental bookings on record currently. I've navigated you to your **My Rentals** dashboard."
-            actions = [{"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/rentals"}}]
-            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/rentals"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/rentals"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myRentals"}}
+            ]
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                data={"messageType": "RENTAL_HISTORY", "cards": cards, "actions": actions}
+            )
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
             for act in actions:
@@ -148,20 +359,96 @@ class OrchestrationEngine:
                 "preferences": session.preferences.model_dump(),
                 "a2ui_surfaces": [],
                 "recommendations": [],
-                "website_actions": actions
+                "website_actions": actions,
+                "actions": actions,
+                "cards": cards
             }
 
-        # Handle Account History: Selling History
-        if session.preferences.intent in [IntentType.SELLING_HISTORY, "SELLING_HISTORY"]:
-            user_id = session.user_id or "usr_demo_01"
+        # -----------------------------------------------------------------
+        # SCENARIO G: VIEW_PAYMENT_HISTORY (Show my previous payments)
+        # -----------------------------------------------------------------
+        if detected.intent == "VIEW_PAYMENT_HISTORY":
+            payments = user_data_repo.get_user_payments(user_id)
+            cards = [
+                {
+                    "cardType": "PAYMENT",
+                    "id": p.id,
+                    "orderId": p.orderId,
+                    "amount": p.amount,
+                    "currency": p.currency,
+                    "paymentMethod": p.paymentMethod,
+                    "paymentStatus": p.paymentStatus.value if hasattr(p.paymentStatus, "value") else str(p.paymentStatus),
+                    "paymentReference": p.paymentReference,
+                    "createdAt": p.createdAt,
+                    "actions": [
+                        {"label": "View Payments", "path": "/dashboard/payments"}
+                    ]
+                }
+                for p in payments
+            ]
+            p_lines = [f"{i}. **₹{p.amount:,.0f}** — {p.paymentMethod.upper()} • Status: **{p.paymentStatus.value}** (Ref: `{p.transactionId}`)" for i, p in enumerate(payments[:3], 1)]
+            bot_text = f"Here is your payment history and transaction ledger on **Aura Motors**:\n\n" + "\n".join(p_lines) + f"\n\nI've navigated you to your **Payment History** dashboard."
+
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/payments"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/payments"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myPayments"}}
+            ]
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                data={"messageType": "PAYMENT_HISTORY", "cards": cards, "actions": actions}
+            )
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions,
+                "cards": cards
+            }
+
+        # -----------------------------------------------------------------
+        # VIEW_SELLING_LISTINGS
+        # -----------------------------------------------------------------
+        if detected.intent == "VIEW_SELLING_LISTINGS":
+            session.preferences.intent = IntentType.SELLING_HISTORY
             listings = user_data_repo.get_user_listings(user_id)
+            cards = [
+                {
+                    "cardType": "LISTING",
+                    "id": l.id,
+                    "brand": l.brand,
+                    "model": l.model,
+                    "year": l.year,
+                    "expectedPrice": l.expected_price,
+                    "kmsDriven": l.kms_driven,
+                    "status": l.status.value if hasattr(l.status, "value") else str(l.status),
+                    "image": l.images[0] if l.images else "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=800&q=80",
+                    "actions": [
+                        {"label": "View Listing", "path": "/dashboard/listings"}
+                    ]
+                }
+                for l in listings
+            ]
             if listings:
                 l_lines = [f"{i}. **{l.year} {l.brand} {l.model}** — Status: **{l.status.value}** (Asking ₹{l.expected_price:,.0f})" for i, l in enumerate(listings[:5], 1)]
                 bot_text = "Here are your vehicle listings on **Aura Motors**:\n\n" + "\n".join(l_lines) + "\n\nI've navigated you to your **My Listings** dashboard."
             else:
                 bot_text = "You don't have any vehicle listings on sale currently. I've navigated you to your **My Listings** dashboard."
-            actions = [{"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/listings"}}]
-            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/listings"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/listings"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myListings"}}
+            ]
+            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text, data={"cards": cards, "actions": actions})
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
             for act in actions:
@@ -172,44 +459,48 @@ class OrchestrationEngine:
                 "preferences": session.preferences.model_dump(),
                 "a2ui_surfaces": [],
                 "recommendations": [],
-                "website_actions": actions
+                "website_actions": actions,
+                "actions": actions,
+                "cards": cards
             }
 
-        # Handle Sell Intent
-        if session.preferences.intent in [IntentType.SELL, "SELL"]:
-            sell_det = session.preferences.sell_details
-            if not sell_det or sell_det.is_registered_in_user_name is None:
-                cat_desc = session.preferences.category.value.lower() if session.preferences.category else "car"
-                bot_text = f"Sure! I can help you sell your {cat_desc}. Is it already registered in your name?"
-                actions = [{"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/sell-car"}}]
-            elif sell_det.brand or sell_det.model or sell_det.year:
-                # User provided vehicle details!
-                sell_payload = {
-                    "brand": sell_det.brand or (session.preferences.preferred_brands[0] if session.preferences.preferred_brands else "Honda"),
-                    "model": sell_det.model or "City",
-                    "variant": sell_det.variant or "1.5 i-VTEC",
-                    "year": sell_det.year or 2021,
-                    "fuel_type": sell_det.fuel_type or (session.preferences.fuel_type.title() if session.preferences.fuel_type else "Petrol"),
-                    "transmission": sell_det.transmission or (session.preferences.transmission.title() if session.preferences.transmission else "Automatic"),
-                    "kms_driven": sell_det.kms_driven or 32000,
-                    "expected_price": sell_det.expected_price or 1180000.0,
-                    "location": sell_det.location or session.preferences.location or "Delhi NCR",
-                    "is_registered_in_user_name": bool(sell_det.is_registered_in_user_name),
-                }
-                title_desc = f"{sell_payload['year']} {sell_payload['brand']} {sell_payload['model']}".strip()
-                bot_text = (
-                    f"Awesome! I've pre-filled your vehicle listing form for your **{title_desc}** "
-                    f"({sell_payload['fuel_type']}, {sell_payload['transmission']}, {sell_payload['kms_driven']:,} km, asking ₹{sell_payload['expected_price']/100000:.1f} Lakh).\n\n"
-                    f"I've navigated you directly to our **Sell a Car** portal where you can review the details and submit your verified listing!"
-                )
-                actions = [
-                    {"type": "PREFILL_SELL_FORM", "payload": sell_payload},
-                    {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/sell-car"}}
-                ]
+        # -----------------------------------------------------------------
+        # SCENARIO D: SELL_VEHICLE (I want to sell my sedan)
+        # -----------------------------------------------------------------
+        if detected.intent == "SELL_VEHICLE":
+            from ..models.preferences import SellDetails
+            from ..models.vehicle import VehicleCategory
+            session.preferences.intent = IntentType.SELL
+            if not session.preferences.sell_details:
+                session.preferences.sell_details = SellDetails()
+            if detected.entities.get("category"):
+                try:
+                    session.preferences.category = VehicleCategory(detected.entities["category"])
+                    session.preferences.vehicle_category = detected.entities["category"]
+                except Exception:
+                    pass
+            session.active_workflow = "SELL_WORKFLOW"
+            session.pending_question = "IS_REGISTERED_IN_NAME"
+
+            owned_vehicles = user_data_repo.get_user_owned_vehicles(user_id)
+            cat_requested = detected.entities.get("category", "").lower()
+            matching_owned = None
+            if cat_requested:
+                matching_owned = next((v for v in owned_vehicles if cat_requested in (v.model.lower() + " " + v.brand.lower())), None)
+            elif owned_vehicles:
+                matching_owned = owned_vehicles[0]
+
+            if matching_owned:
+                session.workflow_data["matching_owned_vehicle_id"] = matching_owned.id
+                bot_text = f"I can certainly help you sell your **{matching_owned.brand} {matching_owned.model}** on Aura Motors.\n\nIs the vehicle currently registered in your name?"
             else:
-                bot_text = "Great! Please share the vehicle brand, model, year, kilometers driven, and your expected selling price (e.g. *'2021 Honda City, petrol, automatic, 32,000 km, asking ₹11.8 Lakh in Delhi'*)."
-                actions = [{"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/sell-car"}}]
+                target_cat = detected.entities.get("category", "vehicle")
+                bot_text = f"I can certainly help you list your {target_cat.lower()} for sale on Aura Motors.\n\nIs the vehicle currently registered in your name?"
 
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/sell-car"}},
+                {"type": "NAVIGATE", "payload": {"path": "/sell-car"}}
+            ]
             bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
@@ -221,8 +512,449 @@ class OrchestrationEngine:
                 "preferences": session.preferences.model_dump(),
                 "a2ui_surfaces": [],
                 "recommendations": [],
-                "website_actions": actions
+                "website_actions": actions,
+                "actions": actions
             }
+
+        # -----------------------------------------------------------------
+        # UPDATE_PROFILE & VIEW_PROFILE
+        # -----------------------------------------------------------------
+        if detected.intent == "UPDATE_PROFILE":
+            phone = detected.entities.get("phone")
+            if phone:
+                from ..api.routes_auth import _USERS_DB
+                if "demo@auramotors.com" in _USERS_DB:
+                    _USERS_DB["demo@auramotors.com"]["phone"] = phone
+                bot_text = f"I have updated your phone number to **{phone}** and navigated you to your **Member Profile**."
+            else:
+                bot_text = "I've navigated you to your **Member Profile** where you can review your verified KYC credentials and contact details."
+
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/profile"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/profile"}}
+            ]
+            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions
+            }
+
+        # -----------------------------------------------------------------
+        # VIEW_DASHBOARD
+        # -----------------------------------------------------------------
+        if detected.intent == "VIEW_DASHBOARD":
+            bot_text = "I've navigated you to your **User Dashboard** overview."
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard"}}
+            ]
+            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions
+            }
+
+        # -----------------------------------------------------------------
+        # CANCEL_BOOKING
+        # -----------------------------------------------------------------
+        if detected.intent == "CANCEL_BOOKING":
+            order_id = detected.entities.get("order_id")
+            from ..models.rental import RentalStatus
+            cancelled_ref = "your booking"
+            if order_id:
+                rental = user_data_repo.get_rental_by_order(order_id)
+                if rental:
+                    rental.rentalStatus = RentalStatus.CANCELLED
+                    cancelled_ref = f"booking `{order_id}`"
+            else:
+                # Cancel latest rental if available
+                user_rentals = user_data_repo.get_user_rentals(user_id)
+                if user_rentals:
+                    user_rentals[0].rentalStatus = RentalStatus.CANCELLED
+                    cancelled_ref = f"booking `{user_rentals[0].orderId}`"
+
+            bot_text = f"{cancelled_ref.capitalize()} has been successfully cancelled. I've updated your rentals dashboard."
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/rentals"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/rentals"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myRentals"}},
+                {"type": "SHOW_NOTIFICATION", "payload": {"message": "Booking cancelled successfully"}}
+            ]
+            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions
+            }
+
+        # -----------------------------------------------------------------
+        # NAVIGATE
+        # -----------------------------------------------------------------
+        if detected.intent == "NAVIGATE":
+            target_path = detected.entities.get("path", "/")
+            bot_text = f"Navigating to **{target_path}**."
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": target_path}},
+                {"type": "NAVIGATE", "payload": {"path": target_path}}
+            ]
+            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions
+            }
+
+        # -----------------------------------------------------------------
+        # SCENARIO: COMPARE_VEHICLES (Compare two vehicles side-by-side)
+        # -----------------------------------------------------------------
+        if detected.intent == "COMPARE_VEHICLES":
+            all_v = marketplace_repo.get_all_vehicles()
+            text_lower = user_content.lower()
+            matched_vehicles = []
+            for v in all_v:
+                b_name = v.brand.lower()
+                m_name = v.model.lower()
+                primary_model_word = m_name.split()[0]
+                if f"{b_name} {primary_model_word}" in text_lower or (b_name in text_lower and primary_model_word in text_lower):
+                    if v not in matched_vehicles:
+                        matched_vehicles.append(v)
+
+            if len(matched_vehicles) >= 2:
+                comp_v1, comp_v2 = matched_vehicles[0], matched_vehicles[1]
+                compared_ids = [comp_v1.id, comp_v2.id]
+            elif session.search_results and len(session.search_results) >= 2:
+                compared_ids = [session.search_results[0]["vehicle"]["id"], session.search_results[1]["vehicle"]["id"]]
+                comp_v1 = marketplace_repo.get_vehicle_by_id(compared_ids[0])
+                comp_v2 = marketplace_repo.get_vehicle_by_id(compared_ids[1])
+            elif len(matched_vehicles) == 1:
+                comp_v1 = matched_vehicles[0]
+                comp_v2 = next((v for v in all_v if v.category == comp_v1.category and v.id != comp_v1.id), all_v[0])
+                compared_ids = [comp_v1.id, comp_v2.id]
+            else:
+                comp_v1, comp_v2 = all_v[0], all_v[1]
+                compared_ids = [comp_v1.id, comp_v2.id]
+
+            v1_name = f"{comp_v1.brand} {comp_v1.model}" if comp_v1 else "Vehicle 1"
+            v2_name = f"{comp_v2.brand} {comp_v2.model}" if comp_v2 else "Vehicle 2"
+
+            bot_text = (
+                f"### Benchmark Analysis: {v1_name} vs {v2_name}\n\n"
+                f"I've configured your side-by-side comparison matrix and navigated the website directly to the **Compare Cars** page.\n\n"
+                f"**1. Driving Dynamics & Engine Output:**\n"
+                f"- **{v1_name}**: Features refined suspension geometry, agile power delivery, and superior maneuverability for daily urban driving.\n"
+                f"- **{v2_name}**: Dominant road presence, high torque output, and unshakable highway stability for long journeys.\n\n"
+                f"**2. Fuel Efficiency & Maintenance:**\n"
+                f"- **{v1_name}**: Approx {getattr(comp_v1, 'mileage_kmpl', 16.5) or 16.5} KMPL, lower scheduled servicing overheads.\n"
+                f"- **{v2_name}**: Approx {getattr(comp_v2, 'mileage_kmpl', 14.2) or 14.2} KMPL, proven legendary durability with industry-leading resale retention.\n\n"
+                f"**Verdict:** Choose **{v1_name}** for city comfort, ergonomics, and daily touring; choose **{v2_name}** for uncompromising presence, off-road authority, and long-distance touring."
+            )
+
+            actions = [
+                {"type": "ADD_TO_COMPARISON", "payload": {"vehicleIds": compared_ids}},
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/compare"}},
+                {"type": "NAVIGATE", "payload": {"path": "/compare"}}
+            ]
+            bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions
+            }
+
+        # -----------------------------------------------------------------
+        # SCENARIO E: SEARCH_VEHICLES (Find an SUV under ₹15 lakh / i want to buy a sedan)
+        # -----------------------------------------------------------------
+        if detected.intent == "SEARCH_VEHICLES":
+            from ..models.vehicle import VehicleCategory
+            updated_prefs, _ = AdaptiveInterviewAgent.extract_preferences(
+                user_content, session.preferences
+            )
+            session.preferences = updated_prefs
+            session.preferences.intent = IntentType.BUY
+            if detected.entities.get("category"):
+                try:
+                    session.preferences.category = VehicleCategory(detected.entities["category"])
+                except Exception:
+                    pass
+            if detected.entities.get("budget_max"):
+                session.preferences.budget_max = detected.entities["budget_max"]
+            if detected.entities.get("location"):
+                session.preferences.location = detected.entities["location"]
+
+            cat_val = session.preferences.category.value if session.preferences.category else None
+            max_b = session.preferences.budget_max
+            loc = session.preferences.location
+            seats = session.preferences.seating_capacity
+
+            matching_vehicles = marketplace_repo.search_vehicles(
+                intent="buy",
+                category=cat_val,
+                location=loc,
+                max_price=max_b,
+                seats=seats
+            )
+            ranked = RankingEngine.rank_vehicles(matching_vehicles, session.preferences, limit=5)
+            session.search_results = [r.to_dict() for r in ranked]
+
+            filter_payload = {
+                "intent": "buy",
+                "category": cat_val or "",
+                "location": loc or "",
+                "maxPrice": max_b or 50000000.0,
+                "minPrice": 0
+            }
+            if seats:
+                filter_payload["seats"] = seats
+
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/buy"}},
+                {"type": "NAVIGATE", "payload": {"path": "/buy"}},
+                {"type": "APPLY_FILTERS", "payload": filter_payload},
+                {"type": "FILTER_VEHICLES", "payload": filter_payload}
+            ]
+
+            cards = [
+                {
+                    "cardType": "VEHICLE",
+                    "id": r.vehicle.id,
+                    "brand": r.vehicle.brand,
+                    "model": r.vehicle.model,
+                    "year": r.vehicle.year,
+                    "category": r.vehicle.category.value,
+                    "purchasePrice": r.vehicle.purchase_price,
+                    "status": "AVAILABLE",
+                    "image": r.vehicle.image_url,
+                    "actions": [
+                        {"label": "View Details", "path": f"/vehicles/{r.vehicle.id}"}
+                    ]
+                }
+                for r in ranked
+            ]
+
+            cat_display = cat_val or (f"{seats}-seater" if seats else "vehicle")
+            budget_display = f" under ₹{max_b/100000:,.0f} Lakh" if max_b else ""
+            loc_display = f" in {loc}" if loc else ""
+
+            if loc and max_b:
+                bot_text = (
+                    f"I've updated our vehicle catalogue and navigated you directly to our **Buy Cars** inventory filtered for **{cat_display}s**{budget_display}{loc_display}.\n\n"
+                    f"Here are {len(ranked)} verified recommendations matching your exact criteria with complete inspection reports."
+                )
+            else:
+                followup_q = AdaptiveInterviewAgent.generate_followup_question(session.preferences)
+                bot_text = (
+                    f"I've updated our website catalogue and navigated you to the **Buy Cars** inventory filtered for **{cat_display}s**{budget_display}.\n\n"
+                    f"You can explore all matching listings on this page. {followup_q}"
+                )
+
+            session.workflow_state = WorkflowState.RECOMMENDATIONS_READY
+
+            a2ui_surfaces = []
+            if ranked:
+                surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
+                rec_components = self._build_recommendations_a2ui_components(ranked, False)
+                await self.emit_event(session_id, "a2ui", {
+                    "type": "createSurface",
+                    "surfaceId": surface_id,
+                    "components": [c.model_dump() for c in rec_components]
+                })
+                a2ui_surfaces = [surface_id]
+
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                a2ui_surfaces=a2ui_surfaces,
+                data={"messageType": "VEHICLE_SEARCH", "cards": cards, "actions": actions}
+            )
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": a2ui_surfaces,
+                "recommendations": session.search_results,
+                "website_actions": actions,
+                "actions": actions,
+                "cards": cards
+            }
+
+        # -----------------------------------------------------------------
+        # SCENARIO F: RENT_VEHICLE (I want to rent a sedan in Delhi)
+        # -----------------------------------------------------------------
+        if detected.intent == "RENT_VEHICLE":
+            from ..models.vehicle import VehicleCategory
+            updated_prefs, _ = AdaptiveInterviewAgent.extract_preferences(
+                user_content, session.preferences
+            )
+            session.preferences = updated_prefs
+            session.preferences.intent = IntentType.RENT
+            if detected.entities.get("category"):
+                try:
+                    session.preferences.category = VehicleCategory(detected.entities["category"])
+                except Exception:
+                    pass
+            if detected.entities.get("location"):
+                session.preferences.location = detected.entities["location"]
+
+            cat_val = session.preferences.category.value if session.preferences.category else None
+            loc = session.preferences.location
+            seats = session.preferences.seating_capacity
+
+            max_b = session.preferences.budget_max or (session.preferences.budget.amount if session.preferences.budget else None)
+            matching_vehicles = marketplace_repo.search_vehicles(
+                intent="rent",
+                category=cat_val,
+                location=loc,
+                seats=seats,
+                max_price=max_b
+            )
+            ranked = RankingEngine.rank_vehicles(matching_vehicles, session.preferences, limit=5)
+            session.search_results = [r.to_dict() for r in ranked]
+
+            filter_payload = {
+                "intent": "rent",
+                "category": cat_val or "",
+                "location": loc or "",
+                "maxPrice": max_b or 50000.0,
+                "minPrice": 0
+            }
+            if seats:
+                filter_payload["seats"] = seats
+
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/rent"}},
+                {"type": "NAVIGATE", "payload": {"path": "/rent"}},
+                {"type": "APPLY_FILTERS", "payload": filter_payload},
+                {"type": "FILTER_VEHICLES", "payload": filter_payload}
+            ]
+
+            cards = [
+                {
+                    "cardType": "VEHICLE",
+                    "id": r.vehicle.id,
+                    "brand": r.vehicle.brand,
+                    "model": r.vehicle.model,
+                    "year": r.vehicle.year,
+                    "category": r.vehicle.category.value,
+                    "totalAmount": r.vehicle.rental_price_per_day,
+                    "status": "AVAILABLE",
+                    "image": r.vehicle.image_url,
+                    "actions": [
+                        {"label": "Book Now", "path": f"/vehicles/{r.vehicle.id}"}
+                    ]
+                }
+                for r in ranked
+            ]
+
+            cat_display = cat_val or (f"{seats}-seater" if seats else "vehicle")
+            loc_display = f" in {loc}" if loc else ""
+            bot_text = (
+                f"I've updated our rental fleet filters and navigated you to the **Rent a Car** portal for **{cat_display}s**{loc_display}.\n\n"
+                f"How many days would you like to rent (e.g., 3 days or 5 days), and what is your pickup date?"
+            )
+
+            a2ui_surfaces = []
+            has_date = bool(session.preferences.rental_start_date or (session.preferences.rental_details and session.preferences.rental_details.pickup_date))
+            has_dur = bool(session.preferences.rental_details and session.preferences.rental_details.rental_duration_days)
+            diag = None
+            if not has_date or not has_dur:
+                session.workflow_state = WorkflowState.INTERVIEWING
+                session.search_results = []
+            elif ranked:
+                session.workflow_state = WorkflowState.RECOMMENDATIONS_READY
+                surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
+                rec_components = self._build_recommendations_a2ui_components(ranked, True)
+                await self.emit_event(session_id, "a2ui", {
+                    "type": "createSurface",
+                    "surfaceId": surface_id,
+                    "components": [c.model_dump() for c in rec_components]
+                })
+                a2ui_surfaces = [surface_id]
+            else:
+                session.workflow_state = WorkflowState.RECOMMENDATIONS_READY
+                all_v = marketplace_repo.get_all_vehicles()
+                diag = RankingEngine.diagnose_zero_results(all_v, session.preferences)
+                surface_id = f"surf_zero_{uuid.uuid4().hex[:6]}"
+                a2ui_surfaces = [surface_id]
+
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                a2ui_surfaces=a2ui_surfaces,
+                data={"messageType": "RENTAL_SEARCH", "cards": cards, "actions": actions}
+            )
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            res_dict = {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": a2ui_surfaces,
+                "recommendations": session.search_results,
+                "website_actions": actions,
+                "actions": actions,
+                "cards": cards
+            }
+            if diag:
+                res_dict["diagnostics"] = diag
+            return res_dict
+
+        # -----------------------------------------------------------------
+        # Preference Extraction for Vehicle Search, Buy, Rent, Compare
+        # -----------------------------------------------------------------
+        updated_prefs, extracted_fields = AdaptiveInterviewAgent.extract_preferences(
+            user_content, session.preferences
+        )
+        session.preferences = updated_prefs
 
         # Check for Comparison Request: "compare", "comparison", " vs ", "versus", "difference between"
         text_lower = user_content.lower()

@@ -47,6 +47,13 @@ export const RentalsPage: React.FC = () => {
 
   useEffect(() => {
     fetchRentals();
+    const handleRefresh = (e: any) => {
+      if (!e.detail?.resource || e.detail.resource === 'myRentals') {
+        fetchRentals();
+      }
+    };
+    window.addEventListener('aura_data_refresh', handleRefresh);
+    return () => window.removeEventListener('aura_data_refresh', handleRefresh);
   }, []);
 
   const formatPrice = (val?: number) => {

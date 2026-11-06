@@ -81,9 +81,13 @@ async def confirm_mock_payment_endpoint(
         currency=req.currency
     )
 
+    p_dict = payment.model_dump()
+    p_dict["transaction_reference"] = payment.paymentReference
+    p_dict["transactionReference"] = payment.paymentReference
+
     return {
         "status": "SUCCESS" if success else "FAILED",
-        "payment": payment.model_dump(),
+        "payment": p_dict,
         "workflow_state": "CONFIRMED" if success else "PAYMENT_FAILED",
         "linked_entity": linked_entity.model_dump() if linked_entity else None
     }

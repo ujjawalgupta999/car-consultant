@@ -76,6 +76,13 @@ export const PurchasesPage: React.FC = () => {
 
   useEffect(() => {
     fetchPurchases();
+    const handleRefresh = (e: any) => {
+      if (!e.detail?.resource || e.detail.resource === 'myPurchases') {
+        fetchPurchases();
+      }
+    };
+    window.addEventListener('aura_data_refresh', handleRefresh);
+    return () => window.removeEventListener('aura_data_refresh', handleRefresh);
   }, []);
 
   const formatPrice = (amount: number) => {

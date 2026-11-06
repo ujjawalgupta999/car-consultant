@@ -56,6 +56,13 @@ export const VehiclesPage: React.FC = () => {
 
   useEffect(() => {
     fetchVehicles();
+    const handleRefresh = (e: any) => {
+      if (!e.detail?.resource || e.detail.resource === 'myVehicles') {
+        fetchVehicles();
+      }
+    };
+    window.addEventListener('aura_data_refresh', handleRefresh);
+    return () => window.removeEventListener('aura_data_refresh', handleRefresh);
   }, []);
 
   const formatPrice = (val?: number) => {

@@ -80,15 +80,19 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
 
     switch (type) {
       case 'PREFILL_SELL_FORM':
+      case 'START_WORKFLOW':
+      case 'UPDATE_FORM':
         set({ sellDraft: payload });
         break;
 
       case 'NAVIGATE_TO_PAGE':
+      case 'NAVIGATE':
         if (navigate && payload.path) {
           navigate(payload.path);
         }
         break;
 
+      case 'FILTER_VEHICLES':
       case 'APPLY_FILTERS':
         const vehicleStore = useVehicleStore.getState();
         const filterUpdates: Record<string, any> = {};
@@ -105,13 +109,30 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
         vehicleStore.setFilters(filterUpdates);
         break;
 
+      case 'REFRESH_DATA':
+        try {
+          window.dispatchEvent(new CustomEvent('aura_data_refresh', { detail: payload }));
+        } catch (e) {
+          console.warn('Could not dispatch aura_data_refresh event', e);
+        }
+        break;
+
+      case 'SHOW_NOTIFICATION':
+        try {
+          window.dispatchEvent(new CustomEvent('aura_notification', { detail: payload }));
+        } catch (e) {
+          console.warn('Could not dispatch aura_notification event', e);
+        }
+        break;
+
       case 'CLEAR_FILTERS':
         useVehicleStore.getState().resetFilters();
         break;
 
+      case 'SELECT_VEHICLE':
       case 'OPEN_VEHICLE_DETAILS':
-        if (navigate && payload.vehicleId) {
-          navigate(`/vehicles/${payload.vehicleId}`);
+        if (navigate && (payload.vehicleId || payload.id)) {
+          navigate(`/vehicles/${payload.vehicleId || payload.id}`);
         }
         break;
 

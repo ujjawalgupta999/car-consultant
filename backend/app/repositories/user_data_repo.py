@@ -186,6 +186,62 @@ class UserDataRepository:
         self._rentals[seed_rental.id] = seed_rental
         self._rentals_by_order[seed_booking_id] = seed_rental
 
+        # 4. Seed initial historical purchase order for demo user
+        purchase_snap = VehicleSnapshot(
+            id="CAR-022",
+            brand="Tata",
+            model="Harrier Fearless Plus",
+            variant="2.0 Kryotec Automatic",
+            year=2024,
+            category="SUV",
+            image="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=800&q=80",
+            transmission="Automatic",
+            fuel_type="Diesel",
+            location="Delhi NCR",
+            specs={"seats": 5, "mileage_kmpl": 16.5}
+        )
+        seed_purch_id = "PUR-2026-INIT01"
+        seed_order_id = "ORD-2026-88124"
+        seed_purch_pay_id = "PAY-20260320-INIT02"
+        seed_purch_txn = "TXN-MOCK-INIT88124"
+
+        seed_purch_payment = PaymentRecord(
+            id=seed_purch_pay_id,
+            userId=self._demo_user_id,
+            orderId=seed_order_id,
+            transactionId=seed_purch_txn,
+            vehicleId="CAR-022",
+            transactionType=TransactionType.BUY,
+            amount=2640000.0,
+            currency="INR",
+            paymentMethod="card",
+            paymentStatus=PaymentStatus.SUCCESS,
+            paymentProvider="MOCK_PAYMENT",
+            paymentReference=seed_purch_txn,
+            createdAt="2026-03-20T14:30:00Z",
+            updatedAt="2026-03-20T14:30:00Z"
+        )
+        self._payments[seed_purch_payment.id] = seed_purch_payment
+        self._payments_by_order[seed_order_id] = seed_purch_payment
+
+        seed_purchase = PurchaseRecord(
+            id=seed_purch_id,
+            userId=self._demo_user_id,
+            vehicleId="CAR-022",
+            paymentId=seed_purch_pay_id,
+            orderId=seed_order_id,
+            vehicleSnapshot=purchase_snap,
+            purchasePrice=2640000.0,
+            purchaseStatus=PurchaseStatus.CONFIRMED,
+            paymentStatus="SUCCESS",
+            transactionReference=seed_purch_txn,
+            purchaseDate="2026-03-20T14:30:00Z",
+            createdAt="2026-03-20T14:30:00Z",
+            updatedAt="2026-03-20T14:30:00Z"
+        )
+        self._purchases[seed_purchase.id] = seed_purchase
+        self._purchases_by_order[seed_order_id] = seed_purchase
+
     # -------------------------------------------------------------
     # UNIFIED PAYMENTS & IDEMPOTENCY
     # -------------------------------------------------------------
