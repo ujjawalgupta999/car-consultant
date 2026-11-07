@@ -196,6 +196,119 @@ class OrchestrationEngine:
                     "actions": actions
                 }
 
+            elif session.pending_question == "PROCEED_TO_PAYMENT":
+                pending_checkout = session.workflow_data.get("pending_checkout", {})
+                order_id = pending_checkout.get("order_id") or session.active_order_id or f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
+                vehicle_id = pending_checkout.get("vehicle_id") or session.selected_vehicle_id or "CAR-001"
+                amount = pending_checkout.get("amount", 25000.0)
+                is_rent = pending_checkout.get("is_rent", False)
+                target_vehicle = marketplace_repo.get_vehicle_by_id(vehicle_id) or marketplace_repo.get_all_vehicles()[0]
+                payment_method = pending_checkout.get("payment_method", "UPI")
+                car_title = f"{target_vehicle.brand} {target_vehicle.model}"
+
+                is_direct_pay = any(w in user_content.lower() for w in ["pay it", "pay now", "confirm and pay"])
+                if detected.is_affirmative or "proceed" in user_content.lower() or is_direct_pay:
+                    if is_direct_pay:
+                        from ..services.transaction_service import transaction_service
+                        session.pending_question = None
+                        session.workflow_state = WorkflowState.CONFIRMED
+                        ok, payment, linked_entity, _, _, _ = transaction_service.process_payment_records(
+                            order_or_booking_id=order_id,
+                            amount=amount,
+                            payment_method=payment_method,
+                            user_id=user_id,
+                            idempotency_key=f"idemp_pay_{order_id}",
+                            simulated_scenario="SUCCESS"
+                        )
+                        txn_id = payment.transactionId if payment else f"TXN-MOCK-{order_id[-6:]}"
+                        showcase_card = {
+                            "cardType": "PURCHASED_SHOWCASE",
+                            "id": f"showcase_{order_id}",
+                            "orderId": order_id,
+                            "transactionId": txn_id,
+                            "vehicleId": target_vehicle.id,
+                            "brand": target_vehicle.brand,
+                            "model": target_vehicle.model,
+                            "year": target_vehicle.year,
+                            "variant": getattr(target_vehicle, "variant", None) or "Luxury Edition",
+                            "image": target_vehicle.image_url,
+                            "amount": amount,
+                            "paymentMethod": payment_method.upper(),
+                            "status": "OWNED" if not is_rent else "RENTAL CONFIRMED",
+                            "actions": [
+                                {"label": "View in My Garage", "path": "/dashboard/vehicles"},
+                                {"label": "View Payments", "path": "/dashboard/payments"}
+                            ]
+                        }
+                        bot_text = (
+                            f"🎉 **Payment Successful & Transaction Confirmed!**\n\n"
+                            f"I have successfully submitted your payment and settled the mock transaction for the **{car_title}**.\n\n"
+                            f"- **Order Reference:** `{order_id}`\n"
+                            f"- **Transaction ID:** `{txn_id}`\n"
+                            f"- **Amount Settled:** ₹{amount:,.0f} via {payment_method.upper()}\n"
+                            f"- **Status:** Verified & Saved to your digital garage.\n\n"
+                            f"I've updated the website in the background to display your official transaction receipt."
+                        )
+                        actions = [
+                            {"type": "EXECUTE_CHECKOUT_SUBMIT", "payload": {"orderId": order_id, "status": "SUCCESS"}},
+                            {"type": "REFRESH_DATA", "payload": {"resource": "all"}},
+                            {"type": "NAVIGATE_TO_PAGE", "payload": {"path": f"/payment/result/{order_id}"}},
+                            {"type": "NAVIGATE", "payload": {"path": f"/payment/result/{order_id}"}}
+                        ]
+                        cards = [showcase_card]
+                    else:
+                        session.pending_question = "CONFIRM_TRANSACTION"
+                        checkout_path = f"/checkout/{order_id}"
+                        bot_text = (
+                            f"I've moved you to the checkout and payment portal in the background with your payment details ready:\n\n"
+                            f"- **Vehicle:** {car_title}\n"
+                            f"- **Payable Amount:** ₹{amount:,.0f}\n"
+                            f"- **Payment Method:** UPI ({pending_checkout.get('upi_id', 'alex@okaxis')})\n"
+                            f"- **Order Reference:** `{order_id}`\n\n"
+                            f"Would you like me to pay and confirm this transaction now? Just say **'pay it'** or **'confirm'**."
+                        )
+                        actions = [
+                            {"type": "NAVIGATE_TO_PAGE", "payload": {"path": checkout_path}},
+                            {"type": "NAVIGATE", "payload": {"path": checkout_path}},
+                            {"type": "PREFILL_CHECKOUT_FORM", "payload": {
+                                "orderId": order_id,
+                                "vehicleId": target_vehicle.id,
+                                "amount": amount,
+                                "paymentMethod": "upi",
+                                "upiId": "alex@okaxis"
+                            }}
+                        ]
+                        cards = []
+                else:
+                    session.pending_question = None
+                    bot_text = (
+                        "Understood! I have kept your reservation in draft state on the booking page. "
+                        "You can review or adjust your details anytime before finalizing."
+                    )
+                    actions = []
+                    cards = []
+
+                bot_msg = ChatMessage(
+                    id=f"msg_{uuid.uuid4().hex[:8]}",
+                    role=ChatRole.ASSISTANT,
+                    content=bot_text,
+                    data={"messageType": "BOOKING_PROCEED", "cards": cards, "actions": actions}
+                )
+                session_repo.add_message(session_id, bot_msg)
+                session_repo.save_session(session)
+                for act in actions:
+                    await self.emit_event(session_id, "website_action", act)
+                return {
+                    "message": bot_msg.model_dump(),
+                    "workflow_state": session.workflow_state.value,
+                    "preferences": session.preferences.model_dump(),
+                    "a2ui_surfaces": [],
+                    "recommendations": [],
+                    "website_actions": actions,
+                    "actions": actions,
+                    "cards": cards
+                }
+
             elif session.pending_question == "CONFIRM_TRANSACTION":
                 pending_checkout = session.workflow_data.get("pending_checkout", {})
                 order_id = pending_checkout.get("order_id") or session.active_order_id or f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
@@ -336,23 +449,29 @@ class OrchestrationEngine:
 
             session.active_order_id = order_id
             session.selected_vehicle_id = target_vehicle.id
-            session.pending_question = "CONFIRM_TRANSACTION"
+            session.pending_question = "PROCEED_TO_PAYMENT"
             session.workflow_data["pending_checkout"] = {
                 "order_id": order_id,
                 "vehicle_id": target_vehicle.id,
                 "amount": amount,
                 "is_rent": is_rent,
-                "payment_method": "UPI"
+                "payment_method": "UPI",
+                "upi_id": "alex@okaxis",
+                "customer_name": "Alex Vance"
             }
 
             car_title = f"{target_vehicle.brand} {target_vehicle.model}"
-            target_path = f"/checkout/{order_id}"
+            target_path = f"/booking/{target_vehicle.id}" if is_rent else f"/checkout/{order_id}"
 
             bot_text = (
-                f"I have selected the **{car_title}** and navigated to the checkout portal in the background.\n\n"
-                f"I've also pre-filled your verified customer information (Alex Vance, Delhi NCR) and set up instant settlement "
-                f"(Total: **₹{amount:,.0f}** via **UPI: alex@okaxis**).\n\n"
-                f"Would you like me to proceed and complete the transaction?"
+                f"I have selected the **{car_title}** and opened the reservation page in the background.\n\n"
+                f"I've filled in your verified details on the background booking form:\n"
+                f"- **Vehicle:** {car_title} ({target_vehicle.year})\n"
+                f"- **Pickup Location:** {prefill_payload['deliveryCity']}\n"
+                f"- **Rental Dates:** Dec 15 to Dec 20, 2026 (5 Days)\n"
+                f"- **Driver / Customer:** Alex Vance (+91 98765 43210)\n"
+                f"- **Estimated Total:** ₹{amount:,.0f}\n\n"
+                f"All fields have been filled on the background page. Would you like me to proceed to payment?"
             )
 
             actions = [
@@ -380,6 +499,141 @@ class OrchestrationEngine:
                 "recommendations": [],
                 "website_actions": actions,
                 "actions": actions
+            }
+
+        # -----------------------------------------------------------------
+        # AUTONOMOUS CONTROLLER: VEHICLE_INQUIRY
+        # "Tell me about Tata Harrier", "Show me Fortuner", "Hyundai Creta", etc.
+        # -----------------------------------------------------------------
+        if detected.intent == "VEHICLE_INQUIRY":
+            all_v = marketplace_repo.get_all_vehicles()
+            v_name = detected.entities.get("vehicle_name", "").lower()
+            target_vehicle = None
+            if v_name:
+                for v in all_v:
+                    if v_name in v.model.lower() or v_name in v.brand.lower():
+                        target_vehicle = v
+                        break
+            if not target_vehicle and session.selected_vehicle_id:
+                target_vehicle = marketplace_repo.get_vehicle_by_id(session.selected_vehicle_id)
+            if not target_vehicle and session.search_results:
+                target_vehicle = marketplace_repo.get_vehicle_by_id(session.search_results[0]["vehicle"]["id"])
+            if not target_vehicle:
+                target_vehicle = all_v[0]
+
+            is_rent = (detected.entities.get("intent") == "rent") or (session.preferences.intent == IntentType.RENT)
+            target_path = "/rent" if is_rent else "/buy"
+            session.selected_vehicle_id = target_vehicle.id
+
+            filter_payload = {
+                "intent": "rent" if is_rent else "buy",
+                "brand": target_vehicle.brand,
+                "category": target_vehicle.category.value,
+                "search": target_vehicle.model,
+                "transmission": target_vehicle.transmission.value,
+                "fuelType": target_vehicle.fuel_type.value,
+                "seats": target_vehicle.seats,
+            }
+
+            actions = [
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": target_path}},
+                {"type": "NAVIGATE", "payload": {"path": target_path}},
+                {"type": "APPLY_FILTERS", "payload": filter_payload},
+                {"type": "FILTER_VEHICLES", "payload": filter_payload}
+            ]
+
+            hp = getattr(getattr(target_vehicle, "specs", None), "horsepower", None)
+            hp_str = f"{hp} HP" if hp else "2.0L Turbocharged (170 HP)"
+            odo_str = f"{target_vehicle.odometer_km:,} km" if target_vehicle.odometer_km else "12,500 km"
+            price_display = f"₹{target_vehicle.rental_price_per_day:,.0f}/day" if is_rent else f"₹{target_vehicle.purchase_price:,.0f}"
+
+            bot_text = (
+                f"### 🔍 Vehicle Deep-Dive: {target_vehicle.brand} {target_vehicle.model} ({target_vehicle.year})\n\n"
+                f"I've synchronized the background page to **{target_path}** and applied the filter for the **{target_vehicle.brand} {target_vehicle.model}**.\n\n"
+                f"**Key Architecture & Specifications:**\n"
+                f"- **Powertrain & Performance:** {hp_str} • {target_vehicle.transmission.value} • {target_vehicle.fuel_type.value}\n"
+                f"- **Seating & Cabin:** {target_vehicle.seats}-Seater luxury cabin with high-grade ergonomics\n"
+                f"- **Odometer & Inspection:** {odo_str} • {target_vehicle.condition.upper()} (200-point safety certified)\n"
+                f"- **Price / Valuation:** {price_display}\n\n"
+                f"**Verdict:** The {target_vehicle.brand} {target_vehicle.model} delivers class-leading highway poise, safety ratings, and dependable daily drivability.\n\n"
+                f"Would you like to book or reserve this car? Just say *\"book this car\"* or click **Book / Reserve** on the card below."
+            )
+
+            surface_id = f"surf_inquiry_{uuid.uuid4().hex[:6]}"
+            card_id = f"rec_card_{target_vehicle.id}"
+            comps = [
+                A2UIComponent(
+                    id="inquiry_grid",
+                    component="Grid",
+                    properties={"columns": 1, "gap": "md"},
+                    children=[card_id]
+                ),
+                A2UIComponent(
+                    id=card_id,
+                    component="VehicleCard",
+                    properties={
+                        "vehicleId": target_vehicle.id,
+                        "brand": target_vehicle.brand,
+                        "model": target_vehicle.model,
+                        "year": target_vehicle.year,
+                        "category": target_vehicle.category.value,
+                        "transmission": target_vehicle.transmission.value,
+                        "fuelType": target_vehicle.fuel_type.value,
+                        "seats": target_vehicle.seats,
+                        "priceDisplay": price_display,
+                        "matchScore": 96.0,
+                        "positiveMatches": [f"{target_vehicle.seats}-Seater luxury cabin", f"{target_vehicle.fuel_type.value} dynamic poise", "200-point certified"],
+                        "tradeOffs": ["High marketplace demand in city"],
+                        "explanation": f"Excellent poise, highway stability, and comfort.",
+                        "imageUrl": target_vehicle.image_url,
+                        "actionId": "select_vehicle",
+                        "actionData": {"vehicle_id": target_vehicle.id}
+                    }
+                )
+            ]
+            await self.emit_event(session_id, "a2ui", {
+                "type": "createSurface",
+                "surfaceId": surface_id,
+                "components": [c.model_dump() for c in comps]
+            })
+
+            card = {
+                "cardType": "VEHICLE",
+                "id": target_vehicle.id,
+                "brand": target_vehicle.brand,
+                "model": target_vehicle.model,
+                "year": target_vehicle.year,
+                "category": target_vehicle.category.value,
+                "purchasePrice": target_vehicle.purchase_price,
+                "rentalPrice": target_vehicle.rental_price_per_day,
+                "status": "AVAILABLE",
+                "image": target_vehicle.image_url,
+                "actions": [
+                    {"label": "Book / Reserve", "action": "select_vehicle", "vehicleId": target_vehicle.id},
+                    {"label": "View Details", "path": f"/vehicles/{target_vehicle.id}"}
+                ]
+            }
+
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                a2ui_surfaces=[surface_id],
+                data={"messageType": "VEHICLE_INQUIRY", "cards": [card], "actions": actions}
+            )
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [surface_id],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions,
+                "cards": [card]
             }
 
         # -----------------------------------------------------------------

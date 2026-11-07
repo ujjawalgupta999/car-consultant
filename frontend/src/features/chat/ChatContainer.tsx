@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChatMessage, A2UIComponent } from '../../types';
 import { A2UIRenderer } from '../../a2ui/A2UIRenderer';
-import { MCPAppHost } from '../../mcp-apps/MCPAppHost';
+import { useConsultantStore } from '../../store/consultantStore';
 import { Bot, User, CheckCircle2, Ticket, ArrowUpRight, Car, Calendar, CreditCard, Tag } from 'lucide-react';
 
 /** Render a markdown string as JSX (supports **bold**, *italic*, ### headers, \n, `code`) */
@@ -124,79 +124,169 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                       card.cardType === 'OWNED_VEHICLE' ||
                       card.status === 'OWNED' ||
                       card.status === 'PURCHASED';
+                    const isRentedCard =
+                      card.cardType === 'RENTAL' ||
+                      card.status === 'RENTAL CONFIRMED' ||
+                      card.status === 'ACTIVE RENTAL';
+
+                    const priceStr = card.amount
+                      ? `₹${card.amount.toLocaleString('en-IN')}`
+                      : card.purchasePrice
+                      ? `₹${card.purchasePrice.toLocaleString('en-IN')}`
+                      : card.rentalPrice
+                      ? `₹${card.rentalPrice.toLocaleString('en-IN')}/day`
+                      : card.totalAmount
+                      ? `₹${card.totalAmount.toLocaleString('en-IN')}`
+                      : card.expectedPrice
+                      ? `₹${card.expectedPrice.toLocaleString('en-IN')}`
+                      : card.currentEstimatedValue
+                      ? `₹${card.currentEstimatedValue.toLocaleString('en-IN')}`
+                      : null;
+
+                    const titleStr = card.brand
+                      ? `${card.brand} ${card.model}`
+                      : (card.vehicleName || `Ref: ${card.orderId || card.id}`);
 
                     return (
                       <div
                         key={card.id || cIdx}
-                        className={`rounded-xl border transition p-2.5 flex flex-col justify-between text-xs shadow-sm ${
+                        className={`group relative overflow-hidden rounded-xl border bg-slate-900/90 shadow-md transition-all duration-300 hover:shadow-xl select-none ${
                           isOwnedCard
-                            ? 'border-emerald-500/70 bg-gradient-to-br from-slate-900 to-emerald-950/30 ring-1 ring-emerald-500/30'
-                            : 'border-surface-border/80 bg-background/80 hover:border-primary/50'
+                            ? 'border-emerald-500/80 ring-1 ring-emerald-500/40'
+                            : isRentedCard
+                            ? 'border-cyan-500/80 ring-1 ring-cyan-500/40'
+                            : 'border-surface-border hover:border-cyan-500/60'
                         }`}
                       >
-                        {card.image && (
-                          <div className="h-24 w-full rounded-lg overflow-hidden mb-2 bg-surface relative">
-                            <img src={card.image} alt={card.model || card.brand || 'Vehicle'} className="h-full w-full object-cover" />
-                            {isOwnedCard && (
-                              <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500 text-slate-950 shadow uppercase tracking-wider">
-                                ✓ OWNED
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-white text-xs truncate">
-                              {card.brand ? `${card.brand} ${card.model}` : (card.vehicleName || `Ref: ${card.orderId || card.id}`)}
-                            </span>
+                        {/* Minimal Default View */}
+                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-950">
+                          {card.image ? (
+                            <img
+                              src={card.image}
+                              alt={titleStr}
+                              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="h-full w-full bg-slate-900 flex items-center justify-center text-gray-500 text-xs">
+                              Vehicle Details
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+
+                          {/* Top Badges */}
+                          <div className="absolute top-2 left-2 right-2 flex items-center justify-between gap-1.5">
+                            <div className="flex items-center gap-1">
+                              {isOwnedCard ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-slate-950 text-[9px] font-black px-2 py-0.5 shadow uppercase tracking-wider">
+                                  ✓ OWNED
+                                </span>
+                              ) : isRentedCard ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500 text-slate-950 text-[9px] font-black px-2 py-0.5 shadow uppercase tracking-wider">
+                                  RENTED
+                                </span>
+                              ) : card.category ? (
+                                <span className="rounded-full bg-slate-900/80 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-gray-300 border border-white/10 uppercase tracking-wider">
+                                  {card.category}
+                                </span>
+                              ) : null}
+                            </div>
                             {card.status && (
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
-                                isOwnedCard
-                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                                  : 'bg-primary/20 text-cyan-300 border border-cyan-500/30'
-                              }`}>
+                              <span className="rounded-full bg-slate-900/80 backdrop-blur-md px-2 py-0.5 text-[9px] font-semibold text-gray-300 border border-white/10 uppercase">
                                 {card.status}
                               </span>
                             )}
                           </div>
 
-                          {card.currentEstimatedValue && (
-                            <p className="text-gray-400 text-[11px]">Est. Value: <span className="font-semibold text-emerald-400">₹{card.currentEstimatedValue.toLocaleString()}</span></p>
-                          )}
-                          {card.purchasePrice && (
-                            <p className="text-gray-400 text-[11px]">Paid: <span className="font-semibold text-emerald-400">₹{card.purchasePrice.toLocaleString()}</span></p>
-                          )}
-                          {card.totalAmount && (
-                            <p className="text-gray-400 text-[11px]">Rental: <span className="font-semibold text-cyan-300">₹{card.totalAmount.toLocaleString()}</span></p>
-                          )}
-                          {card.expectedPrice && (
-                            <p className="text-gray-400 text-[11px]">Asking: <span className="font-semibold text-emerald-400">₹{card.expectedPrice.toLocaleString()}</span></p>
-                          )}
-                          {card.amount && (
-                            <p className="text-gray-400 text-[11px]">Amount: <span className="font-semibold text-emerald-400">₹{card.amount.toLocaleString()}</span> ({card.paymentMethod})</p>
-                          )}
-                          {card.variant && (
-                            <p className="text-gray-400 text-[11px]">Variant: <span className="text-gray-200">{card.variant}</span> ({card.year})</p>
-                          )}
+                          {/* Bottom Default Info */}
+                          <div className="absolute bottom-2 left-2.5 right-2.5 flex items-end justify-between">
+                            <div className="min-w-0 pr-2">
+                              <h4 className="text-xs font-bold text-white truncate drop-shadow-md">
+                                {titleStr}
+                              </h4>
+                              {card.year && (
+                                <span className="text-[10px] text-gray-400 font-mono">{card.year}</span>
+                              )}
+                            </div>
+                            <div className="text-right shrink-0">
+                              {priceStr && (
+                                <div className="text-xs font-extrabold text-white drop-shadow-md">
+                                  {priceStr}
+                                </div>
+                              )}
+                              <span className="text-[8px] text-cyan-300 uppercase tracking-wider font-semibold">
+                                Hover for specs
+                              </span>
+                            </div>
+                          </div>
                         </div>
 
-                        {card.actions && Array.isArray(card.actions) && card.actions.length > 0 && (
-                          <div className="mt-2.5 flex items-center gap-1.5 border-t border-surface-border/40 pt-2">
-                            {card.actions.map((act: any, actIdx: number) => (
-                              <button
-                                key={actIdx}
-                                type="button"
-                                onClick={() => {
-                                  if (act.path) navigate(act.path);
-                                  else if (act.action === 'SELL_VEHICLE') navigate('/sell-car');
-                                }}
-                                className="flex-1 text-center py-1 px-2 rounded-md bg-surface-muted hover:bg-primary/30 text-[11px] font-medium text-gray-200 hover:text-white border border-surface-border transition cursor-pointer"
-                              >
-                                {act.label || 'View'}
-                              </button>
-                            ))}
+                        {/* Smooth Hover-Reveal Overlay */}
+                        <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md p-3 flex flex-col justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+                          <div>
+                            <div className="flex items-center justify-between pb-1.5 border-b border-surface-border/60">
+                              <div className="min-w-0 pr-2">
+                                <h4 className="text-xs font-bold text-white truncate">
+                                  {titleStr}
+                                </h4>
+                                {card.category && (
+                                  <p className="text-[9px] text-primary-accent uppercase tracking-wider">{card.category}</p>
+                                )}
+                              </div>
+                              {priceStr && (
+                                <span className="text-xs font-black text-cyan-400 shrink-0">{priceStr}</span>
+                              )}
+                            </div>
+
+                            <div className="space-y-1 my-2 text-[11px] text-gray-300">
+                              {card.variant && (
+                                <p><span className="text-gray-500">Variant:</span> {card.variant}</p>
+                              )}
+                              {card.currentEstimatedValue && (
+                                <p><span className="text-gray-500">Est. Value:</span> <span className="text-emerald-400 font-semibold">₹{card.currentEstimatedValue.toLocaleString()}</span></p>
+                              )}
+                              {card.purchasePrice && (
+                                <p><span className="text-gray-500">Paid:</span> <span className="text-emerald-400 font-semibold">₹{card.purchasePrice.toLocaleString()}</span></p>
+                              )}
+                              {card.totalAmount && (
+                                <p><span className="text-gray-500">Rental Total:</span> <span className="text-cyan-300 font-semibold">₹{card.totalAmount.toLocaleString()}</span></p>
+                              )}
+                              {card.expectedPrice && (
+                                <p><span className="text-gray-500">Asking Price:</span> <span className="text-emerald-400 font-semibold">₹{card.expectedPrice.toLocaleString()}</span></p>
+                              )}
+                              {card.paymentMethod && (
+                                <p><span className="text-gray-500">Method:</span> {card.paymentMethod}</p>
+                              )}
+                              {card.orderId && (
+                                <p><span className="text-gray-500">Ref:</span> <span className="font-mono text-cyan-300 text-[10px]">{card.orderId}</span></p>
+                              )}
+                            </div>
                           </div>
-                        )}
+
+                          {card.actions && Array.isArray(card.actions) && card.actions.length > 0 && (
+                            <div className="flex items-center gap-1.5 pt-1.5 border-t border-surface-border/60">
+                              {card.actions.map((act: any, actIdx: number) => (
+                                <button
+                                  key={actIdx}
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (act.path) navigate(act.path);
+                                    else if (act.action === 'SELL_VEHICLE') navigate('/sell-car');
+                                    else if (act.action === 'select_vehicle') {
+                                      useConsultantStore.getState().executeWebsiteAction(
+                                        { type: 'NAVIGATE_TO_PAGE', payload: { path: `/booking/${card.id || card.vehicleId}` } },
+                                        navigate
+                                      );
+                                    }
+                                  }}
+                                  className="flex-1 text-center py-1 px-2 rounded-md bg-gradient-to-r from-primary to-cyan-600 text-[10px] font-bold text-white shadow hover:opacity-90 transition cursor-pointer"
+                                >
+                                  {act.label || 'View'}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
@@ -245,17 +335,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         );
       })}
 
-      {/* Embedded MCP App inside conversation */}
-      {activeMcpApp && (
-        <div className="max-w-2xl ml-11">
-          <MCPAppHost
-            appName={activeMcpApp.name}
-            contextData={activeMcpApp.context}
-            onFinish={onMcpAppFinish}
-            onCancel={onMcpAppCancel}
-          />
-        </div>
-      )}
 
       {/* Confirmed Booking Voucher Card */}
       {confirmedBooking && (

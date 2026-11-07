@@ -164,6 +164,16 @@ export const RentCars: React.FC = () => {
             <p className="text-xs text-gray-400">
               Found <span className="font-bold text-white">{rentalListings.length}</span> eligible self-drive rental vehicles
             </p>
+            {filters.brand && (
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold">
+                Brand: {filters.brand}
+              </span>
+            )}
+            {filters.search && (
+              <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-400 text-xs font-semibold">
+                Search: {filters.search}
+              </span>
+            )}
             {filters.category && (
               <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-xs font-semibold">
                 Category: {filters.category}
@@ -185,11 +195,11 @@ export const RentCars: React.FC = () => {
               </span>
             )}
           </div>
-          {(filters.category || filters.seats || filters.fuelType || filters.transmission) && (
+          {(filters.category || filters.brand || filters.search || filters.seats || filters.fuelType || filters.transmission) && (
             <button
               onClick={() => {
                 setCategory('');
-                setFilters({ category: '', seats: undefined, fuelType: '', transmission: '' });
+                setFilters({ category: '', brand: '', search: '', seats: undefined, fuelType: '', transmission: '' });
               }}
               className="text-xs text-gray-400 hover:text-white underline cursor-pointer"
             >

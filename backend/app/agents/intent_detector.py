@@ -52,8 +52,8 @@ class UniversalIntentDetector:
         # If there is a pending question from the active workflow, e.g. IS_REGISTERED_IN_NAME
         # -------------------------------------------------------------
         affirmative_patterns = [
-            r"^(?:yes|yeah|yup|yep|sure|ok|okay|continue|okay\s*,\s*continue|go\s+ahead|proceed|confirm|confirm\s+transaction|do\s+it|complete|pay\s+now|affirmative|correct|done|yes\s+please|it\s+is|it's\s+in\s+my\s+name|in\s+my\s+name|registered\s+to\s+me)\b",
-            r"\b(okay\s+continue|yes\s+it\s+is|it\s+is\s+registered\s+in\s+my\s+name|confirm\s+and\s+pay|proceed\s+with\s+booking)\b"
+            r"^(?:yes|yeah|yup|yep|sure|ok|okay|continue|okay\s*,\s*continue|go\s+ahead|proceed|confirm|confirm\s+transaction|do\s+it|complete|pay|pay\s+it|pay\s+now|pay\s+this|affirmative|correct|done|yes\s+please|it\s+is|it's\s+in\s+my\s+name|in\s+my\s+name|registered\s+to\s+me)\b",
+            r"\b(okay\s+continue|yes\s+it\s+is|it\s+is\s+registered\s+in\s+my\s+name|confirm\s+and\s+pay|proceed\s+with\s+booking|proceed\s+to\s+payment|proceed\s+with\s+payment|pay\s+it|pay\s+now|pay\s+the\s+amount)\b"
         ]
         negative_patterns = [
             r"^(?:no|nope|nah|not\s+really|negative|not\s+in\s+my\s+name|someone\s+else|different\s+person)\b"
@@ -215,6 +215,34 @@ class UniversalIntentDetector:
                 else:
                     entities["intent"] = "rent"
                 return DetectedIntent(intent="BOOK_VEHICLE", entities=entities, is_intent_switch=is_switching, raw_query=user_text)
+
+        # -------------------------------------------------------------
+        # 5.8 Specific Vehicle Inquiry Intent (e.g. "Tell me about Tata Harrier", "Show me Fortuner")
+        # -------------------------------------------------------------
+        specific_models = [
+            "harrier", "fortuner", "creta", "thar", "scorpio", "nexon", "seltos",
+            "innova", "xuv700", "slavia", "virtus", "safari", "z4", "ioniq",
+            "swift", "city", "baleno", "verna", "amaze", "punch", "brezza",
+            "hyryder", "fronx", "taigun", "kushaq", "elevate", "miata", "compass",
+            "wrangler", "carnival", "carens", "glanza", "jimny", "tiago", "altroz"
+        ]
+        inquiry_triggers = [
+            r"\b(?:tell\s+me\s+about|what\s+about|how\s+is\s+the|details\s+of|specs\s+of|info\s+on|strengths\s+and|good\s+for\s+daily\s+driving|show\s+me\s+(?:the\s+)?)\b",
+            r"\b(?:about\s+the|about\s+this\s+car|about\s+this\s+vehicle)\b"
+        ]
+        matched_model = None
+        for sm in specific_models:
+            if re.search(r'\b' + sm + r'\b', target_text):
+                matched_model = sm
+                break
+
+        if matched_model and (any(re.search(t, target_text) for t in inquiry_triggers) or "tell me" in target_text or "what about" in target_text or "show me" in target_text):
+            entities = {"vehicle_name": matched_model}
+            if "rent" in target_text or "rental" in target_text or "hire" in target_text:
+                entities["intent"] = "rent"
+            else:
+                entities["intent"] = "buy"
+            return DetectedIntent(intent="VEHICLE_INQUIRY", entities=entities, is_intent_switch=is_switching, raw_query=user_text)
 
         # Helper for negated categories e.g. "sedan instead of suv", "not an suv"
         negated_cats = set()

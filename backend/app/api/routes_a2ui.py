@@ -29,41 +29,83 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
         session.workflow_state = WorkflowState.VEHICLE_SELECTED
         session.selected_vehicle_id = vehicle_id
 
-        # Trigger MCP App event
+        # Update session state
         raw_intent = session.preferences.intent
         intent_str = raw_intent.value.lower() if hasattr(raw_intent, "value") else str(raw_intent or "buy").lower()
         is_rent = (intent_str == "rent")
-        app_name = "booking"
+
+        order_id = f"BK-2026-{uuid.uuid4().hex[:6].upper()}" if is_rent else f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
+        daily_rate = vehicle.rental_price_per_day or 3500.0
+        amount = round(daily_rate * 5 * 1.18 + 5000.0) if is_rent else 25000.0
+        target_path = f"/booking/{vehicle.id}" if is_rent else f"/checkout/{order_id}"
+
+        prefill_payload = {
+            "customerName": "Alex Vance",
+            "customerEmail": "demo@auramotors.com",
+            "customerPhone": "+91 98765 43210",
+            "deliveryCity": session.preferences.location or vehicle.location or "Delhi NCR",
+            "pickupLocation": vehicle.location or "Delhi NCR",
+            "pickupDate": "2026-12-15",
+            "returnDate": "2026-12-20",
+            "durationDays": 5,
+            "paymentMethod": "upi",
+            "upiId": "alex@okaxis",
+            "vehicleId": vehicle.id,
+            "amount": amount,
+            "orderId": order_id
+        }
+
+        session.active_order_id = order_id
+        session.pending_question = "PROCEED_TO_PAYMENT"
+        session.workflow_data["pending_checkout"] = {
+            "order_id": order_id,
+            "vehicle_id": vehicle.id,
+            "amount": amount,
+            "is_rent": is_rent,
+            "payment_method": "UPI",
+            "upi_id": "alex@okaxis",
+            "customer_name": "Alex Vance"
+        }
+
+        actions = [
+            {"type": "NAVIGATE_TO_PAGE", "payload": {"path": target_path}},
+            {"type": "NAVIGATE", "payload": {"path": target_path}},
+            {"type": "PREFILL_CHECKOUT_FORM", "payload": prefill_payload}
+        ]
 
         action_msg = ChatMessage(
             id=f"msg_{uuid.uuid4().hex[:8]}",
             role=ChatRole.ASSISTANT,
             content=(
-                f"You selected the **{vehicle.year} {vehicle.brand} {vehicle.model}**! "
-                f"I've opened the interactive booking portal below inside this conversation."
+                f"I have selected the **{vehicle.year} {vehicle.brand} {vehicle.model}** and opened the reservation page in the background.\n\n"
+                f"I've filled in your verified details on the background booking form:\n"
+                f"- **Vehicle:** {vehicle.brand} {vehicle.model} ({vehicle.year})\n"
+                f"- **Location:** {prefill_payload['deliveryCity']}\n"
+                f"- **Dates:** Dec 15 to Dec 20, 2026 (5 Days)\n"
+                f"- **Customer:** Alex Vance (+91 98765 43210)\n"
+                f"- **Estimated Total:** ₹{amount:,.0f}\n\n"
+                f"All fields have been filled on the background page. Would you like me to proceed to payment?"
             ),
-            mcp_app="booking",
             data={
                 "vehicle": vehicle.model_dump(),
                 "intent": intent_str,
-                "preferences": session.preferences.model_dump()
+                "preferences": session.preferences.model_dump(),
+                "actions": actions
             }
         )
         session_repo.add_message(payload.session_id, action_msg)
         session_repo.save_session(session)
 
-        await orchestration_engine.emit_event(payload.session_id, "mcp_trigger", {
-            "app": "booking",
-            "uri": "ui://booking-form",
-            "vehicle_id": vehicle_id,
-            "intent": intent_str
-        })
+        for act in actions:
+            await orchestration_engine.emit_event(payload.session_id, "website_action", act)
 
         return {
             "status": "success",
             "workflow_state": session.workflow_state.value,
             "message": action_msg.model_dump(),
-            "selected_vehicle": vehicle.model_dump()
+            "selected_vehicle": vehicle.model_dump(),
+            "website_actions": actions,
+            "actions": actions
         }
 
     elif payload.action_id == "update_category":

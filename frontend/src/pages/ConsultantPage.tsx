@@ -118,16 +118,8 @@ export const ConsultantPage: React.FC = () => {
       if (res.workflow_state) setWorkflowState(res.workflow_state);
       if (res.message) addMessage(res.message);
 
-      if (actionId === 'select_vehicle' && res.selected_vehicle) {
-        setActiveMcpApp({
-          name: 'booking',
-          context: {
-            sessionId,
-            vehicle: res.selected_vehicle,
-            vehicleId: res.selected_vehicle.id,
-            intent: 'rent',
-          },
-        });
+      if (res.website_actions && Array.isArray(res.website_actions)) {
+        res.website_actions.forEach((act: any) => executeWebsiteAction(act, navigate));
       }
     } catch (err) {
       console.error(err);
