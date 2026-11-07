@@ -36,7 +36,7 @@ export const Home: React.FC = () => {
   const { vehicles, fetchVehicles, setFilters } = useVehicleStore();
   const { setIsOpen, addMessage } = useConsultantStore();
 
-  const [activeTab, setActiveTab] = useState<'rent' | 'buy'>('rent');
+  const [activeTab, setActiveTab] = useState<'buy'>('buy');
   const [searchLocation, setSearchLocation] = useState('Delhi');
   const [searchCategory, setSearchCategory] = useState('');
 
@@ -49,11 +49,11 @@ export const Home: React.FC = () => {
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setFilters({
-      intent: activeTab,
+      intent: 'buy',
       location: searchLocation,
       category: searchCategory,
     });
-    navigate(activeTab === 'rent' ? '/rent' : '/buy');
+    navigate('/buy');
   };
 
   const handleAskAIPrompt = (prompt: string) => {
@@ -99,36 +99,17 @@ export const Home: React.FC = () => {
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl mx-auto font-normal leading-relaxed">
-            Discover, rent, or purchase verified luxury and performance vehicles. 
+            Discover, inspect, and purchase verified luxury and performance vehicles. 
             Powered by our deep conversational AI consultant that dynamically curates your drive.
           </p>
 
-          {/* Tabbed Search Interface */}
+          {/* Search Interface */}
           <div className="mt-10 mx-auto max-w-3xl rounded-2xl border border-surface-border bg-surface/90 backdrop-blur-xl p-4 sm:p-5 shadow-2xl text-left">
-            {/* Rent vs Buy Tabs */}
-            <div className="flex gap-2 border-b border-surface-border/80 pb-3 mb-4">
-              <button
-                type="button"
-                onClick={() => setActiveTab('rent')}
-                className={`rounded-xl px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
-                  activeTab === 'rent'
-                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                🚗 Rent a Vehicle
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('buy')}
-                className={`rounded-xl px-5 py-2 text-xs font-bold uppercase tracking-wider transition-all ${
-                  activeTab === 'buy'
-                    ? 'bg-primary text-white shadow-lg shadow-primary/25'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
+            <div className="flex items-center justify-between border-b border-surface-border/80 pb-3 mb-4">
+              <span className="rounded-xl bg-primary text-white text-xs font-bold uppercase tracking-wider px-4 py-1.5 shadow-md">
                 🏷️ Buy a Vehicle
-              </button>
+              </span>
+              <span className="text-xs text-gray-400">Verified Inspection & Direct Ownership</span>
             </div>
 
             {/* Form Fields */}

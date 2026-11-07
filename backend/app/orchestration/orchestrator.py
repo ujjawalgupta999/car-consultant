@@ -407,6 +407,146 @@ class OrchestrationEngine:
                 }
 
         # -----------------------------------------------------------------
+        # AUTONOMOUS CONTROLLER: UPDATE_DETAILS
+        # "change my name to Sarah", "change phone to ...", "change payment to card",
+        # "change budget to 25 lakh", "change car to fortuner", "switch to sedan", etc.
+        # -----------------------------------------------------------------
+        if detected.intent == "UPDATE_DETAILS":
+            entities = detected.entities
+            updated_items = []
+
+            pending_checkout = session.workflow_data.get("pending_checkout", {})
+            order_id = pending_checkout.get("order_id") or session.active_order_id or f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
+            session.active_order_id = order_id
+
+            target_vehicle = None
+            if "vehicle_name" in entities:
+                v_name = entities["vehicle_name"].lower()
+                all_v = marketplace_repo.get_all_vehicles()
+                for v in all_v:
+                    if v_name in v.model.lower() or v_name in v.brand.lower():
+                        target_vehicle = v
+                        break
+                if target_vehicle:
+                    session.selected_vehicle_id = target_vehicle.id
+                    pending_checkout["vehicle_id"] = target_vehicle.id
+                    updated_items.append(f"**Vehicle:** {target_vehicle.brand} {target_vehicle.model}")
+
+            if not target_vehicle:
+                v_id = pending_checkout.get("vehicle_id") or session.selected_vehicle_id or "CAR-001"
+                target_vehicle = marketplace_repo.get_vehicle_by_id(v_id) or marketplace_repo.get_all_vehicles()[0]
+
+            if "name" in entities:
+                c_name = entities["name"].strip().title()
+                pending_checkout["customer_name"] = c_name
+                updated_items.append(f"**Buyer Name:** {c_name}")
+
+            if "phone" in entities:
+                c_phone = entities["phone"].strip()
+                pending_checkout["customer_phone"] = c_phone
+                updated_items.append(f"**Phone Number:** {c_phone}")
+
+            if "email" in entities:
+                c_email = entities["email"].strip().lower()
+                pending_checkout["customer_email"] = c_email
+                updated_items.append(f"**Email:** {c_email}")
+
+            if "city" in entities:
+                c_city = entities["city"].strip().title()
+                pending_checkout["delivery_city"] = c_city
+                session.preferences.location = c_city
+                updated_items.append(f"**Delivery City:** {c_city}")
+
+            if "payment_method" in entities:
+                p_method = entities["payment_method"].strip().upper()
+                pending_checkout["payment_method"] = p_method
+                updated_items.append(f"**Payment Method:** {p_method}")
+
+            if "upi_id" in entities:
+                u_id = entities["upi_id"].strip()
+                pending_checkout["upi_id"] = u_id
+                updated_items.append(f"**UPI ID:** {u_id}")
+
+            if "budget_max" in entities:
+                b_max = float(entities["budget_max"])
+                session.preferences.budget = Budget(amount=b_max, period=BudgetPeriod.TOTAL)
+                updated_items.append(f"**Budget:** ₹{b_max:,.0f} (₹{b_max/100000:.1f} Lakh)")
+
+            if "category" in entities:
+                cat = entities["category"]
+                session.preferences.category = cat
+                updated_items.append(f"**Category:** {cat}")
+
+            session.workflow_data["pending_checkout"] = pending_checkout
+            amount = pending_checkout.get("amount", 25000.0)
+
+            prefill_payload = {
+                "orderId": order_id,
+                "vehicleId": target_vehicle.id,
+                "amount": amount,
+                "customerName": pending_checkout.get("customer_name", "Alex Vance"),
+                "customerPhone": pending_checkout.get("customer_phone", "+91 98765 43210"),
+                "customerEmail": pending_checkout.get("customer_email", "demo@auramotors.com"),
+                "deliveryCity": pending_checkout.get("delivery_city", "Delhi NCR"),
+                "pickupLocation": pending_checkout.get("delivery_city", "Delhi NCR"),
+                "paymentMethod": pending_checkout.get("payment_method", "UPI").lower(),
+                "upiId": pending_checkout.get("upi_id", "alex@okaxis")
+            }
+
+            actions = [
+                {"type": "PREFILL_CHECKOUT_FORM", "payload": prefill_payload}
+            ]
+
+            filter_payload = {}
+            if "category" in entities:
+                filter_payload["category"] = entities["category"]
+            if "budget_max" in entities:
+                filter_payload["max_price"] = entities["budget_max"]
+            if "city" in entities:
+                filter_payload["location"] = entities["city"]
+            if "vehicle_name" in entities and target_vehicle:
+                filter_payload["search"] = target_vehicle.model
+                filter_payload["brand"] = target_vehicle.brand
+
+            if filter_payload:
+                actions.append({"type": "APPLY_FILTERS", "payload": filter_payload})
+
+            if session.pending_question in ["CONFIRM_TRANSACTION", "PROCEED_TO_PAYMENT"]:
+                prompt_action = "Would you like me to proceed with payment now? Say **'proceed'** or **'pay it'**."
+            else:
+                session.pending_question = "PROCEED_TO_PAYMENT"
+                prompt_action = "Would you like me to proceed to payment with these updated details? Say **'proceed'** or **'pay it'**."
+
+            summary_text = "\n".join(f"- {it}" for it in updated_items) if updated_items else "- Details updated successfully."
+            bot_text = (
+                f"✅ **I've updated your details:**\n\n"
+                f"{summary_text}\n\n"
+                f"I've synchronized the background page and checkout draft with your new details.\n\n"
+                f"{prompt_action}"
+            )
+
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                data={"messageType": "DETAILS_UPDATED", "actions": actions}
+            )
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions,
+                "cards": []
+            }
+
+        # -----------------------------------------------------------------
         # AUTONOMOUS CONTROLLER: BOOK_VEHICLE
         # "book this car", "buy this car", "book tata harrier", "book fortuner"
         # -----------------------------------------------------------------
@@ -426,10 +566,9 @@ class OrchestrationEngine:
             if not target_vehicle:
                 target_vehicle = all_v[0]
 
-            is_rent = detected.entities.get("intent") == "rent" and session.preferences.intent != IntentType.BUY
-            order_id = f"BK-2026-{uuid.uuid4().hex[:6].upper()}" if is_rent else f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
-            daily_rate = target_vehicle.rental_price_per_day or 3500.0
-            amount = round(daily_rate * 5 * 1.18 + 5000.0) if is_rent else 25000.0
+            is_rent = False
+            order_id = f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
+            amount = 25000.0  # Reservation token deposit
 
             prefill_payload = {
                 "customerName": "Alex Vance",
@@ -437,9 +576,6 @@ class OrchestrationEngine:
                 "customerPhone": "+91 98765 43210",
                 "deliveryCity": session.preferences.location or target_vehicle.location or "Delhi NCR",
                 "pickupLocation": target_vehicle.location or "Delhi NCR",
-                "pickupDate": "2026-12-15",
-                "returnDate": "2026-12-20",
-                "durationDays": 5,
                 "paymentMethod": "upi",
                 "upiId": "alex@okaxis",
                 "vehicleId": target_vehicle.id,
@@ -454,28 +590,33 @@ class OrchestrationEngine:
                 "order_id": order_id,
                 "vehicle_id": target_vehicle.id,
                 "amount": amount,
-                "is_rent": is_rent,
+                "is_rent": False,
                 "payment_method": "UPI",
                 "upi_id": "alex@okaxis",
-                "customer_name": "Alex Vance"
+                "customer_name": "Alex Vance",
+                "customer_phone": "+91 98765 43210",
+                "customer_email": "demo@auramotors.com",
+                "delivery_city": prefill_payload["deliveryCity"]
             }
 
             car_title = f"{target_vehicle.brand} {target_vehicle.model}"
-            target_path = f"/booking/{target_vehicle.id}" if is_rent else f"/checkout/{order_id}"
+            target_path = f"/checkout/{order_id}"
 
             bot_text = (
-                f"I have selected the **{car_title}** and opened the reservation page in the background.\n\n"
+                f"I have selected the **{car_title}** and opened the checkout portal in the background.\n\n"
                 f"I've filled in your verified details on the background booking form:\n"
                 f"- **Vehicle:** {car_title} ({target_vehicle.year})\n"
-                f"- **Pickup Location:** {prefill_payload['deliveryCity']}\n"
-                f"- **Rental Dates:** Dec 15 to Dec 20, 2026 (5 Days)\n"
-                f"- **Driver / Customer:** Alex Vance (+91 98765 43210)\n"
-                f"- **Estimated Total:** ₹{amount:,.0f}\n\n"
-                f"All fields have been filled on the background page. Would you like me to proceed to payment?"
+                f"- **Ex-Showroom Price:** ₹{target_vehicle.purchase_price:,.0f}\n"
+                f"- **Booking Token / Deposit:** ₹{amount:,.0f}\n"
+                f"- **Buyer Name:** {prefill_payload['customerName']}\n"
+                f"- **Contact:** {prefill_payload['customerPhone']}\n"
+                f"- **Delivery Location:** {prefill_payload['deliveryCity']}\n\n"
+                f"All fields have been filled on the background page. You can change any detail simply by typing it here (e.g. 'change name to...', 'use card').\n\n"
+                f"Would you like me to proceed to payment? Say **'proceed'** or **'pay it'**."
             )
 
             actions = [
-                {"type": "AUTO_CLICK_BOOK", "payload": {"vehicleId": target_vehicle.id, "orderId": order_id, "intent": "rent" if is_rent else "buy", "path": target_path}},
+                {"type": "AUTO_CLICK_BOOK", "payload": {"vehicleId": target_vehicle.id, "orderId": order_id, "intent": "buy", "path": target_path}},
                 {"type": "PREFILL_CHECKOUT_FORM", "payload": prefill_payload},
                 {"type": "NAVIGATE_TO_PAGE", "payload": {"path": target_path}},
                 {"type": "NAVIGATE", "payload": {"path": target_path}}
@@ -1265,7 +1406,7 @@ class OrchestrationEngine:
             }
 
         # -----------------------------------------------------------------
-        # SCENARIO F: RENT_VEHICLE (I want to rent a sedan in Delhi)
+        # SCENARIO F: RENT_VEHICLE (Aura Motors focuses on Purchases)
         # -----------------------------------------------------------------
         if detected.intent == "RENT_VEHICLE":
             from ..models.vehicle import VehicleCategory
@@ -1273,7 +1414,7 @@ class OrchestrationEngine:
                 user_content, session.preferences
             )
             session.preferences = updated_prefs
-            session.preferences.intent = IntentType.RENT
+            session.preferences.intent = IntentType.BUY
             if detected.entities.get("category"):
                 try:
                     session.preferences.category = VehicleCategory(detected.entities["category"])
@@ -1288,7 +1429,7 @@ class OrchestrationEngine:
 
             max_b = session.preferences.budget_max or (session.preferences.budget.amount if session.preferences.budget else None)
             matching_vehicles = marketplace_repo.search_vehicles(
-                intent="rent",
+                intent="buy",
                 category=cat_val,
                 location=loc,
                 seats=seats,
@@ -1298,18 +1439,18 @@ class OrchestrationEngine:
             session.search_results = [r.to_dict() for r in ranked]
 
             filter_payload = {
-                "intent": "rent",
+                "intent": "buy",
                 "category": cat_val or "",
                 "location": loc or "",
-                "maxPrice": max_b or 50000.0,
+                "maxPrice": max_b or 10000000.0,
                 "minPrice": 0
             }
             if seats:
                 filter_payload["seats"] = seats
 
             actions = [
-                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/rent"}},
-                {"type": "NAVIGATE", "payload": {"path": "/rent"}},
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/buy"}},
+                {"type": "NAVIGATE", "payload": {"path": "/buy"}},
                 {"type": "APPLY_FILTERS", "payload": filter_payload},
                 {"type": "FILTER_VEHICLES", "payload": filter_payload}
             ]
@@ -1322,11 +1463,12 @@ class OrchestrationEngine:
                     "model": r.vehicle.model,
                     "year": r.vehicle.year,
                     "category": r.vehicle.category.value,
-                    "totalAmount": r.vehicle.rental_price_per_day,
+                    "totalAmount": r.vehicle.purchase_price,
                     "status": "AVAILABLE",
                     "image": r.vehicle.image_url,
                     "actions": [
-                        {"label": "Book Now", "path": f"/vehicles/{r.vehicle.id}"}
+                        {"label": "Buy Now", "path": f"/checkout/ORD-2026-{r.vehicle.id[-3:]}"},
+                        {"label": "View Details", "path": f"/vehicles/{r.vehicle.id}"}
                     ]
                 }
                 for r in ranked
@@ -1335,8 +1477,9 @@ class OrchestrationEngine:
             cat_display = cat_val or (f"{seats}-seater" if seats else "vehicle")
             loc_display = f" in {loc}" if loc else ""
             bot_text = (
-                f"I've updated our rental fleet filters and navigated you to the **Rent a Car** portal for **{cat_display}s**{loc_display}.\n\n"
-                f"How many days would you like to rent (e.g., 3 days or 5 days), and what is your pickup date?"
+                f"Aura Motors is dedicated exclusively to verified pre-owned and new vehicle purchases.\n\n"
+                f"I've updated our fleet filters and navigated you to the **Buy a Car** portal for **{cat_display}s**{loc_display} with our available options.\n\n"
+                f"What is your target purchase budget or preferred brand?"
             )
 
             a2ui_surfaces = []
@@ -1483,19 +1626,14 @@ class OrchestrationEngine:
 
             followup_text = AdaptiveInterviewAgent.generate_followup_question(session.preferences)
 
-            # Determine appropriate website navigation route
-            is_rent = (session.preferences.intent == "RENT" or session.preferences.intent == IntentType.RENT)
-            if not is_rent:
-                target_path = "/buy"
-                portal_label = "Buy Cars"
-            else:
-                target_path = "/rent"
-                portal_label = "Rent a Car"
+            # Determine appropriate website navigation route (Buying by default)
+            target_path = "/buy"
+            portal_label = "Buy Cars"
 
-            # Build website filter payload with clear budget defaults to avoid cross-intent contamination
-            default_max = 50000000.0 if not is_rent else 50000.0
+            # Build website filter payload with clear budget defaults
+            default_max = 50000000.0
             filter_payload = {
-                "intent": "rent" if is_rent else "buy",
+                "intent": "buy",
                 "category": session.preferences.category.value if session.preferences.category else "",
                 "transmission": session.preferences.transmission if session.preferences.transmission not in ["any", None] else "",
                 "location": session.preferences.location or "",
@@ -1807,7 +1945,6 @@ class OrchestrationEngine:
                     "label": "What do you want to do?",
                     "options": [
                         {"label": "🛒 Buy a Car", "value": "BUY"},
-                        {"label": "🔑 Rent a Car", "value": "RENT"},
                         {"label": "💰 Sell My Car", "value": "SELL"},
                     ],
                     "actionId": "update_intent",

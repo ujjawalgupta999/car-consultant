@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useConsultantStore } from '../store/consultantStore';
+import { useVehicleStore } from '../store/vehicleStore';
 
 export const Checkout: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +26,7 @@ export const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { token, user } = useAuthStore();
   const { checkoutDraft, acknowledgeManualTransaction } = useConsultantStore();
+  const { vehicles, getVehicleById } = useVehicleStore();
 
   const passedBooking = location.state?.booking;
   const passedVehicle = location.state?.vehicle;
@@ -82,6 +84,21 @@ export const Checkout: React.FC = () => {
     if (checkoutDraft.cardCvv) setCardCvv(checkoutDraft.cardCvv);
     if (checkoutDraft.bankName) setBankName(checkoutDraft.bankName);
   }, [checkoutDraft]);
+
+  // Fallback vehicle resolution from vehicle store
+  useEffect(() => {
+    if (!vehicle && vehicles.length > 0) {
+      if (checkoutDraft?.vehicleId) {
+        const found = getVehicleById(checkoutDraft.vehicleId);
+        if (found) setVehicle(found);
+      } else if (id && (id.startsWith('CAR-') || id.startsWith('car-'))) {
+        const found = getVehicleById(id);
+        if (found) setVehicle(found);
+      } else {
+        setVehicle(vehicles[0]);
+      }
+    }
+  }, [vehicle, vehicles, checkoutDraft, id, getVehicleById]);
 
   // Fetch authoritative details if orderId is provided
   useEffect(() => {

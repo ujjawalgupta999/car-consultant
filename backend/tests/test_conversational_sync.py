@@ -77,3 +77,35 @@ async def test_two_step_conversational_booking_proceed_and_pay():
     showcase = r3["cards"][0]
     assert showcase["status"] in ["OWNED", "RENTAL CONFIRMED"]
 
+@pytest.mark.asyncio
+async def test_update_details_by_typing_in_chat():
+    session = session_repo.get_or_create_session("test_update_details_session")
+
+    # Start booking
+    r1 = await orchestration_engine.process_user_turn(session.session_id, "book tata harrier")
+    assert r1 is not None
+
+    # Change buyer name and phone by just typing in Aura AI
+    r2 = await orchestration_engine.process_user_turn(session.session_id, "change my name to Sarah Connor and phone to 9876543210")
+    assert r2 is not None
+
+    # Verify background prefill action emitted with updated details
+    actions2 = r2["website_actions"]
+    prefill2 = next((a for a in actions2 if a["type"] == "PREFILL_CHECKOUT_FORM"), None)
+    assert prefill2 is not None
+    assert prefill2["payload"]["customerName"] == "Sarah Connor"
+    assert prefill2["payload"]["customerPhone"] == "9876543210"
+
+    # Verify bot response confirms the change
+    msg_content = r2["message"]["content"]
+    assert "Sarah Connor" in msg_content
+    assert "9876543210" in msg_content
+
+    # Change payment method by typing
+    r3 = await orchestration_engine.process_user_turn(session.session_id, "change payment method to card")
+    actions3 = r3["website_actions"]
+    prefill3 = next((a for a in actions3 if a["type"] == "PREFILL_CHECKOUT_FORM"), None)
+    assert prefill3 is not None
+    assert prefill3["payload"]["paymentMethod"] == "card"
+
+

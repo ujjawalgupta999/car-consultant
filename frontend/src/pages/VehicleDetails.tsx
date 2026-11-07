@@ -21,7 +21,8 @@ import {
   CheckCircle2,
   ArrowRight,
   Zap,
-  Tag
+  Tag,
+  CreditCard
 } from 'lucide-react';
 
 export const VehicleDetails: React.FC = () => {
@@ -74,36 +75,21 @@ export const VehicleDetails: React.FC = () => {
     addMessage({
       id: `msg_details_q_${Date.now()}`,
       role: 'user',
-      content: `Give me an honest review of the ${vehicle.year} ${vehicle.brand} ${vehicle.model}. What are the trade-offs and is the ₹${vehicle.rental_price_per_day}/day rental rate worth it?`,
+      content: `I want to buy the ${vehicle.year} ${vehicle.brand} ${vehicle.model}. Can you help me review the car and reserve it?`,
       timestamp: new Date().toISOString(),
     });
     setIsOpen(true);
   };
 
-  const handleStartBookingMCP = () => {
-    setActiveMcpApp({
-      name: 'booking',
-      context: {
-        sessionId: 'sess_default',
-        vehicle: vehicle,
-        vehicleId: vehicle.id,
-        intent: 'rent',
-      },
-    });
-    setIsOpen(true);
-  };
-
-  const handleStartPurchaseMCP = () => {
-    setActiveMcpApp({
-      name: 'booking',
-      context: {
-        sessionId: 'sess_default',
-        vehicle: vehicle,
-        vehicleId: vehicle.id,
+  const handleManualBuy = () => {
+    const orderId = `ORD-2026-${Date.now().toString().slice(-6)}`;
+    navigate(`/checkout/${orderId}`, {
+      state: {
+        vehicle,
         intent: 'buy',
+        amount: 25000,
       },
     });
-    setIsOpen(true);
   };
 
   const similarCars = vehicles.filter((v) => v.category === vehicle.category && v.id !== vehicle.id).slice(0, 3);
@@ -136,11 +122,6 @@ export const VehicleDetails: React.FC = () => {
                 {isPurchased && (
                   <span className="rounded-full bg-emerald-500 text-slate-950 px-3 py-1 text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
                     <ShieldCheck className="w-3.5 h-3.5" /> ✓ PURCHASED BY YOU
-                  </span>
-                )}
-                {isRented && !isPurchased && (
-                  <span className="rounded-full bg-cyan-500 text-slate-950 px-3 py-1 text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
-                    <ShieldCheck className="w-3.5 h-3.5" /> ✓ CURRENTLY RENTED
                   </span>
                 )}
                 <span className="rounded-full bg-background/80 backdrop-blur-md px-3 py-1 text-xs font-bold text-white border border-white/10 uppercase tracking-wider">
@@ -196,33 +177,37 @@ export const VehicleDetails: React.FC = () => {
                 <span>Stationed in {vehicle.location} • Verified Clean Inspection</span>
               </p>
 
-              {/* Dual Rates Breakdown */}
+              {/* Purchase Pricing Breakdown */}
               <div className="space-y-4 rounded-xl bg-background/60 border border-surface-border p-4 mb-6">
                 <div>
                   <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
-                    Self-Drive Rental Rate
+                    Ex-Showroom Purchase Price
                   </div>
-                  <div className="text-2xl font-black text-cyan-400">
-                    ₹{vehicle.rental_price_per_day.toLocaleString('en-IN')}{' '}
-                    <span className="text-xs text-gray-400 font-normal">/ day (GST incl)</span>
+                  <div className="text-3xl font-black text-white">
+                    ₹{vehicle.purchase_price.toLocaleString('en-IN')}
+                  </div>
+                  <div className="text-[11px] text-emerald-400 mt-1">
+                    Estimated EMI starting at ₹{Math.round((vehicle.purchase_price * 0.8 * 0.095) / 12).toLocaleString('en-IN')}/mo
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-surface-border/60">
-                  <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
-                    Ex-Showroom Purchase Price
+                <div className="pt-3 border-t border-surface-border/60 flex items-center justify-between">
+                  <div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                      Online Booking Token
+                    </div>
+                    <div className="text-sm font-bold text-cyan-400">
+                      ₹25,000 (Adjustable & Fully Refundable)
+                    </div>
                   </div>
-                  <div className="text-2xl font-black text-white">
-                    ₹{vehicle.purchase_price.toLocaleString('en-IN')}
-                  </div>
-                  <div className="text-[11px] text-emerald-400 mt-0.5">
-                    Estimated EMI starting at ₹{Math.round((vehicle.purchase_price * 0.8 * 0.095) / 12).toLocaleString('en-IN')}/mo
-                  </div>
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                    Instant Lock
+                  </span>
                 </div>
               </div>
 
               {/* Ownership Status Alert */}
-              {isPurchased ? (
+              {isPurchased && (
                 <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between text-xs text-emerald-300 font-semibold mb-4">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -232,36 +217,27 @@ export const VehicleDetails: React.FC = () => {
                     View in Garage
                   </Link>
                 </div>
-              ) : isRented ? (
-                <div className="p-3.5 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-between text-xs text-cyan-300 font-semibold mb-4">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                    <span>Active rental booking on record</span>
-                  </div>
-                  <Link to="/dashboard/rentals" className="text-white bg-cyan-600 px-3 py-1 rounded-lg hover:bg-cyan-500 transition text-[11px] font-bold">
-                    View Rental Pass
-                  </Link>
-                </div>
-              ) : null}
+              )}
 
               {/* Action Buttons */}
               <div className="space-y-3">
                 <button
                   type="button"
-                  onClick={handleStartBookingMCP}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-cyan-500 py-3 text-xs font-bold text-white uppercase tracking-wider shadow-lg hover:opacity-95 transition-all active:scale-95"
+                  onClick={handleManualBuy}
+                  data-action="buy-now-manual"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3.5 text-xs font-black text-slate-950 uppercase tracking-wider shadow-lg hover:brightness-110 transition-all active:scale-95"
                 >
-                  <Zap className="w-4 h-4" />
-                  <span>Rent This Car (MCP App)</span>
+                  <CreditCard className="w-4 h-4" />
+                  <span>Buy Now — Manual Checkout</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={handleStartPurchaseMCP}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-surface-muted hover:bg-surface-hover border border-surface-border py-3 text-xs font-bold text-white uppercase tracking-wider transition-all"
+                  onClick={handleAskAIAboutCar}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 py-3 text-xs font-bold text-cyan-300 uppercase tracking-wider transition-all"
                 >
-                  <Tag className="w-4 h-4" />
-                  <span>Reserve to Purchase (₹25k Token)</span>
+                  <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <span>Buy with Aura AI Consultant</span>
                 </button>
 
                 <div className="flex gap-2 pt-2">

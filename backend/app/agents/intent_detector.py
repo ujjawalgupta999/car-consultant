@@ -51,6 +51,140 @@ class UniversalIntentDetector:
         # 1. Check Contextual Affirmative / Negative Answers
         # If there is a pending question from the active workflow, e.g. IS_REGISTERED_IN_NAME
         # -------------------------------------------------------------
+        # 1.4 Dynamic Detail Update Intent ("change name to ...", "change phone to ...", "change payment to ...", etc.)
+        # Check this BEFORE answering pending questions so users can update details at any step!
+        has_change_trigger = bool(re.search(
+            r"\b(?:change|update|edit|set|modify|switch|use|make|replace|put)\b",
+            text_lower
+        ))
+        has_field_indicator = bool(re.search(
+            r"\b(?:name|phone|mobile|number|email|city|location|residence|budget|payment(?:\s+method)?|car|vehicle|category|upi(?:\s*id)?)\b",
+            text_lower
+        )) or bool(re.search(r"\b(?:my\s+name\s+is|my\s+phone\s+is|my\s+email\s+is|my\s+city\s+is|my\s+budget\s+is)\b", text_lower))
+
+        if (has_change_trigger and has_field_indicator) or ("my name is" in text_lower or "my phone is" in text_lower or "my email is" in text_lower or "use card" in text_lower or "use upi" in text_lower or "switch to" in text_lower):
+            update_entities = {}
+
+            # Name
+            name_m = re.search(r"\b(?:change|update|set|make)\s+(?:my\s+)?name\s+(?:to\s+|as\s+|:\s*)([A-Za-z\s]{2,30})\b", text_lower)
+            if not name_m:
+                name_m = re.search(r"\bmy\s+name\s+is\s+([A-Za-z\s]{2,30})\b", text_lower)
+            if name_m:
+                val = name_m.group(1).strip()
+                val = re.split(r"\b(?:and|with|phone|email|city|budget|car)\b", val)[0].strip()
+                if val:
+                    update_entities["name"] = val.title()
+
+            # Phone
+            phone_m = re.search(r"\b(?:change|update|set|make)\s+(?:my\s+)?(?:phone|mobile|contact)(?:\s+number)?\s+(?:to\s+|as\s+|:\s*)([+\d\s-]{10,16})", text_lower)
+            if not phone_m:
+                phone_m = re.search(r"\b(?:my\s+)?(?:phone|mobile)(?:\s+number)?\s+(?:is|:)\s*([+\d\s-]{10,16})", text_lower)
+            if not phone_m and ("phone" in text_lower or "mobile" in text_lower):
+                phone_m = re.search(r"(?:\+?91[\s-]?)?[6-9]\d{9}", text_lower)
+            if phone_m:
+                update_entities["phone"] = phone_m.group(0).strip()
+
+            # Email
+            email_m = re.search(r"\b(?:change|update|set|make)\s+(?:my\s+)?email\s+(?:to\s+|as\s+|:\s*)([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", text_lower)
+            if not email_m:
+                email_m = re.search(r"\b(?:my\s+)?email\s+(?:is|:)\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})", text_lower)
+            if not email_m:
+                email_m = re.search(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}", text_lower)
+            if email_m:
+                update_entities["email"] = email_m.group(0).strip()
+
+            # City / Location
+            city_m = re.search(r"\b(?:change|update|set|make)\s+(?:my\s+)?(?:city|location|delivery\s+city|address)\s+(?:to\s+|as\s+|:\s*)([A-Za-z\s]{2,20})\b", text_lower)
+            if city_m:
+                c_val = city_m.group(1).strip()
+                c_val = re.split(r"\b(?:and|with|phone|email|budget)\b", c_val)[0].strip()
+                if c_val:
+                    update_entities["city"] = c_val.title()
+            else:
+                for c in ["delhi", "mumbai", "bangalore", "hyderabad", "pune", "chennai", "kolkata", "ahmedabad", "jaipur", "goa", "noida", "gurgaon"]:
+                    if f"to {c}" in text_lower or f"in {c}" in text_lower or (f"change city" in text_lower and c in text_lower):
+                        update_entities["city"] = c.title()
+                        break
+
+            # Payment Method
+            pay_m = re.search(r"\b(?:change|update|set|switch)\s+(?:the\s+)?payment(?:\s+method)?\s+(?:to\s+|as\s+|:\s*)(card|credit\s*card|debit\s*card|upi|net\s*banking|netbanking)\b", text_lower)
+            if not pay_m:
+                pay_m = re.search(r"\buse\s+(card|credit\s*card|debit\s*card|upi|net\s*banking|netbanking)(?:\s+instead|\s+for\s+payment)?\b", text_lower)
+            if not pay_m:
+                pay_m = re.search(r"\bpay\s+(?:with|via|using)\s+(card|credit\s*card|debit\s*card|upi|net\s*banking|netbanking)\b", text_lower)
+            if pay_m:
+                pm_val = pay_m.group(1).strip().lower()
+                if "card" in pm_val:
+                    update_entities["payment_method"] = "card"
+                elif "net" in pm_val:
+                    update_entities["payment_method"] = "netbanking"
+                else:
+                    update_entities["payment_method"] = "upi"
+
+            # UPI ID
+            upi_m = re.search(r"\b(?:change|update|set|make)\s+(?:my\s+)?upi(?:\s*id)?\s+(?:to\s+|as\s+|:\s*)([a-zA-Z0-9.\-_]+@[a-zA-Z0-9]+)\b", text_lower)
+            if upi_m:
+                update_entities["upi_id"] = upi_m.group(1).strip()
+
+            # Budget
+            budget_m = re.search(r"\b(?:change|update|set|increase|decrease|make)\s+(?:my\s+)?budget\s+(?:to\s+|as\s+|:\s*)(\d+(?:\.\d+)?)\s*(?:lakh|lacs?|l\b|crore|cr\b|k\b)?", text_lower)
+            if not budget_m:
+                budget_m = re.search(r"\bbudget\s*(?:is|to|:)\s*(\d+(?:\.\d+)?)\s*(?:lakh|lacs?|l\b|crore|cr\b|k\b)?", text_lower)
+            if budget_m:
+                val = float(budget_m.group(1))
+                if "crore" in text_lower or "cr" in text_lower:
+                    val *= 10000000.0
+                elif val < 500:
+                    val *= 100000.0
+                update_entities["budget_max"] = val
+
+            # Car / Vehicle
+            car_m = re.search(r"\b(?:change|update|switch|swap)\s+(?:the\s+)?(?:car|vehicle)\s+to\s+([A-Za-z0-9\s]+)\b", text_lower)
+            if not car_m:
+                car_m = re.search(r"\bswitch\s+to\s+([A-Za-z0-9\s]+)\b", text_lower)
+            if not car_m:
+                car_m = re.search(r"\bchoose\s+(?:the\s+)?([A-Za-z0-9\s]+)\s+instead\b", text_lower)
+            
+            matched_car = None
+            if car_m:
+                c_cand = car_m.group(1).strip()
+                c_cand = re.split(r"\b(?:and|with|payment|budget)\b", c_cand)[0].strip()
+                matched_car = c_cand
+
+            for sm in [
+                "harrier", "fortuner", "creta", "thar", "scorpio", "nexon", "seltos",
+                "innova", "xuv700", "slavia", "virtus", "safari", "z4", "ioniq",
+                "swift", "baleno", "verna", "amaze", "punch", "brezza"
+            ]:
+                if f"switch to {sm}" in text_lower or f"change car to {sm}" in text_lower or f"change to {sm}" in text_lower or f"change vehicle to {sm}" in text_lower or f"choose {sm}" in text_lower:
+                    matched_car = sm
+                    break
+
+            if "honda city" in text_lower or "car to city" in text_lower:
+                matched_car = "city"
+
+            if matched_car:
+                update_entities["vehicle_name"] = matched_car
+
+            # Category
+            cat_m = re.search(r"\b(?:change|update|switch)\s+(?:the\s+)?category\s+to\s+(suv|sedan|hatchback|convertible|electric|ev)\b", text_lower)
+            if not cat_m:
+                cat_m = re.search(r"\bswitch\s+to\s+(suv|sedan|hatchback|convertible|electric|ev)\b", text_lower)
+            if cat_m:
+                c_cat = cat_m.group(1).strip().lower()
+                if "suv" in c_cat: update_entities["category"] = "SUV"
+                elif "sedan" in c_cat: update_entities["category"] = "Sedan"
+                elif "hatchback" in c_cat: update_entities["category"] = "Hatchback"
+                elif "convertible" in c_cat: update_entities["category"] = "Convertible"
+                elif "electric" in c_cat or "ev" in c_cat: update_entities["category"] = "Electric Vehicle"
+
+            if update_entities:
+                return DetectedIntent(
+                    intent="UPDATE_DETAILS",
+                    entities=update_entities,
+                    raw_query=user_text
+                )
+
         affirmative_patterns = [
             r"^(?:yes|yeah|yup|yep|sure|ok|okay|continue|okay\s*,\s*continue|go\s+ahead|proceed|confirm|confirm\s+transaction|do\s+it|complete|pay|pay\s+it|pay\s+now|pay\s+this|affirmative|correct|done|yes\s+please|it\s+is|it's\s+in\s+my\s+name|in\s+my\s+name|registered\s+to\s+me)\b",
             r"\b(okay\s+continue|yes\s+it\s+is|it\s+is\s+registered\s+in\s+my\s+name|confirm\s+and\s+pay|proceed\s+with\s+booking|proceed\s+to\s+payment|proceed\s+with\s+payment|pay\s+it|pay\s+now|pay\s+the\s+amount)\b"
@@ -200,7 +334,7 @@ class UniversalIntentDetector:
         book_patterns = [
             r"^(?:please\s+)?(?:book|reserve)\s+(?:this\s+car|the\s+car|this\s+vehicle|this|now)\b",
             r"^(?:please\s+)?(?:buy|purchase)\s+(?:this\s+car|this\s+vehicle|this\s+one|this)\b",
-            r"\bbook\s+(?:the\s+)?(harrier|fortuner|creta|city|thar|scorpio|nexon|seltos|innova|xuv700|slavia|virtus|safari|z4|ioniq\s*5|nexon\s*ev)\b",
+            r"\b(?:book|reserve|buy|purchase)\s+(?:the\s+)?(?:tata\s+|hyundai\s+|toyota\s+|mahindra\s+|honda\s+|bmw\s+|audi\s+|mercedes\s+)?(harrier|fortuner|creta|city|thar|scorpio|nexon|seltos|innova|xuv700|slavia|virtus|safari|z4|ioniq\s*5|nexon\s*ev)\b",
             r"^(?:i\s+want\s+to\s+|ready\s+to\s+)?book\s+(?:this|now)\b",
             r"^(?:i\s+want\s+to\s+)?buy\s+this\s+car\b"
         ]
@@ -210,10 +344,7 @@ class UniversalIntentDetector:
                 entities = {}
                 if bm.groups() and bm.group(1):
                     entities["vehicle_name"] = bm.group(1).strip()
-                if "buy" in target_text or "purchase" in target_text:
-                    entities["intent"] = "buy"
-                else:
-                    entities["intent"] = "rent"
+                entities["intent"] = "buy"
                 return DetectedIntent(intent="BOOK_VEHICLE", entities=entities, is_intent_switch=is_switching, raw_query=user_text)
 
         # -------------------------------------------------------------
@@ -237,11 +368,7 @@ class UniversalIntentDetector:
                 break
 
         if matched_model and (any(re.search(t, target_text) for t in inquiry_triggers) or "tell me" in target_text or "what about" in target_text or "show me" in target_text):
-            entities = {"vehicle_name": matched_model}
-            if "rent" in target_text or "rental" in target_text or "hire" in target_text:
-                entities["intent"] = "rent"
-            else:
-                entities["intent"] = "buy"
+            entities = {"vehicle_name": matched_model, "intent": "buy"}
             return DetectedIntent(intent="VEHICLE_INQUIRY", entities=entities, is_intent_switch=is_switching, raw_query=user_text)
 
         # Helper for negated categories e.g. "sedan instead of suv", "not an suv"

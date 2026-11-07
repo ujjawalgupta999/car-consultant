@@ -20,7 +20,7 @@ class SessionRepository:
     def get_or_create_session(self, session_id: Optional[str] = None) -> Session:
         if not session_id or session_id not in self._sessions:
             sid = session_id or f"sess_{uuid.uuid4().hex[:8]}"
-            prefs = UserPreferences(session_id=sid, intent=IntentType.RENT)
+            prefs = UserPreferences(session_id=sid, intent=IntentType.BUY)
             session = Session(
                 session_id=sid,
                 workflow_state=WorkflowState.NEW,

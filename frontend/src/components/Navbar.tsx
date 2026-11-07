@@ -15,7 +15,6 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Explore Cars', path: '/explore' },
-    { name: 'Rent a Car', path: '/rent' },
     { name: 'Buy a Car', path: '/buy' },
     { name: 'Sell a Car', path: '/sell-car' },
     { name: 'Compare', path: '/compare', badge: comparedVehicles.length },
@@ -132,13 +131,6 @@ export const Navbar: React.FC = () => {
                 >
                   <ShoppingBag className="w-3.5 h-3.5 text-blue-400" />
                   <span>My Purchases</span>
-                </Link>
-                <Link
-                  to="/dashboard/rentals"
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-muted hover:text-white transition"
-                >
-                  <Car className="w-3.5 h-3.5 text-amber-400" />
-                  <span>My Rentals</span>
                 </Link>
               </div>
             </div>

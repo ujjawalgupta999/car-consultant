@@ -29,15 +29,11 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
         session.workflow_state = WorkflowState.VEHICLE_SELECTED
         session.selected_vehicle_id = vehicle_id
 
-        # Update session state
-        raw_intent = session.preferences.intent
-        intent_str = raw_intent.value.lower() if hasattr(raw_intent, "value") else str(raw_intent or "buy").lower()
-        is_rent = (intent_str == "rent")
-
-        order_id = f"BK-2026-{uuid.uuid4().hex[:6].upper()}" if is_rent else f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
-        daily_rate = vehicle.rental_price_per_day or 3500.0
-        amount = round(daily_rate * 5 * 1.18 + 5000.0) if is_rent else 25000.0
-        target_path = f"/booking/{vehicle.id}" if is_rent else f"/checkout/{order_id}"
+        # Update session state for Purchase
+        is_rent = False
+        order_id = f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
+        amount = 25000.0
+        target_path = f"/checkout/{order_id}"
 
         prefill_payload = {
             "customerName": "Alex Vance",
@@ -77,18 +73,19 @@ async def handle_a2ui_action(payload: A2UIActionPayload):
             id=f"msg_{uuid.uuid4().hex[:8]}",
             role=ChatRole.ASSISTANT,
             content=(
-                f"I have selected the **{vehicle.year} {vehicle.brand} {vehicle.model}** and opened the reservation page in the background.\n\n"
+                f"I have selected the **{vehicle.year} {vehicle.brand} {vehicle.model}** and opened the checkout portal in the background.\n\n"
                 f"I've filled in your verified details on the background booking form:\n"
                 f"- **Vehicle:** {vehicle.brand} {vehicle.model} ({vehicle.year})\n"
-                f"- **Location:** {prefill_payload['deliveryCity']}\n"
-                f"- **Dates:** Dec 15 to Dec 20, 2026 (5 Days)\n"
-                f"- **Customer:** Alex Vance (+91 98765 43210)\n"
-                f"- **Estimated Total:** ₹{amount:,.0f}\n\n"
-                f"All fields have been filled on the background page. Would you like me to proceed to payment?"
+                f"- **Ex-Showroom Price:** ₹{vehicle.purchase_price:,.0f}\n"
+                f"- **Booking Token / Deposit:** ₹{amount:,.0f}\n"
+                f"- **Buyer Name:** {prefill_payload['customerName']}\n"
+                f"- **Delivery Location:** {prefill_payload['deliveryCity']}\n\n"
+                f"All fields have been filled on the background page. You can change any detail simply by typing it here (e.g. 'change name to...', 'use card').\n\n"
+                f"Would you like me to proceed to payment? Say **'proceed'** or **'pay it'**."
             ),
             data={
                 "vehicle": vehicle.model_dump(),
-                "intent": intent_str,
+                "intent": "buy",
                 "preferences": session.preferences.model_dump(),
                 "actions": actions
             }

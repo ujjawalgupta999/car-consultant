@@ -5,7 +5,7 @@ import { useComparisonStore } from '../store/comparisonStore';
 import { useAuthStore } from '../store/authStore';
 import { useConsultantStore } from '../store/consultantStore';
 import { useVehicleStore } from '../store/vehicleStore';
-import { Gauge, Fuel, Users, Star, Heart, Scale, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Gauge, Fuel, Users, Star, Heart, Scale, Sparkles, ArrowRight, ShieldCheck, CreditCard } from 'lucide-react';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
@@ -51,6 +51,19 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
       timestamp: new Date().toISOString(),
     });
     setIsOpen(true);
+  };
+
+  const handleManualBuy = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const orderId = `ORD-2026-${Date.now().toString().slice(-6)}`;
+    navigate(`/checkout/${orderId}`, {
+      state: {
+        vehicle,
+        intent: 'buy',
+        amount: 25000,
+      },
+    });
   };
 
   return (
@@ -153,23 +166,19 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
           <div className="flex items-end justify-between mb-3">
             <div>
               <div className="text-[10px] text-gray-400 uppercase tracking-wider">
-                {priorityIntent === 'buy' ? 'Ex-Showroom Price' : 'Daily Rental'}
+                Ex-Showroom Price
               </div>
               <div className="text-lg font-black text-white">
-                {priorityIntent === 'buy'
-                  ? `₹${(vehicle.purchase_price).toLocaleString('en-IN')}`
-                  : `₹${(vehicle.rental_price_per_day).toLocaleString('en-IN')} / day`}
+                ₹{vehicle.purchase_price.toLocaleString('en-IN')}
               </div>
             </div>
 
-            {priorityIntent === 'all' && (
-              <div className="text-right">
-                <div className="text-[10px] text-gray-400 uppercase tracking-wider">Buy At</div>
-                <div className="text-xs font-bold text-gray-200">
-                  ₹{(vehicle.purchase_price / 100000).toFixed(1)} Lakh
-                </div>
+            <div className="text-right">
+              <div className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">Deposit</div>
+              <div className="text-xs font-bold text-gray-200">
+                ₹25,000 to book
               </div>
-            )}
+            </div>
           </div>
 
           {/* Action Row */}
@@ -182,23 +191,27 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
                 <span>View in My Garage</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
-            ) : isRented ? (
-              <Link
-                to="/dashboard/rentals"
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 border border-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 transition-all shadow-md"
-              >
-                <span>View Rental Pass</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
             ) : (
-              <Link
-                to={`/vehicles/${vehicle.id}`}
-                data-action="book-button"
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-surface-muted hover:bg-surface-hover border border-surface-border px-3 py-2 text-xs font-semibold text-white transition-all"
-              >
-                <span>Details</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <>
+                <button
+                  type="button"
+                  onClick={handleManualBuy}
+                  data-action="buy-now-button"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-3 py-2 text-xs transition-all shadow-md active:scale-95"
+                >
+                  <CreditCard className="w-3.5 h-3.5" />
+                  <span>Buy Now</span>
+                </button>
+
+                <Link
+                  to={`/vehicles/${vehicle.id}`}
+                  data-action="book-button"
+                  className="flex items-center justify-center gap-1 rounded-xl bg-surface-muted hover:bg-surface-hover border border-surface-border px-3 py-2 text-xs font-semibold text-white transition-all"
+                >
+                  <span>Details</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </>
             )}
 
             <button

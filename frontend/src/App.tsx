@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { FloatingConsultantDrawer } from './components/FloatingConsultantDrawer';
@@ -75,7 +75,7 @@ export const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<ExploreCars />} />
-            <Route path="/rent" element={<RentCars />} />
+            <Route path="/rent" element={<Navigate to="/buy" replace />} />
             <Route path="/buy" element={<BuyCars />} />
             <Route path="/sell-car" element={<SellCarPage />} />
             <Route path="/vehicles/:id" element={<VehicleDetails />} />
@@ -92,7 +92,7 @@ export const App: React.FC = () => {
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<OverviewPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
-              <Route path="rentals" element={<RentalsPage />} />
+              <Route path="rentals" element={<Navigate to="/dashboard/purchases" replace />} />
               <Route path="payments" element={<PaymentsPage />} />
               <Route path="vehicles" element={<VehiclesPage />} />
               <Route path="listings" element={<ListingsPage />} />
