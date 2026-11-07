@@ -32,6 +32,9 @@ interface ConsultantStore {
   setActiveContext: (ctx: { currentRoute: string; vehicleId?: string; vehicleName?: string }) => void;
   sellDraft: any | null;
   setSellDraft: (draft: any) => void;
+  checkoutDraft: Record<string, any> | null;
+  setCheckoutDraft: (draft: Record<string, any> | null) => void;
+  acknowledgeManualTransaction: (transaction: { orderId: string; brand?: string; model?: string; amount?: number; type?: 'RENT' | 'BUY' }) => void;
   executeWebsiteAction: (action: WebsiteAction, navigate?: (path: string) => void) => void;
   resetConversation: () => void;
 }
@@ -73,6 +76,30 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
   setActiveContext: (ctx) => set({ activeContext: ctx }),
   sellDraft: null,
   setSellDraft: (draft) => set({ sellDraft: draft }),
+  checkoutDraft: null,
+  setCheckoutDraft: (draft) => set({ checkoutDraft: draft }),
+
+  acknowledgeManualTransaction: (txn) => {
+    const carTitle = txn.brand && txn.model ? `${txn.brand} ${txn.model}` : 'your selected vehicle';
+    const txnType = txn.type === 'RENT' ? 'rental booking' : 'purchase reservation';
+    const amountStr = txn.amount ? ` (Total: ₹${txn.amount.toLocaleString()})` : '';
+
+    const ackMessage: ChatMessage = {
+      id: `msg_txn_ack_${Date.now()}`,
+      role: 'assistant',
+      content:
+        `🎉 **Transaction Confirmed on Website!**\n\n` +
+        `Your ${txnType} for **${carTitle}**${amountStr} has been successfully recorded (Reference: \`${txn.orderId}\`).\n\n` +
+        `I have updated your digital garage, transaction records, and payment history in real time.`,
+      timestamp: new Date().toISOString(),
+    };
+    set((state) => ({ messages: [...state.messages, ackMessage] }));
+    try {
+      window.dispatchEvent(new CustomEvent('aura_data_refresh', { detail: txn }));
+    } catch (e) {
+      console.warn('Could not dispatch aura_data_refresh', e);
+    }
+  },
 
   executeWebsiteAction: (action: WebsiteAction, navigate?: (path: string) => void) => {
     console.log('[AI Consultant Controller Action]:', action);
@@ -166,6 +193,44 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
         });
         break;
 
+      case 'PREFILL_CHECKOUT_FORM':
+        const currentDraft = get().checkoutDraft || {};
+        const mergedDraft = { ...currentDraft, ...payload };
+        set({ checkoutDraft: mergedDraft });
+        try {
+          window.dispatchEvent(new CustomEvent('aura_prefill_checkout', { detail: mergedDraft }));
+        } catch (e) {
+          console.warn('Could not dispatch aura_prefill_checkout', e);
+        }
+        break;
+
+      case 'AUTO_CLICK_BOOK':
+        try {
+          const btn = document.querySelector('[data-action="book-button"]') || document.getElementById('book-button');
+          if (btn) {
+            btn.classList.add('ring-4', 'ring-cyan-400', 'animate-pulse');
+            setTimeout(() => {
+              btn.classList.remove('ring-4', 'ring-cyan-400', 'animate-pulse');
+              (btn as HTMLElement).click();
+            }, 400);
+          } else if (navigate && (payload.path || payload.vehicleId)) {
+            const targetPath = payload.path || (payload.intent === 'buy' ? `/checkout/${payload.vehicleId}` : `/booking/${payload.vehicleId}`);
+            navigate(targetPath);
+          }
+          window.dispatchEvent(new CustomEvent('aura_auto_click_book', { detail: payload }));
+        } catch (e) {
+          console.warn('Could not execute auto click book', e);
+        }
+        break;
+
+      case 'EXECUTE_CHECKOUT_SUBMIT':
+        try {
+          window.dispatchEvent(new CustomEvent('aura_execute_checkout_submit', { detail: payload }));
+        } catch (e) {
+          console.warn('Could not dispatch aura_execute_checkout_submit', e);
+        }
+        break;
+
       default:
         console.warn('Unhandled Website Action:', type);
     }
@@ -187,6 +252,7 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
       confirmedBooking: null,
       currentEvent: null,
       sellDraft: null,
+      checkoutDraft: null,
     });
   },
 }));

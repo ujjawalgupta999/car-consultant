@@ -17,12 +17,14 @@ import {
   Tag
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useConsultantStore } from '../store/consultantStore';
 
 export const Checkout: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { token, user } = useAuthStore();
+  const { checkoutDraft, acknowledgeManualTransaction } = useConsultantStore();
 
   const passedBooking = location.state?.booking;
   const passedVehicle = location.state?.vehicle;
@@ -56,6 +58,30 @@ export const Checkout: React.FC = () => {
 
   // Test rail scenario
   const [simScenario, setSimScenario] = useState<'success' | 'failure' | 'timeout'>('success');
+
+  // Real-time live background auto-fill from Aura AI Consultant
+  useEffect(() => {
+    if (!checkoutDraft) return;
+    if (checkoutDraft.customerName) setCustomerName(checkoutDraft.customerName);
+    if (checkoutDraft.customerEmail) setCustomerEmail(checkoutDraft.customerEmail);
+    if (checkoutDraft.customerPhone) setCustomerPhone(checkoutDraft.customerPhone);
+    if (checkoutDraft.deliveryCity) setDeliveryCity(checkoutDraft.deliveryCity);
+    if (checkoutDraft.pickupLocation) setDeliveryCity(checkoutDraft.pickupLocation);
+    if (checkoutDraft.pickupDate) setPickupDate(checkoutDraft.pickupDate);
+    if (checkoutDraft.returnDate) setReturnDate(checkoutDraft.returnDate);
+    if (checkoutDraft.durationDays) setDurationDays(checkoutDraft.durationDays);
+    if (checkoutDraft.paymentMethod) {
+      const m = String(checkoutDraft.paymentMethod).toLowerCase();
+      if (m === 'upi' || m === 'card' || m === 'netbanking') {
+        setPaymentMethod(m as any);
+      }
+    }
+    if (checkoutDraft.upiId) setUpiId(checkoutDraft.upiId);
+    if (checkoutDraft.cardNumber) setCardNumber(checkoutDraft.cardNumber);
+    if (checkoutDraft.cardExpiry) setCardExpiry(checkoutDraft.cardExpiry);
+    if (checkoutDraft.cardCvv) setCardCvv(checkoutDraft.cardCvv);
+    if (checkoutDraft.bankName) setBankName(checkoutDraft.bankName);
+  }, [checkoutDraft]);
 
   // Fetch authoritative details if orderId is provided
   useEffect(() => {
@@ -116,6 +142,29 @@ export const Checkout: React.FC = () => {
       }
     });
   };
+
+  // Autonomous execution: listen for Aura AI controller checkout submit action
+  useEffect(() => {
+    const handleExecuteSubmit = (e: any) => {
+      console.log('[Aura Controller] Auto-executing checkout submission...', e?.detail);
+      navigate(`/payment/processing/${orderId}`, {
+        state: {
+          orderId,
+          amount: payableAmount,
+          paymentMethod,
+          simScenario: 'success',
+          vehicle,
+          isRent,
+          customerName,
+          customerEmail
+        }
+      });
+    };
+    window.addEventListener('aura_execute_checkout_submit', handleExecuteSubmit);
+    return () => {
+      window.removeEventListener('aura_execute_checkout_submit', handleExecuteSubmit);
+    };
+  }, [orderId, payableAmount, paymentMethod, vehicle, isRent, customerName, customerEmail, navigate]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pt-28 pb-20">
@@ -409,6 +458,8 @@ export const Checkout: React.FC = () => {
             {/* Submit Button */}
             <button
               type="submit"
+              id="checkout-submit-btn"
+              data-action="submit-checkout"
               className="w-full py-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-2xl text-base transition shadow-xl shadow-cyan-950/40 flex items-center justify-center gap-2"
             >
               <ShieldCheck className="w-5 h-5 text-slate-950" />

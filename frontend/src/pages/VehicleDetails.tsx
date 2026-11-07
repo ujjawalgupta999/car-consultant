@@ -27,12 +27,15 @@ import {
 export const VehicleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { vehicles, fetchVehicles, getVehicleById } = useVehicleStore();
+  const { vehicles, fetchVehicles, getVehicleById, purchasedVehicleIds, rentedVehicleIds } = useVehicleStore();
   const { addVehicle, removeVehicle, hasVehicle } = useComparisonStore();
   const { isSaved, toggleSaved } = useAuthStore();
   const { setIsOpen, addMessage, setActiveContext, setActiveMcpApp } = useConsultantStore();
 
   const [activeImage, setActiveImage] = useState<string>('');
+
+  const isPurchased = id ? purchasedVehicleIds.includes(id) : false;
+  const isRented = id ? rentedVehicleIds.includes(id) : false;
 
   useEffect(() => {
     if (vehicles.length === 0) {
@@ -129,7 +132,17 @@ export const VehicleDetails: React.FC = () => {
                 alt={`${vehicle.brand} ${vehicle.model}`}
                 className="h-full w-full object-cover"
               />
-              <div className="absolute top-4 left-4 flex gap-2">
+              <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
+                {isPurchased && (
+                  <span className="rounded-full bg-emerald-500 text-slate-950 px-3 py-1 text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                    <ShieldCheck className="w-3.5 h-3.5" /> ✓ PURCHASED BY YOU
+                  </span>
+                )}
+                {isRented && !isPurchased && (
+                  <span className="rounded-full bg-cyan-500 text-slate-950 px-3 py-1 text-xs font-black uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                    <ShieldCheck className="w-3.5 h-3.5" /> ✓ CURRENTLY RENTED
+                  </span>
+                )}
                 <span className="rounded-full bg-background/80 backdrop-blur-md px-3 py-1 text-xs font-bold text-white border border-white/10 uppercase tracking-wider">
                   {vehicle.category}
                 </span>
@@ -207,6 +220,29 @@ export const VehicleDetails: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Ownership Status Alert */}
+              {isPurchased ? (
+                <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between text-xs text-emerald-300 font-semibold mb-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span>You own this vehicle in your digital garage</span>
+                  </div>
+                  <Link to="/dashboard/vehicles" className="text-white bg-emerald-600 px-3 py-1 rounded-lg hover:bg-emerald-500 transition text-[11px] font-bold">
+                    View in Garage
+                  </Link>
+                </div>
+              ) : isRented ? (
+                <div className="p-3.5 bg-cyan-500/10 border border-cyan-500/30 rounded-2xl flex items-center justify-between text-xs text-cyan-300 font-semibold mb-4">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-cyan-400" />
+                    <span>Active rental booking on record</span>
+                  </div>
+                  <Link to="/dashboard/rentals" className="text-white bg-cyan-600 px-3 py-1 rounded-lg hover:bg-cyan-500 transition text-[11px] font-bold">
+                    View Rental Pass
+                  </Link>
+                </div>
+              ) : null}
 
               {/* Action Buttons */}
               <div className="space-y-3">

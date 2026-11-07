@@ -119,14 +119,29 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
               {isAssistant && (msg as any).data?.cards && Array.isArray((msg as any).data.cards) && (msg as any).data.cards.length > 0 && (
                 <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-surface-border/40">
                   {(msg as any).data.cards.map((card: any, cIdx: number) => {
+                    const isOwnedCard =
+                      card.cardType === 'PURCHASED_SHOWCASE' ||
+                      card.cardType === 'OWNED_VEHICLE' ||
+                      card.status === 'OWNED' ||
+                      card.status === 'PURCHASED';
+
                     return (
                       <div
                         key={card.id || cIdx}
-                        className="rounded-xl border border-surface-border/80 bg-background/80 hover:border-primary/50 transition p-2.5 flex flex-col justify-between text-xs shadow-sm"
+                        className={`rounded-xl border transition p-2.5 flex flex-col justify-between text-xs shadow-sm ${
+                          isOwnedCard
+                            ? 'border-emerald-500/70 bg-gradient-to-br from-slate-900 to-emerald-950/30 ring-1 ring-emerald-500/30'
+                            : 'border-surface-border/80 bg-background/80 hover:border-primary/50'
+                        }`}
                       >
                         {card.image && (
-                          <div className="h-24 w-full rounded-lg overflow-hidden mb-2 bg-surface">
+                          <div className="h-24 w-full rounded-lg overflow-hidden mb-2 bg-surface relative">
                             <img src={card.image} alt={card.model || card.brand || 'Vehicle'} className="h-full w-full object-cover" />
+                            {isOwnedCard && (
+                              <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500 text-slate-950 shadow uppercase tracking-wider">
+                                ✓ OWNED
+                              </span>
+                            )}
                           </div>
                         )}
                         <div className="space-y-1">
@@ -135,7 +150,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                               {card.brand ? `${card.brand} ${card.model}` : (card.vehicleName || `Ref: ${card.orderId || card.id}`)}
                             </span>
                             {card.status && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-primary/20 text-cyan-300 border border-cyan-500/30 uppercase">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                                isOwnedCard
+                                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                  : 'bg-primary/20 text-cyan-300 border border-cyan-500/30'
+                              }`}>
                                 {card.status}
                               </span>
                             )}

@@ -81,3 +81,24 @@ async def test_scenarios():
     assert len(r_g.get("cards", [])) > 0
     print("[PASS] Scenario G: Show my previous payments opens /dashboard/payments")
 
+    # Scenario H: Auto-Click Book & Background Form Pre-fill
+    r_h = await orchestration_engine.process_user_turn(sess.session_id, "book this car")
+    actions_h = [a["type"] for a in r_h.get("website_actions", [])]
+    assert "AUTO_CLICK_BOOK" in actions_h
+    assert "PREFILL_CHECKOUT_FORM" in actions_h
+    assert "proceed and complete the transaction" in r_h["message"]["content"].lower()
+    print("[PASS] Scenario H: Auto-click book command emits AUTO_CLICK_BOOK & PREFILL_CHECKOUT_FORM with confirmation gate")
+
+    # Scenario I: Explicit User Confirmation Gate -> Payment Execution & Showcase Card
+    r_i = await orchestration_engine.process_user_turn(sess.session_id, "Yes, proceed")
+    actions_i = [a["type"] for a in r_i.get("website_actions", [])]
+    paths_i = [a.get("payload", {}).get("path") for a in r_i.get("website_actions", []) if "path" in a.get("payload", {})]
+    assert "EXECUTE_CHECKOUT_SUBMIT" in actions_i
+    assert "REFRESH_DATA" in actions_i
+    assert any("/payment/result" in p for p in paths_i)
+    assert len(r_i.get("cards", [])) > 0
+    showcase_card = r_i["cards"][0]
+    assert showcase_card.get("cardType") == "PURCHASED_SHOWCASE"
+    assert "OWNED" in showcase_card.get("status", "") or "CONFIRMED" in showcase_card.get("status", "")
+    print("[PASS] Scenario I: Confirmation gate executes payment, returns showcase card and navigates to result page")
+

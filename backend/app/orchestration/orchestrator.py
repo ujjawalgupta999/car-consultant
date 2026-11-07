@@ -196,6 +196,192 @@ class OrchestrationEngine:
                     "actions": actions
                 }
 
+            elif session.pending_question == "CONFIRM_TRANSACTION":
+                pending_checkout = session.workflow_data.get("pending_checkout", {})
+                order_id = pending_checkout.get("order_id") or session.active_order_id or f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
+                vehicle_id = pending_checkout.get("vehicle_id") or session.selected_vehicle_id or "CAR-001"
+                amount = pending_checkout.get("amount", 25000.0)
+                is_rent = pending_checkout.get("is_rent", False)
+                target_vehicle = marketplace_repo.get_vehicle_by_id(vehicle_id) or marketplace_repo.get_all_vehicles()[0]
+                payment_method = pending_checkout.get("payment_method", "UPI")
+
+                if detected.is_affirmative:
+                    session.pending_question = None
+                    session.workflow_state = WorkflowState.CONFIRMED
+
+                    # Process authoritative mock payment
+                    from ..services.transaction_service import transaction_service
+                    ok, payment, linked_entity, _, _, _ = transaction_service.process_payment_records(
+                        order_or_booking_id=order_id,
+                        amount=amount,
+                        payment_method=payment_method,
+                        user_id=user_id,
+                        idempotency_key=f"idemp_pay_{order_id}",
+                        simulated_scenario="SUCCESS"
+                    )
+
+                    car_title = f"{target_vehicle.brand} {target_vehicle.model}"
+                    txn_id = payment.transactionId if payment else f"TXN-MOCK-{order_id[-6:]}"
+
+                    showcase_card = {
+                        "cardType": "PURCHASED_SHOWCASE",
+                        "id": f"showcase_{order_id}",
+                        "orderId": order_id,
+                        "transactionId": txn_id,
+                        "vehicleId": target_vehicle.id,
+                        "brand": target_vehicle.brand,
+                        "model": target_vehicle.model,
+                        "year": target_vehicle.year,
+                        "variant": getattr(target_vehicle, "variant", None) or "Luxury Edition",
+                        "image": target_vehicle.image_url,
+                        "amount": amount,
+                        "paymentMethod": payment_method.upper(),
+                        "status": "OWNED" if not is_rent else "RENTAL CONFIRMED",
+                        "actions": [
+                            {"label": "View in My Garage", "path": "/dashboard/vehicles"},
+                            {"label": "View Payments", "path": "/dashboard/payments"}
+                        ]
+                    }
+
+                    bot_text = (
+                        f"🎉 **Transaction Complete & Confirmed!**\n\n"
+                        f"I have successfully submitted your checkout and settled the mock transaction for the **{car_title}**.\n\n"
+                        f"- **Order Reference:** `{order_id}`\n"
+                        f"- **Transaction ID:** `{txn_id}`\n"
+                        f"- **Amount Settled:** ₹{amount:,.0f} via {payment_method.upper()}\n"
+                        f"- **Status:** Verified & Saved to your digital garage.\n\n"
+                        f"I've updated the website in the background to display your official transaction receipt."
+                    )
+
+                    actions = [
+                        {"type": "EXECUTE_CHECKOUT_SUBMIT", "payload": {"orderId": order_id, "status": "SUCCESS"}},
+                        {"type": "REFRESH_DATA", "payload": {"resource": "all"}},
+                        {"type": "NAVIGATE_TO_PAGE", "payload": {"path": f"/payment/result/{order_id}"}},
+                        {"type": "NAVIGATE", "payload": {"path": f"/payment/result/{order_id}"}}
+                    ]
+                else:
+                    session.pending_question = None
+                    bot_text = (
+                        "Understood! I have kept your reservation in draft state on the checkout page. "
+                        "You can review or adjust your details anytime before finalizing."
+                    )
+                    actions = [
+                        {"type": "NAVIGATE_TO_PAGE", "payload": {"path": f"/checkout/{order_id}"}},
+                        {"type": "NAVIGATE", "payload": {"path": f"/checkout/{order_id}"}}
+                    ]
+                    showcase_card = None
+
+                cards = [showcase_card] if showcase_card else []
+                bot_msg = ChatMessage(
+                    id=f"msg_{uuid.uuid4().hex[:8]}",
+                    role=ChatRole.ASSISTANT,
+                    content=bot_text,
+                    data={"messageType": "TRANSACTION_CONFIRMATION", "cards": cards, "actions": actions}
+                )
+                session_repo.add_message(session_id, bot_msg)
+                session_repo.save_session(session)
+                for act in actions:
+                    await self.emit_event(session_id, "website_action", act)
+                return {
+                    "message": bot_msg.model_dump(),
+                    "workflow_state": session.workflow_state.value,
+                    "preferences": session.preferences.model_dump(),
+                    "a2ui_surfaces": [],
+                    "recommendations": [],
+                    "website_actions": actions,
+                    "actions": actions,
+                    "cards": cards
+                }
+
+        # -----------------------------------------------------------------
+        # AUTONOMOUS CONTROLLER: BOOK_VEHICLE
+        # "book this car", "buy this car", "book tata harrier", "book fortuner"
+        # -----------------------------------------------------------------
+        if detected.intent == "BOOK_VEHICLE":
+            all_v = marketplace_repo.get_all_vehicles()
+            v_name = detected.entities.get("vehicle_name", "").lower()
+            target_vehicle = None
+            if v_name:
+                for v in all_v:
+                    if v_name in v.model.lower() or v_name in v.brand.lower():
+                        target_vehicle = v
+                        break
+            if not target_vehicle and session.selected_vehicle_id:
+                target_vehicle = marketplace_repo.get_vehicle_by_id(session.selected_vehicle_id)
+            if not target_vehicle and session.search_results:
+                target_vehicle = marketplace_repo.get_vehicle_by_id(session.search_results[0]["vehicle"]["id"])
+            if not target_vehicle:
+                target_vehicle = all_v[0]
+
+            is_rent = detected.entities.get("intent") == "rent" and session.preferences.intent != IntentType.BUY
+            order_id = f"BK-2026-{uuid.uuid4().hex[:6].upper()}" if is_rent else f"ORD-2026-{uuid.uuid4().hex[:6].upper()}"
+            daily_rate = target_vehicle.rental_price_per_day or 3500.0
+            amount = round(daily_rate * 5 * 1.18 + 5000.0) if is_rent else 25000.0
+
+            prefill_payload = {
+                "customerName": "Alex Vance",
+                "customerEmail": "demo@auramotors.com",
+                "customerPhone": "+91 98765 43210",
+                "deliveryCity": session.preferences.location or target_vehicle.location or "Delhi NCR",
+                "pickupLocation": target_vehicle.location or "Delhi NCR",
+                "pickupDate": "2026-12-15",
+                "returnDate": "2026-12-20",
+                "durationDays": 5,
+                "paymentMethod": "upi",
+                "upiId": "alex@okaxis",
+                "vehicleId": target_vehicle.id,
+                "amount": amount,
+                "orderId": order_id
+            }
+
+            session.active_order_id = order_id
+            session.selected_vehicle_id = target_vehicle.id
+            session.pending_question = "CONFIRM_TRANSACTION"
+            session.workflow_data["pending_checkout"] = {
+                "order_id": order_id,
+                "vehicle_id": target_vehicle.id,
+                "amount": amount,
+                "is_rent": is_rent,
+                "payment_method": "UPI"
+            }
+
+            car_title = f"{target_vehicle.brand} {target_vehicle.model}"
+            target_path = f"/checkout/{order_id}"
+
+            bot_text = (
+                f"I have selected the **{car_title}** and navigated to the checkout portal in the background.\n\n"
+                f"I've also pre-filled your verified customer information (Alex Vance, Delhi NCR) and set up instant settlement "
+                f"(Total: **₹{amount:,.0f}** via **UPI: alex@okaxis**).\n\n"
+                f"Would you like me to proceed and complete the transaction?"
+            )
+
+            actions = [
+                {"type": "AUTO_CLICK_BOOK", "payload": {"vehicleId": target_vehicle.id, "orderId": order_id, "intent": "rent" if is_rent else "buy", "path": target_path}},
+                {"type": "PREFILL_CHECKOUT_FORM", "payload": prefill_payload},
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": target_path}},
+                {"type": "NAVIGATE", "payload": {"path": target_path}}
+            ]
+
+            bot_msg = ChatMessage(
+                id=f"msg_{uuid.uuid4().hex[:8]}",
+                role=ChatRole.ASSISTANT,
+                content=bot_text,
+                data={"messageType": "CHECKOUT_PREFILL", "actions": actions}
+            )
+            session_repo.add_message(session_id, bot_msg)
+            session_repo.save_session(session)
+            for act in actions:
+                await self.emit_event(session_id, "website_action", act)
+            return {
+                "message": bot_msg.model_dump(),
+                "workflow_state": session.workflow_state.value,
+                "preferences": session.preferences.model_dump(),
+                "a2ui_surfaces": [],
+                "recommendations": [],
+                "website_actions": actions,
+                "actions": actions
+            }
+
         # -----------------------------------------------------------------
         # SCENARIO A: VIEW_MY_VEHICLES (Show me my cars)
         # -----------------------------------------------------------------

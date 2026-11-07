@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useComparisonStore } from '../store/comparisonStore';
 import { useConsultantStore } from '../store/consultantStore';
 import { useAuthStore } from '../store/authStore';
-import { Car, Sparkles, Scale, User, Heart, Menu, X } from 'lucide-react';
+import { Car, Sparkles, Scale, User, Heart, Menu, X, CreditCard, ChevronDown, ShoppingBag } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
@@ -96,17 +96,52 @@ export const Navbar: React.FC = () => {
             </span>
           </button>
 
-          {/* User Account / Dashboard */}
+          {/* User Account / Dashboard Dropdown */}
           {isAuthenticated ? (
-            <Link
-              to="/dashboard"
-              className="flex items-center gap-2 rounded-xl border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-gray-200 hover:border-primary hover:text-white transition-all"
-            >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary-accent font-bold text-[10px]">
-                {user?.name.charAt(0) || 'U'}
+            <div className="relative group">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 rounded-xl border border-surface-border bg-surface px-3 py-2 text-xs font-medium text-gray-200 hover:border-primary hover:text-white transition-all"
+              >
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20 text-primary-accent font-bold text-[10px]">
+                  {user?.name.charAt(0) || 'U'}
+                </div>
+                <span className="hidden md:inline">{user?.name.split(' ')[0]}</span>
+                <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-white transition-transform group-hover:rotate-180" />
+              </Link>
+
+              {/* Hover Dropdown Menu */}
+              <div className="absolute right-0 top-full mt-1.5 w-52 rounded-xl border border-surface-border bg-slate-900/95 backdrop-blur-xl p-1.5 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-muted hover:text-white transition"
+                >
+                  <User className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Account Dashboard</span>
+                </Link>
+                <Link
+                  to="/dashboard/payments"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-emerald-400 hover:bg-emerald-500/10 transition"
+                >
+                  <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Transactions / Payments</span>
+                </Link>
+                <Link
+                  to="/dashboard/purchases"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-muted hover:text-white transition"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5 text-blue-400" />
+                  <span>My Purchases</span>
+                </Link>
+                <Link
+                  to="/dashboard/rentals"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-300 hover:bg-surface-muted hover:text-white transition"
+                >
+                  <Car className="w-3.5 h-3.5 text-amber-400" />
+                  <span>My Rentals</span>
+                </Link>
               </div>
-              <span className="hidden md:inline">{user?.name.split(' ')[0]}</span>
-            </Link>
+            </div>
           ) : (
             <Link
               to="/login"
@@ -145,6 +180,14 @@ export const Navbar: React.FC = () => {
               )}
             </Link>
           ))}
+          <Link
+            to="/dashboard/payments"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-emerald-400 bg-emerald-500/10 rounded-lg"
+          >
+            <CreditCard className="w-4 h-4" />
+            Transactions / Payments
+          </Link>
           <Link
             to="/consultant"
             onClick={() => setMobileMenuOpen(false)}

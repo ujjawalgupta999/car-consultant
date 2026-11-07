@@ -4,6 +4,7 @@ import { Vehicle } from '../types';
 import { useComparisonStore } from '../store/comparisonStore';
 import { useAuthStore } from '../store/authStore';
 import { useConsultantStore } from '../store/consultantStore';
+import { useVehicleStore } from '../store/vehicleStore';
 import { Gauge, Fuel, Users, Star, Heart, Scale, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface VehicleCardProps {
@@ -16,6 +17,11 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
   const { addVehicle, removeVehicle, hasVehicle } = useComparisonStore();
   const { isSaved, toggleSaved } = useAuthStore();
   const { setIsOpen, addMessage, setActiveContext } = useConsultantStore();
+  const { purchasedVehicleIds, rentedVehicleIds, rentals } = useVehicleStore();
+
+  const isPurchased = purchasedVehicleIds.includes(vehicle.id);
+  const isRented = rentedVehicleIds.includes(vehicle.id);
+  const activeRental = isRented ? rentals.find((r: any) => (r.vehicleId || r.vehicleSnapshot?.id) === vehicle.id) : null;
 
   const isCompared = hasVehicle(vehicle.id);
   const isFavorite = isSaved(vehicle.id);
@@ -48,7 +54,15 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
   };
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-2xl">
+    <div
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-surface shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
+        isPurchased
+          ? 'border-emerald-500/80 ring-1 ring-emerald-500/40'
+          : isRented
+          ? 'border-cyan-500/80 ring-1 ring-cyan-500/40'
+          : 'border-surface-border hover:border-primary/50'
+      }`}
+    >
       {/* Thumbnail with overlay badges */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-background">
         <img
@@ -58,9 +72,23 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
         />
         <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-80" />
 
-        {/* Category Pill */}
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white border border-white/10 uppercase tracking-wider">
-          {vehicle.category}
+        {/* Category / Ownership Pill */}
+        <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+          {isPurchased && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black px-2.5 py-1 shadow-lg uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5" /> ✓ PURCHASED BY YOU
+            </span>
+          )}
+          {isRented && !isPurchased && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-black px-2.5 py-1 shadow-lg uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5" /> ✓ CURRENTLY RENTED
+            </span>
+          )}
+          {!isPurchased && !isRented && (
+            <div className="flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white border border-white/10 uppercase tracking-wider">
+              {vehicle.category}
+            </div>
+          )}
         </div>
 
         {/* Favorite & Compare Quick Icons */}
@@ -146,13 +174,32 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
 
           {/* Action Row */}
           <div className="flex items-center gap-2">
-            <Link
-              to={`/vehicles/${vehicle.id}`}
-              className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-surface-muted hover:bg-surface-hover border border-surface-border px-3 py-2 text-xs font-semibold text-white transition-all"
-            >
-              <span>Details</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            {isPurchased ? (
+              <Link
+                to="/dashboard/vehicles"
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 px-3 py-2 text-xs font-bold text-slate-950 transition-all shadow-md"
+              >
+                <span>View in My Garage</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            ) : isRented ? (
+              <Link
+                to="/dashboard/rentals"
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 border border-cyan-500 px-3 py-2 text-xs font-bold text-slate-950 transition-all shadow-md"
+              >
+                <span>View Rental Pass</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            ) : (
+              <Link
+                to={`/vehicles/${vehicle.id}`}
+                data-action="book-button"
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-surface-muted hover:bg-surface-hover border border-surface-border px-3 py-2 text-xs font-semibold text-white transition-all"
+              >
+                <span>Details</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            )}
 
             <button
               type="button"

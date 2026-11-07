@@ -14,6 +14,7 @@ import {
   FileText
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useVehicleStore } from '../store/vehicleStore';
 
 export const PaymentResultPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -28,6 +29,14 @@ export const PaymentResultPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>(
     stateData.errorMessage || 'Transaction could not be confirmed.'
   );
+
+  const { getVehicleById, vehicles } = useVehicleStore();
+  const showcaseVehicle =
+    stateData.vehicle ||
+    payment?.vehicleSnapshot ||
+    payment?.vehicle ||
+    (payment?.vehicleId ? getVehicleById(payment.vehicleId) : null) ||
+    vehicles[0];
 
   const isRent = (orderId || '').startsWith('BK-') || (orderId || '').startsWith('bk_');
 
@@ -104,6 +113,61 @@ export const PaymentResultPage: React.FC = () => {
             <p className="text-slate-400 text-sm mt-2 max-w-md mx-auto">
               Your mock payment has been settled. The authoritative record has been synchronized with your account dashboard and Aura AI Consultant.
             </p>
+
+            {/* Post-Transaction Purchased / Reserved Vehicle Showcase Card */}
+            {showcaseVehicle && (
+              <div className="my-6 rounded-2xl border-2 border-emerald-500/80 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/30 p-5 text-left shadow-2xl relative overflow-hidden">
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-3">
+                    {(showcaseVehicle.image_url || showcaseVehicle.image) && (
+                      <img
+                        src={showcaseVehicle.image_url || showcaseVehicle.image}
+                        alt={showcaseVehicle.model || 'Vehicle'}
+                        className="w-24 h-16 object-cover rounded-xl border border-slate-700 shrink-0"
+                      />
+                    )}
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-400">
+                        {showcaseVehicle.brand || 'Aura Motors'}
+                      </span>
+                      <h3 className="text-base font-black text-white">
+                        {showcaseVehicle.brand} {showcaseVehicle.model}{' '}
+                        <span className="text-gray-400 text-xs font-normal">({showcaseVehicle.year || 2024})</span>
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Ref: <span className="font-mono text-emerald-400">{orderId}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-slate-950 text-xs font-black px-3 py-1 shadow-lg uppercase tracking-wider">
+                    <ShieldCheck className="w-3.5 h-3.5" /> {isRent ? 'ACTIVE RENTAL PASS' : 'OWNED / IN GARAGE'}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="text-slate-300">
+                    <span className="text-slate-500">Ownership Status:</span>{' '}
+                    <strong className="text-emerald-400 font-bold">{isRent ? 'Rental Reserved' : 'Added to Digital Garage'}</strong>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to="/dashboard/vehicles"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition flex items-center gap-1.5"
+                    >
+                      <span>View in My Garage</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                    <Link
+                      to={isRent ? '/dashboard/rentals' : '/dashboard/purchases'}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition"
+                    >
+                      {isRent ? 'View Rental Pass' : 'View Purchases'}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Authoritative Receipt Card */}
             <div className="my-8 bg-slate-950 border border-slate-800 rounded-2xl p-6 text-left text-xs space-y-3 shadow-xl">

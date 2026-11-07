@@ -52,8 +52,8 @@ class UniversalIntentDetector:
         # If there is a pending question from the active workflow, e.g. IS_REGISTERED_IN_NAME
         # -------------------------------------------------------------
         affirmative_patterns = [
-            r"^(?:yes|yeah|yup|yep|sure|ok|okay|continue|okay\s*,\s*continue|go\s+ahead|proceed|affirmative|correct|done|yes\s+please|it\s+is|it's\s+in\s+my\s+name|in\s+my\s+name|registered\s+to\s+me)\b",
-            r"\b(okay\s+continue|yes\s+it\s+is|it\s+is\s+registered\s+in\s+my\s+name)\b"
+            r"^(?:yes|yeah|yup|yep|sure|ok|okay|continue|okay\s*,\s*continue|go\s+ahead|proceed|confirm|confirm\s+transaction|do\s+it|complete|pay\s+now|affirmative|correct|done|yes\s+please|it\s+is|it's\s+in\s+my\s+name|in\s+my\s+name|registered\s+to\s+me)\b",
+            r"\b(okay\s+continue|yes\s+it\s+is|it\s+is\s+registered\s+in\s+my\s+name|confirm\s+and\s+pay|proceed\s+with\s+booking)\b"
         ]
         negative_patterns = [
             r"^(?:no|nope|nah|not\s+really|negative|not\s+in\s+my\s+name|someone\s+else|different\s+person)\b"
@@ -192,6 +192,29 @@ class UniversalIntentDetector:
             order_m = re.search(r'\b(bk-[a-z0-9\-]+|ord-[a-z0-9\-]+)\b', target_text)
             entities = {"order_id": order_m.group(1).upper()} if order_m else {}
             return DetectedIntent(intent="CANCEL_BOOKING", entities=entities, is_intent_switch=is_switching, raw_query=user_text)
+
+        # -------------------------------------------------------------
+        # 5.5 Auto-Click Book / Specific Vehicle Booking Intent
+        # "book this car", "buy this car", "book tata harrier", "book fortuner"
+        # -------------------------------------------------------------
+        book_patterns = [
+            r"^(?:please\s+)?(?:book|reserve)\s+(?:this\s+car|the\s+car|this\s+vehicle|this|now)\b",
+            r"^(?:please\s+)?(?:buy|purchase)\s+(?:this\s+car|this\s+vehicle|this\s+one|this)\b",
+            r"\bbook\s+(?:the\s+)?(harrier|fortuner|creta|city|thar|scorpio|nexon|seltos|innova|xuv700|slavia|virtus|safari|z4|ioniq\s*5|nexon\s*ev)\b",
+            r"^(?:i\s+want\s+to\s+|ready\s+to\s+)?book\s+(?:this|now)\b",
+            r"^(?:i\s+want\s+to\s+)?buy\s+this\s+car\b"
+        ]
+        for bp in book_patterns:
+            bm = re.search(bp, target_text)
+            if bm:
+                entities = {}
+                if bm.groups() and bm.group(1):
+                    entities["vehicle_name"] = bm.group(1).strip()
+                if "buy" in target_text or "purchase" in target_text:
+                    entities["intent"] = "buy"
+                else:
+                    entities["intent"] = "rent"
+                return DetectedIntent(intent="BOOK_VEHICLE", entities=entities, is_intent_switch=is_switching, raw_query=user_text)
 
         # Helper for negated categories e.g. "sedan instead of suv", "not an suv"
         negated_cats = set()

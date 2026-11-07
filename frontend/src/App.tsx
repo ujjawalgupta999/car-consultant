@@ -39,7 +39,7 @@ import { PaymentResultPage } from './pages/PaymentResultPage';
 const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
   const { setActiveContext } = useConsultantStore();
-  const { vehicles, fetchVehicles } = useVehicleStore();
+  const { vehicles, fetchVehicles, fetchUserOwnership } = useVehicleStore();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -50,7 +50,16 @@ const ScrollToTop: React.FC = () => {
     if (vehicles.length === 0) {
       fetchVehicles();
     }
-  }, [vehicles.length, fetchVehicles]);
+    fetchUserOwnership();
+
+    const handleDataRefresh = () => {
+      fetchUserOwnership();
+    };
+    window.addEventListener('aura_data_refresh', handleDataRefresh);
+    return () => {
+      window.removeEventListener('aura_data_refresh', handleDataRefresh);
+    };
+  }, [vehicles.length, fetchVehicles, fetchUserOwnership]);
 
   return null;
 };

@@ -36,7 +36,12 @@ interface VehicleStore {
   isLoading: boolean;
   error: string | null;
   filters: VehicleFilters;
+  purchasedVehicleIds: string[];
+  rentedVehicleIds: string[];
+  purchases: any[];
+  rentals: any[];
   fetchVehicles: () => Promise<void>;
+  fetchUserOwnership: () => Promise<void>;
   setFilters: (partial: Partial<VehicleFilters>) => void;
   resetFilters: () => void;
   getFilteredVehicles: () => Vehicle[];
@@ -48,6 +53,10 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
   isLoading: false,
   error: null,
   filters: DEFAULT_FILTERS,
+  purchasedVehicleIds: [],
+  rentedVehicleIds: [],
+  purchases: [],
+  rentals: [],
 
   fetchVehicles: async () => {
     set({ isLoading: true, error: null });
@@ -58,6 +67,46 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
       set({ vehicles: data.vehicles || [], isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
+    }
+  },
+
+  fetchUserOwnership: async () => {
+    try {
+      const [purchasesRes, rentalsRes] = await Promise.all([
+        fetch('/api/purchases').catch(() => null),
+        fetch('/api/rentals').catch(() => null),
+      ]);
+
+      const purchasedIds: string[] = [];
+      let purchasesData: any[] = [];
+      if (purchasesRes && purchasesRes.ok) {
+        const pJson = await purchasesRes.json();
+        purchasesData = pJson.purchases || [];
+        purchasesData.forEach((p: any) => {
+          const vId = p.vehicleId || p.vehicleSnapshot?.id;
+          if (vId && !purchasedIds.includes(vId)) purchasedIds.push(vId);
+        });
+      }
+
+      const rentedIds: string[] = [];
+      let rentalsData: any[] = [];
+      if (rentalsRes && rentalsRes.ok) {
+        const rJson = await rentalsRes.json();
+        rentalsData = rJson.rentals || [];
+        rentalsData.forEach((r: any) => {
+          const vId = r.vehicleId || r.vehicleSnapshot?.id;
+          if (vId && !rentedIds.includes(vId)) rentedIds.push(vId);
+        });
+      }
+
+      set({
+        purchasedVehicleIds: purchasedIds,
+        rentedVehicleIds: rentedIds,
+        purchases: purchasesData,
+        rentals: rentalsData,
+      });
+    } catch (e) {
+      console.warn('Could not fetch user ownership state:', e);
     }
   },
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { RotateCcw, ShieldCheck, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { useConsultantStore } from '../store/consultantStore';
 
 export const PaymentProcessingPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>();
@@ -53,6 +54,15 @@ export const PaymentProcessingPage: React.FC = () => {
         const data = await res.json();
 
         if (res.ok && data.status === 'SUCCESS') {
+          // Real-time synchronization: notify Aura AI about the completed payment
+          useConsultantStore.getState().acknowledgeManualTransaction({
+            orderId: orderId || data.payment?.orderId || 'ORD-TXN',
+            brand: stateData.vehicle?.brand || data.payment?.vehicleSnapshot?.brand,
+            model: stateData.vehicle?.model || data.payment?.vehicleSnapshot?.model,
+            amount,
+            type: stateData.isRent ? 'RENT' : 'BUY',
+          });
+
           await new Promise((r) => setTimeout(r, 600));
           if (!isMounted) return;
           navigate(`/payment/result/${orderId}`, {

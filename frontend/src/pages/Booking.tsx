@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useVehicleStore } from '../store/vehicleStore';
 import { useAuthStore } from '../store/authStore';
+import { useConsultantStore } from '../store/consultantStore';
 import { calculateBookingTotal, createBooking } from '../services/api';
 import { Calendar, MapPin, ShieldCheck, CheckCircle2, ChevronRight, AlertCircle, CreditCard } from 'lucide-react';
 
@@ -17,6 +18,7 @@ export const Booking: React.FC = () => {
   const navigate = useNavigate();
   const { getVehicleById } = useVehicleStore();
   const { user } = useAuthStore();
+  const { checkoutDraft, acknowledgeManualTransaction } = useConsultantStore();
 
   const vehicle = vehicleId ? getVehicleById(vehicleId) : undefined;
 
@@ -29,6 +31,23 @@ export const Booking: React.FC = () => {
   const [driverPhone, setDriverPhone] = useState(user?.phone || '+91 98765 43210');
   const [licenseNumber, setLicenseNumber] = useState('DL-04-20220019283');
   const [pickupLocation, setPickupLocation] = useState(vehicle?.location || 'Delhi');
+
+  // Real-time live background auto-fill from Aura AI Consultant
+  useEffect(() => {
+    if (!checkoutDraft) return;
+    if (checkoutDraft.customerName) setDriverName(checkoutDraft.customerName);
+    if (checkoutDraft.driverName) setDriverName(checkoutDraft.driverName);
+    if (checkoutDraft.customerEmail) setDriverEmail(checkoutDraft.customerEmail);
+    if (checkoutDraft.driverEmail) setDriverEmail(checkoutDraft.driverEmail);
+    if (checkoutDraft.customerPhone) setDriverPhone(checkoutDraft.customerPhone);
+    if (checkoutDraft.driverPhone) setDriverPhone(checkoutDraft.driverPhone);
+    if (checkoutDraft.pickupLocation || checkoutDraft.deliveryCity) {
+      setPickupLocation(checkoutDraft.pickupLocation || checkoutDraft.deliveryCity);
+    }
+    if (checkoutDraft.pickupDate) setPickupDate(checkoutDraft.pickupDate);
+    if (checkoutDraft.returnDate) setReturnDate(checkoutDraft.returnDate);
+    if (checkoutDraft.licenseNumber) setLicenseNumber(checkoutDraft.licenseNumber);
+  }, [checkoutDraft]);
 
   // Calculation state
   const [pricingSummary, setPricingSummary] = useState<{
@@ -109,6 +128,16 @@ export const Booking: React.FC = () => {
     try {
       const res = await createBooking(payload);
       const bookingId = res.booking_id || res.id;
+
+      // Real-time synchronization: notify Aura AI about the manual website booking
+      acknowledgeManualTransaction({
+        orderId: bookingId,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        amount: pricingSummary.total_amount,
+        type: 'RENT',
+      });
+
       navigate(`/checkout/${bookingId}`, { state: { booking: res, vehicle } });
     } catch (err: any) {
       console.error(err);
@@ -393,6 +422,8 @@ export const Booking: React.FC = () => {
               {/* Submit CTA */}
               <button
                 type="submit"
+                id="book-button"
+                data-action="book-button"
                 disabled={loading}
                 className="w-full mt-4 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-cyan-950/40 flex items-center justify-center space-x-2"
               >
