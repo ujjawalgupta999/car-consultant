@@ -28,7 +28,7 @@ import {
 export const VehicleDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { vehicles, fetchVehicles, getVehicleById, purchasedVehicleIds, rentedVehicleIds } = useVehicleStore();
+  const { vehicles, fetchVehicles, getVehicleById, purchasedVehicleIds } = useVehicleStore();
   const { addVehicle, removeVehicle, hasVehicle } = useComparisonStore();
   const { isSaved, toggleSaved } = useAuthStore();
   const { setIsOpen, addMessage, setActiveContext, setActiveMcpApp } = useConsultantStore();
@@ -36,7 +36,6 @@ export const VehicleDetails: React.FC = () => {
   const [activeImage, setActiveImage] = useState<string>('');
 
   const isPurchased = id ? purchasedVehicleIds.includes(id) : false;
-  const isRented = id ? rentedVehicleIds.includes(id) : false;
 
   useEffect(() => {
     if (vehicles.length === 0) {
@@ -211,10 +210,10 @@ export const VehicleDetails: React.FC = () => {
                 <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between text-xs text-emerald-300 font-semibold mb-4">
                   <div className="flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    <span>You own this vehicle in your digital garage</span>
+                    <span>You own this vehicle in your verified portfolio</span>
                   </div>
-                  <Link to="/dashboard/vehicles" className="text-white bg-emerald-600 px-3 py-1 rounded-lg hover:bg-emerald-500 transition text-[11px] font-bold">
-                    View in Garage
+                  <Link to="/dashboard/purchases" className="text-white bg-emerald-600 px-3 py-1 rounded-lg hover:bg-emerald-500 transition text-[11px] font-bold">
+                    View in Purchases
                   </Link>
                 </div>
               )}

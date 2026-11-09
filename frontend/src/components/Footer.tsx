@@ -33,8 +33,8 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2.5 text-xs">
               <li><Link to="/explore" className="hover:text-white transition-colors">Complete Catalogue</Link></li>
-              <li><Link to="/rent" className="hover:text-white transition-colors">Self-Drive Rentals</Link></li>
               <li><Link to="/buy" className="hover:text-white transition-colors">Buy New & Used</Link></li>
+              <li><Link to="/sell-car" className="hover:text-white transition-colors">Sell Your Car</Link></li>
               <li><Link to="/compare" className="hover:text-white transition-colors">Compare Vehicles</Link></li>
               <li><Link to="/consultant" className="text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1">AI Consultant <ArrowUpRight className="w-3 h-3" /></Link></li>
             </ul>

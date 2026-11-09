@@ -234,9 +234,9 @@ class OrchestrationEngine:
                             "image": target_vehicle.image_url,
                             "amount": amount,
                             "paymentMethod": payment_method.upper(),
-                            "status": "OWNED" if not is_rent else "RENTAL CONFIRMED",
+                            "status": "OWNED",
                             "actions": [
-                                {"label": "View in My Garage", "path": "/dashboard/vehicles"},
+                                {"label": "View in My Purchases", "path": "/dashboard/purchases"},
                                 {"label": "View Payments", "path": "/dashboard/payments"}
                             ]
                         }
@@ -246,12 +246,12 @@ class OrchestrationEngine:
                             f"- **Order Reference:** `{order_id}`\n"
                             f"- **Transaction ID:** `{txn_id}`\n"
                             f"- **Amount Settled:** ₹{amount:,.0f} via {payment_method.upper()}\n"
-                            f"- **Status:** Verified & Saved to your digital garage.\n\n"
+                            f"- **Status:** Verified & Saved to your My Purchases portfolio.\n\n"
                             f"I've updated the website in the background to display your official transaction receipt."
                         )
                         actions = [
                             {"type": "EXECUTE_CHECKOUT_SUBMIT", "payload": {"orderId": order_id, "status": "SUCCESS"}},
-                            {"type": "REFRESH_DATA", "payload": {"resource": "all"}},
+                            {"type": "REFRESH_DATA", "payload": {"resource": "myPurchases"}},
                             {"type": "NAVIGATE_TO_PAGE", "payload": {"path": f"/payment/result/{order_id}"}},
                             {"type": "NAVIGATE", "payload": {"path": f"/payment/result/{order_id}"}}
                         ]
@@ -349,9 +349,9 @@ class OrchestrationEngine:
                         "image": target_vehicle.image_url,
                         "amount": amount,
                         "paymentMethod": payment_method.upper(),
-                        "status": "OWNED" if not is_rent else "RENTAL CONFIRMED",
+                        "status": "OWNED",
                         "actions": [
-                            {"label": "View in My Garage", "path": "/dashboard/vehicles"},
+                            {"label": "View in My Purchases", "path": "/dashboard/purchases"},
                             {"label": "View Payments", "path": "/dashboard/payments"}
                         ]
                     }
@@ -362,13 +362,13 @@ class OrchestrationEngine:
                         f"- **Order Reference:** `{order_id}`\n"
                         f"- **Transaction ID:** `{txn_id}`\n"
                         f"- **Amount Settled:** ₹{amount:,.0f} via {payment_method.upper()}\n"
-                        f"- **Status:** Verified & Saved to your digital garage.\n\n"
+                        f"- **Status:** Verified & Saved to your My Purchases portfolio.\n\n"
                         f"I've updated the website in the background to display your official transaction receipt."
                     )
 
                     actions = [
                         {"type": "EXECUTE_CHECKOUT_SUBMIT", "payload": {"orderId": order_id, "status": "SUCCESS"}},
-                        {"type": "REFRESH_DATA", "payload": {"resource": "all"}},
+                        {"type": "REFRESH_DATA", "payload": {"resource": "myPurchases"}},
                         {"type": "NAVIGATE_TO_PAGE", "payload": {"path": f"/payment/result/{order_id}"}},
                         {"type": "NAVIGATE", "payload": {"path": f"/payment/result/{order_id}"}}
                     ]
@@ -662,12 +662,12 @@ class OrchestrationEngine:
             if not target_vehicle:
                 target_vehicle = all_v[0]
 
-            is_rent = (detected.entities.get("intent") == "rent") or (session.preferences.intent == IntentType.RENT)
-            target_path = "/rent" if is_rent else "/buy"
+            is_rent = False
+            target_path = "/buy"
             session.selected_vehicle_id = target_vehicle.id
 
             filter_payload = {
-                "intent": "rent" if is_rent else "buy",
+                "intent": "buy",
                 "brand": target_vehicle.brand,
                 "category": target_vehicle.category.value,
                 "search": target_vehicle.model,
@@ -686,7 +686,7 @@ class OrchestrationEngine:
             hp = getattr(getattr(target_vehicle, "specs", None), "horsepower", None)
             hp_str = f"{hp} HP" if hp else "2.0L Turbocharged (170 HP)"
             odo_str = f"{target_vehicle.odometer_km:,} km" if target_vehicle.odometer_km else "12,500 km"
-            price_display = f"₹{target_vehicle.rental_price_per_day:,.0f}/day" if is_rent else f"₹{target_vehicle.purchase_price:,.0f}"
+            price_display = f"₹{target_vehicle.purchase_price:,.0f}"
 
             bot_text = (
                 f"### 🔍 Vehicle Deep-Dive: {target_vehicle.brand} {target_vehicle.model} ({target_vehicle.year})\n\n"
@@ -798,41 +798,39 @@ class OrchestrationEngine:
             }
 
         # -----------------------------------------------------------------
-        # SCENARIO A: VIEW_MY_VEHICLES (Show me my cars)
+        # SCENARIO A: VIEW_MY_VEHICLES (Show me my purchases)
         # -----------------------------------------------------------------
-        if detected.intent == "VIEW_MY_VEHICLES":
-            vehicles = user_data_repo.get_user_owned_vehicles(user_id)
+        if detected.intent in ["VIEW_MY_VEHICLES", "VIEW_GARAGE"]:
+            purchases = user_data_repo.get_user_purchases(user_id)
             cards = [
                 {
-                    "cardType": "OWNED_VEHICLE",
-                    "id": v.id,
-                    "vehicleId": v.vehicleId,
-                    "brand": v.brand,
-                    "model": v.model,
-                    "variant": v.variant,
-                    "year": v.year,
-                    "currentEstimatedValue": v.currentEstimatedValue,
-                    "source": v.source.value if hasattr(v.source, "value") else str(v.source),
-                    "image": v.image,
-                    "status": v.status,
+                    "cardType": "PURCHASE",
+                    "id": p.id,
+                    "orderId": p.orderId,
+                    "brand": p.vehicleSnapshot.brand,
+                    "model": p.vehicleSnapshot.model,
+                    "variant": p.vehicleSnapshot.variant,
+                    "year": p.vehicleSnapshot.year,
+                    "purchasePrice": p.purchasePrice,
+                    "purchaseStatus": p.purchaseStatus.value if hasattr(p.purchaseStatus, "value") else str(p.purchaseStatus),
+                    "image": p.vehicleSnapshot.image,
                     "actions": [
-                        {"label": "Sell Vehicle", "action": "SELL_VEHICLE", "vehicleId": v.id},
-                        {"label": "View Garage", "path": "/dashboard/vehicles"}
+                        {"label": "View Purchases", "path": "/dashboard/purchases"}
                     ]
                 }
-                for v in vehicles
+                for p in purchases
             ]
-            bot_text = f"Here are the {len(vehicles)} vehicles associated with your account in your digital garage."
+            bot_text = f"Here are the {len(purchases)} confirmed purchases in your **My Purchases** portfolio on Aura Motors."
             actions = [
-                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/vehicles"}},
-                {"type": "NAVIGATE", "payload": {"path": "/dashboard/vehicles"}},
-                {"type": "REFRESH_DATA", "payload": {"resource": "myVehicles"}}
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myPurchases"}}
             ]
             bot_msg = ChatMessage(
                 id=f"msg_{uuid.uuid4().hex[:8]}",
                 role=ChatRole.ASSISTANT,
                 content=bot_text,
-                data={"messageType": "GARAGE_VEHICLES", "cards": cards, "actions": actions}
+                data={"messageType": "PURCHASE_HISTORY", "cards": cards, "actions": actions}
             )
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
@@ -908,47 +906,41 @@ class OrchestrationEngine:
             }
 
         # -----------------------------------------------------------------
-        # SCENARIO C: VIEW_RENTALS (Show my rental history)
+        # SCENARIO C: VIEW_RENTALS (Redirect to purchases)
         # -----------------------------------------------------------------
-        if detected.intent == "VIEW_RENTALS":
-            session.preferences.intent = IntentType.RENTAL_HISTORY
-            rentals = user_data_repo.get_user_rentals(user_id)
+        if detected.intent in ["VIEW_RENTALS", "RENTAL"]:
+            session.preferences.intent = IntentType.PURCHASE_HISTORY
+            purchases = user_data_repo.get_user_purchases(user_id)
             cards = [
                 {
-                    "cardType": "RENTAL",
-                    "id": r.id,
-                    "orderId": r.orderId,
-                    "brand": r.vehicleSnapshot.brand,
-                    "model": r.vehicleSnapshot.model,
-                    "pickupDate": r.pickupDate,
-                    "returnDate": r.returnDate,
-                    "durationDays": r.durationDays,
-                    "rentalAmount": r.rentalAmount,
-                    "rentalStatus": r.rentalStatus.value if hasattr(r.rentalStatus, "value") else str(r.rentalStatus),
-                    "pickupLocation": r.pickupLocation,
-                    "image": r.vehicleSnapshot.image,
+                    "cardType": "PURCHASE",
+                    "id": p.id,
+                    "orderId": p.orderId,
+                    "brand": p.vehicleSnapshot.brand,
+                    "model": p.vehicleSnapshot.model,
+                    "variant": p.vehicleSnapshot.variant,
+                    "year": p.vehicleSnapshot.year,
+                    "purchasePrice": p.purchasePrice,
+                    "purchaseStatus": p.purchaseStatus.value if hasattr(p.purchaseStatus, "value") else str(p.purchaseStatus),
+                    "image": p.vehicleSnapshot.image,
                     "actions": [
-                        {"label": "View Rentals", "path": "/dashboard/rentals"}
+                        {"label": "View Purchases", "path": "/dashboard/purchases"}
                     ]
                 }
-                for r in rentals
+                for p in purchases
             ]
-            if rentals:
-                r_lines = [f"{i}. **{r.vehicleSnapshot.brand} {r.vehicleSnapshot.model}** — {r.pickupDate} to {r.returnDate} (Booking: `{r.orderId or r.id}`)" for i, r in enumerate(rentals[:3], 1)]
-                bot_text = f"Here are your active rental reservations on **Aura Motors**:\n\n" + "\n".join(r_lines) + f"\n\nI've navigated you to your **My Rentals** dashboard."
-            else:
-                bot_text = "You don't have any active rental bookings on record currently. I've navigated you to your **My Rentals** dashboard."
+            bot_text = "Rental services have been retired; Aura Motors operates exclusively as an authoritative vehicle purchase & acquisition marketplace. I've navigated you to your **My Purchases** dashboard."
 
             actions = [
-                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/rentals"}},
-                {"type": "NAVIGATE", "payload": {"path": "/dashboard/rentals"}},
-                {"type": "REFRESH_DATA", "payload": {"resource": "myRentals"}}
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myPurchases"}}
             ]
             bot_msg = ChatMessage(
                 id=f"msg_{uuid.uuid4().hex[:8]}",
                 role=ChatRole.ASSISTANT,
                 content=bot_text,
-                data={"messageType": "RENTAL_HISTORY", "cards": cards, "actions": actions}
+                data={"messageType": "PURCHASE_HISTORY", "cards": cards, "actions": actions}
             )
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)

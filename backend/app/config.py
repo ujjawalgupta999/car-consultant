@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o"
     
     # Storage
-    storage_backend: str = "auto" # "auto", "mongodb", "json"
+    storage_backend: str = "mongodb" # "mongodb", "auto", "json"
     mongodb_uri: str = "mongodb://localhost:27017/car_consultant"
     mongodb_db_name: str = "car_consultant"
     

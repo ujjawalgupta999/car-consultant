@@ -27,7 +27,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Overview', path: '/dashboard', icon: LayoutDashboard },
   { label: 'My Purchases', path: '/dashboard/purchases', icon: ShoppingBag },
   { label: 'Transactions / Payments', path: '/dashboard/payments', icon: CreditCard },
-  { label: 'My Vehicles', path: '/dashboard/vehicles', icon: Car },
   { label: 'Sell a Car', path: '/sell-car', icon: PlusCircle, badge: 'New' },
   { label: 'My Listings', path: '/dashboard/listings', icon: ListOrdered },
   { label: 'Saved Cars', path: '/dashboard/saved', icon: Heart },

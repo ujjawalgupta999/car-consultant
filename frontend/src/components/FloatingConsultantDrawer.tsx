@@ -169,9 +169,8 @@ export const FloatingConsultantDrawer: React.FC = () => {
         if (data.status === 'SUCCESS') {
           setWorkflowState('CONFIRMED');
           setActiveMcpApp(null);
-          const isBuy = data.transactionType === 'BUY';
-          const title = isBuy ? 'Vehicle Purchase Confirmed' : 'Rental Reservation Confirmed';
-          const targetDashboard = isBuy ? '/dashboard/purchases' : '/dashboard/rentals';
+          const title = 'Vehicle Purchase Confirmed';
+          const targetDashboard = '/dashboard/purchases';
 
           addMessage({
             id: `msg_sync_confirm_${data.orderId || Date.now()}`,
@@ -182,7 +181,7 @@ export const FloatingConsultantDrawer: React.FC = () => {
               messageType: 'PAYMENT_SUCCESS',
               transaction: data,
               actions: [
-                { label: isBuy ? 'View Purchase Details' : 'View Rental Details', path: targetDashboard },
+                { label: 'View Purchase Details', path: targetDashboard },
                 { label: 'Payment History', path: '/dashboard/payments' },
                 { label: 'Explore More Cars', path: '/explore' }
               ]

@@ -2,29 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ShoppingBag,
-  Calendar,
-  Car,
   ListOrdered,
-  TrendingUp,
+  CreditCard,
+  Heart,
   ArrowRight,
   Sparkles,
   ShieldCheck,
   PlusCircle,
-  Clock,
+  Lock,
 } from 'lucide-react';
+import { useAuthStore } from '../../store/authStore';
 
 interface SummaryData {
   total_purchases: number;
-  total_rentals: number;
-  active_rentals: number;
-  vehicles_owned: number;
-  active_selling_listings: number;
   total_spent_inr: number;
-  portfolio_valuation_inr: number;
+  total_payments: number;
+  total_settled_payments_inr: number;
+  active_selling_listings: number;
+  total_saved?: number;
 }
 
 export const OverviewPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,11 +53,13 @@ export const OverviewPage: React.FC = () => {
     return `₹${val.toLocaleString('en-IN')}`;
   };
 
+  const totalSavedCount = user?.saved_vehicles?.length ?? summary?.total_saved ?? 0;
+
   return (
     <div className="space-y-6">
-      {/* Metric Cards Grid */}
+      {/* Metric Cards Grid - Strictly 4 Core Non-Rental Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Purchases Stat */}
+        {/* 1. Purchases Stat */}
         <div
           onClick={() => navigate('/dashboard/purchases')}
           className="cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl p-5 transition-all shadow-xl group"
@@ -77,50 +79,10 @@ export const OverviewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Rentals Stat */}
-        <div
-          onClick={() => navigate('/dashboard/rentals')}
-          className="cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl p-5 transition-all shadow-xl group"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">My Rentals</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Calendar className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-white">
-            {isLoading ? '...' : summary?.total_rentals ?? 0}
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-            <span>Active bookings: {summary?.active_rentals ?? 0}</span>
-            <ArrowRight className="w-3.5 h-3.5 text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
-        </div>
-
-        {/* Owned Vehicles Stat */}
-        <div
-          onClick={() => navigate('/dashboard/vehicles')}
-          className="cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl p-5 transition-all shadow-xl group"
-        >
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">My Garage</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Car className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-2xl font-black text-white">
-            {isLoading ? '...' : summary?.vehicles_owned ?? 0}
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
-            <span>Valuation: {formatPrice(summary?.portfolio_valuation_inr)}</span>
-            <ArrowRight className="w-3.5 h-3.5 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
-        </div>
-
-        {/* Selling Listings Stat */}
+        {/* 2. Selling Listings Stat */}
         <div
           onClick={() => navigate('/dashboard/listings')}
-          className="cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-2xl p-5 transition-all shadow-xl group"
+          className="cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 transition-all shadow-xl group"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Selling Listings</span>
@@ -134,6 +96,46 @@ export const OverviewPage: React.FC = () => {
           <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
             <span>Active marketplace ads</span>
             <ArrowRight className="w-3.5 h-3.5 text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </div>
+
+        {/* 3. Payments Stat */}
+        <div
+          onClick={() => navigate('/dashboard/payments')}
+          className="cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-2xl p-5 transition-all shadow-xl group"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Payments</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <CreditCard className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-white">
+            {isLoading ? '...' : summary?.total_payments ?? 0}
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>Settled: {formatPrice(summary?.total_settled_payments_inr)}</span>
+            <ArrowRight className="w-3.5 h-3.5 text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
+        </div>
+
+        {/* 4. Saved Vehicles Stat */}
+        <div
+          onClick={() => navigate('/dashboard/saved')}
+          className="cursor-pointer bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-rose-500/40 rounded-2xl p-5 transition-all shadow-xl group"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saved Cars</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Heart className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-black text-white">
+            {isLoading ? '...' : totalSavedCount}
+          </div>
+          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+            <span>Bookmarked vehicles</span>
+            <ArrowRight className="w-3.5 h-3.5 text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
       </div>
@@ -170,12 +172,12 @@ export const OverviewPage: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => navigate('/rent')}
+            onClick={() => navigate('/dashboard/payments')}
             className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/60 hover:bg-cyan-500/10 border border-slate-800 hover:border-cyan-500/40 transition-all text-left"
           >
             <div>
-              <div className="text-xs font-bold text-white">Rent a Car</div>
-              <div className="text-[10px] text-slate-400">Daily luxury & SUV rentals</div>
+              <div className="text-xs font-bold text-white">Transactions</div>
+              <div className="text-[10px] text-slate-400">Receipts & payment history</div>
             </div>
             <ArrowRight className="w-4 h-4 text-cyan-400" />
           </button>
@@ -213,20 +215,19 @@ export const OverviewPage: React.FC = () => {
 
         <div className="rounded-2xl border border-slate-800/80 bg-slate-900/40 p-5">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <Lock className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Rental Concierge Service</h3>
-              <p className="text-[11px] text-slate-400">Contactless doorstep delivery and Airport VIP pickup</p>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Transparent Digital Transactions</h3>
+              <p className="text-[11px] text-slate-400">100% encrypted, token reservations, escrow protection</p>
             </div>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            Active reservations feature zero security deposit hold for verified members and comprehensive zero-depreciation insurance cover included.
+            All reservation tokens are fully refundable. Verified members enjoy zero hidden processing fees and direct bank authorization receipts.
           </p>
         </div>
       </div>
     </div>
   );
 };
-

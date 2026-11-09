@@ -17,7 +17,7 @@ export const A2UIRenderer: React.FC<A2UIRendererProps> = ({
   onAction,
 }) => {
   const navigate = useNavigate();
-  const { purchasedVehicleIds, rentedVehicleIds, getVehicleById } = useVehicleStore();
+  const { purchasedVehicleIds, getVehicleById } = useVehicleStore();
   // Track selected value per RadioGroup field (keyed by component id)
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>({});
   // Track loading state per component id
@@ -171,7 +171,6 @@ export const A2UIRenderer: React.FC<A2UIRendererProps> = ({
 
         const vId = props.vehicleId || props.actionData?.vehicle_id || props.actionData?.id;
         const isPurchased = vId && purchasedVehicleIds.includes(vId);
-        const isRented = vId && rentedVehicleIds.includes(vId);
 
         const handleInspectClick = (e: React.MouseEvent) => {
           e.preventDefault();
@@ -220,8 +219,6 @@ export const A2UIRenderer: React.FC<A2UIRendererProps> = ({
             className={`group relative my-3 overflow-hidden rounded-2xl border bg-slate-900/90 shadow-xl cursor-pointer transition-all duration-300 hover:shadow-2xl select-none ${
               isPurchased
                 ? 'border-emerald-500/80 ring-1 ring-emerald-500/40'
-                : isRented
-                ? 'border-cyan-500/80 ring-1 ring-cyan-500/40'
                 : 'border-surface-border hover:border-cyan-500/70'
             }`}
           >
@@ -237,17 +234,11 @@ export const A2UIRenderer: React.FC<A2UIRendererProps> = ({
               {/* Top Badges */}
               <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  {isPurchased && (
+                  {isPurchased ? (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 shadow-lg uppercase tracking-wider">
                       <ShieldCheck className="w-3 h-3" /> OWNED / PURCHASED
                     </span>
-                  )}
-                  {isRented && !isPurchased && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-black px-2.5 py-0.5 shadow-lg uppercase tracking-wider">
-                      <ShieldCheck className="w-3 h-3" /> ACTIVE RENTAL
-                    </span>
-                  )}
-                  {!isPurchased && !isRented && (
+                  ) : (
                     <span className="rounded-full bg-slate-900/80 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-bold text-gray-300 border border-white/10 uppercase tracking-wider">
                       {props.category}
                     </span>

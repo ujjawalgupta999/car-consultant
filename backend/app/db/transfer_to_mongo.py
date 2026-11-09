@@ -1,7 +1,9 @@
 import json
 import logging
+import hashlib
 from pathlib import Path
 from typing import Dict, Any, List
+from datetime import datetime
 import pymongo
 
 from .mongodb import mongodb_manager
@@ -11,7 +13,7 @@ logger = logging.getLogger("car_consultant.db.transfer")
 
 def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
     """
-    Transfers vehicles dataset and user data portfolio into MongoDB.
+    Transfers vehicles dataset and user data portfolio into MongoDB Atlas.
     Uses upsert operations so it is completely safe, idempotent, and non-destructive.
     """
     if not mongodb_manager.is_connected():
@@ -31,36 +33,37 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
 
     counts = {
         "vehicles": 0,
-        "owned_vehicles": 0,
-        "purchase_orders": 0,
-        "payment_transactions": 0,
-        "selling_listings": 0,
-        "saved_vehicles": 0,
-        "user_profiles": 0
+        "users": 0,
+        "purchases": 0,
+        "payments": 0,
+        "selling_listings": 0
     }
 
     try:
         # 1. Create indexes
+        db.users.create_index([("id", pymongo.ASCENDING)], unique=True)
+        db.users.create_index([("email", pymongo.ASCENDING)], unique=True)
+
         db.vehicles.create_index([("id", pymongo.ASCENDING)], unique=True)
         db.vehicles.create_index([("category", pymongo.ASCENDING)])
         db.vehicles.create_index([("brand", pymongo.ASCENDING)])
         db.vehicles.create_index([("purchase_price", pymongo.ASCENDING)])
 
-        db.owned_vehicles.create_index([("id", pymongo.ASCENDING)], unique=True)
-        db.owned_vehicles.create_index([("userId", pymongo.ASCENDING)])
+        db.purchases.create_index([("id", pymongo.ASCENDING)], unique=True)
+        db.purchases.create_index([("userId", pymongo.ASCENDING)])
+        db.purchases.create_index([("orderId", pymongo.ASCENDING)])
 
-        db.purchase_orders.create_index([("id", pymongo.ASCENDING)], unique=True)
-        db.purchase_orders.create_index([("userId", pymongo.ASCENDING)])
-        db.purchase_orders.create_index([("orderId", pymongo.ASCENDING)])
+        db.orders.create_index([("id", pymongo.ASCENDING)], unique=True)
+        db.orders.create_index([("orderId", pymongo.ASCENDING)])
+        db.orders.create_index([("userId", pymongo.ASCENDING)])
 
-        db.payment_transactions.create_index([("id", pymongo.ASCENDING)], unique=True)
-        db.payment_transactions.create_index([("transactionId", pymongo.ASCENDING)], unique=True)
-        db.payment_transactions.create_index([("userId", pymongo.ASCENDING)])
+        db.payments.create_index([("id", pymongo.ASCENDING)], unique=True)
+        db.payments.create_index([("transactionId", pymongo.ASCENDING)], unique=True)
+        db.payments.create_index([("userId", pymongo.ASCENDING)])
+        db.payments.create_index([("orderId", pymongo.ASCENDING)])
 
         db.selling_listings.create_index([("id", pymongo.ASCENDING)], unique=True)
         db.selling_listings.create_index([("userId", pymongo.ASCENDING)])
-
-        db.user_profiles.create_index([("id", pymongo.ASCENDING)], unique=True)
 
         # 2. Transfer Vehicles from vehicles.json
         vehicles_path = Path(__file__).parent.parent.parent / "data" / "vehicles.json"
@@ -75,62 +78,44 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
                     upsert=True
                 )
             counts["vehicles"] = db.vehicles.count_documents({})
-            logger.info(f"Successfully migrated {len(vehicles_data)} vehicles to MongoDB 'vehicles' collection.")
+            logger.info(f"Successfully migrated {len(vehicles_data)} vehicles to MongoDB Atlas 'vehicles' collection.")
 
-        # 3. Transfer User Demo Portfolio from UserDataRepository
+        # 3. Transfer Users into 'users' collection
+        demo_user_doc = {
+            "id": "usr_demo_01",
+            "name": "Alex Vance",
+            "email": "demo@auramotors.com",
+            "phone": "+91 98765 43210",
+            "password_hash": hashlib.sha256("Password123!".encode()).hexdigest(),
+            "saved_vehicles": ["CAR-001", "CAR-021"],
+            "created_at": "2026-11-01T10:00:00Z",
+            "updated_at": datetime.utcnow().isoformat() + "Z"
+        }
+        db.users.update_one({"email": demo_user_doc["email"]}, {"$set": demo_user_doc}, upsert=True)
+        counts["users"] = db.users.count_documents({})
+
+        # 4. Transfer Purchases from repository
         from ..repositories.user_data_repo import user_data_repo
-        from ..api.routes_auth import _USERS_DB
-
-        # User Profiles
-        demo_user = user_data_repo.get_profile()
-        if demo_user:
-            user_doc = demo_user if isinstance(demo_user, dict) else demo_user.model_dump()
-            db.user_profiles.update_one(
-                {"id": user_doc["id"]},
-                {"$set": user_doc},
-                upsert=True
-            )
-
-        for email, u_data in _USERS_DB.items():
-            u_doc = {k: v for k, v in u_data.items() if k != "password_hash"}
-            db.user_profiles.update_one(
-                {"id": u_doc["id"]},
-                {"$set": u_doc},
-                upsert=True
-            )
-        counts["user_profiles"] = db.user_profiles.count_documents({})
-
-        # Owned Vehicles (Digital Garage)
-        for ov in user_data_repo.get_all_owned_vehicles():
-            doc = ov.model_dump() if hasattr(ov, "model_dump") else dict(ov)
-            db.owned_vehicles.update_one(
-                {"id": doc["id"]},
-                {"$set": doc},
-                upsert=True
-            )
-        counts["owned_vehicles"] = db.owned_vehicles.count_documents({})
-
-        # Purchase Orders
         for po in user_data_repo.get_all_purchases():
             doc = po.model_dump() if hasattr(po, "model_dump") else dict(po)
-            db.purchase_orders.update_one(
+            db.purchases.update_one(
                 {"id": doc["id"]},
                 {"$set": doc},
                 upsert=True
             )
-        counts["purchase_orders"] = db.purchase_orders.count_documents({})
+        counts["purchases"] = db.purchases.count_documents({})
 
-        # Payment Transactions
+        # 5. Transfer Payments
         for pt in user_data_repo.get_all_payments():
             doc = pt.model_dump() if hasattr(pt, "model_dump") else dict(pt)
-            db.payment_transactions.update_one(
+            db.payments.update_one(
                 {"id": doc["id"]},
                 {"$set": doc},
                 upsert=True
             )
-        counts["payment_transactions"] = db.payment_transactions.count_documents({})
+        counts["payments"] = db.payments.count_documents({})
 
-        # Selling Listings
+        # 6. Transfer Selling Listings
         for sl in user_data_repo.get_all_selling_listings():
             doc = sl.model_dump() if hasattr(sl, "model_dump") else dict(sl)
             db.selling_listings.update_one(
@@ -140,23 +125,12 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
             )
         counts["selling_listings"] = db.selling_listings.count_documents({})
 
-        # Saved Vehicles
-        saved_ids = user_data_repo.get_saved_vehicle_ids()
-        u_id = demo_user.get("id", "usr_demo_01") if isinstance(demo_user, dict) else "usr_demo_01"
-        for sv_id in saved_ids:
-            db.saved_vehicles.update_one(
-                {"userId": u_id, "vehicleId": sv_id},
-                {"$set": {"userId": u_id, "vehicleId": sv_id}},
-                upsert=True
-            )
-        counts["saved_vehicles"] = db.saved_vehicles.count_documents({})
-
         logger.info(f"MongoDB Data Transfer Complete: {counts}")
         return {
             "success": True,
             "database": db.name,
             "counts": counts,
-            "message": "All vehicles and user data successfully synchronized to MongoDB."
+            "message": "All vehicles and user data successfully synchronized to MongoDB Atlas."
         }
     except Exception as e:
         logger.error(f"Error during MongoDB data transfer: {e}")
@@ -171,4 +145,3 @@ if __name__ == "__main__":
     print("Initiating MongoDB Data Transfer...")
     result = transfer_all_data_to_mongodb(force=True)
     print(json.dumps(result, indent=2))
-

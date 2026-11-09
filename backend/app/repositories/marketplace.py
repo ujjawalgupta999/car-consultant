@@ -3,8 +3,7 @@ import logging
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 from .base import MarketplaceRepositoryBase
-from ..models.vehicle import Vehicle, RentalAvailabilityInterval
-from ..marketplace.availability import is_vehicle_available_for_dates
+from ..models.vehicle import Vehicle
 from ..config import settings
 from ..db.mongodb import mongodb_manager
 
@@ -14,8 +13,11 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
     def __init__(self, data_path: Optional[str] = None):
         self.data_path = Path(data_path) if data_path else (Path(__file__).parent.parent.parent / "data" / "vehicles.json")
         self._vehicles: Dict[str, Vehicle] = {}
-        self.load_from_json()
+        # 1. Initialize MongoDB connection & seeding if available
         self.load_from_mongodb()
+        # 2. If MongoDB wasn't connected, load from json as fallback
+        if len(self._vehicles) == 0:
+            self.load_from_json()
 
     def load_from_json(self):
         if not self.data_path.exists():
@@ -26,20 +28,34 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
             for item in raw_data:
                 vehicle = Vehicle(**item)
                 self._vehicles[vehicle.id] = vehicle
-        logger.info(f"Loaded {len(self._vehicles)} vehicles into marketplace repository from JSON.")
+        logger.info(f"Loaded {len(self._vehicles)} vehicles into marketplace repository from local fallback.")
 
     def load_from_mongodb(self):
-        """If MongoDB is connected and populated, synchronize the in-memory catalog from MongoDB."""
+        """Loads and synchronizes all vehicle listings directly from MongoDB Atlas."""
         try:
+            if not mongodb_manager.is_connected():
+                mongodb_manager.connect()
+
             if mongodb_manager.is_connected():
                 coll = mongodb_manager.get_collection("vehicles")
                 if coll is not None:
                     count = coll.count_documents({})
+                    # If empty, automatically seed from vehicles.json into Atlas
+                    if count == 0 and self.data_path.exists():
+                        with open(self.data_path, "r", encoding="utf-8") as f:
+                            seed_data = json.load(f)
+                        for item in seed_data:
+                            coll.update_one({"id": item["id"]}, {"$set": item}, upsert=True)
+                        count = coll.count_documents({})
+                        logger.info(f"Seeded {count} vehicles into empty MongoDB Atlas 'vehicles' collection.")
+
                     if count > 0:
+                        loaded = {}
                         for doc in coll.find({}, {"_id": 0}):
                             vehicle = Vehicle(**doc)
-                            self._vehicles[vehicle.id] = vehicle
-                        logger.info(f"Synchronized {count} vehicles from MongoDB 'vehicles' collection.")
+                            loaded[vehicle.id] = vehicle
+                        self._vehicles = loaded
+                        logger.info(f"Directly loaded and synchronized {len(self._vehicles)} vehicles from MongoDB Atlas.")
         except Exception as e:
             logger.warning(f"Could not load vehicles from MongoDB: {e}")
 
@@ -47,20 +63,20 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
         return list(self._vehicles.values())
 
     def get_vehicle_by_id(self, vehicle_id: str) -> Optional[Vehicle]:
+        if mongodb_manager.is_connected():
+            coll = mongodb_manager.get_collection("vehicles")
+            if coll is not None:
+                try:
+                    doc = coll.find_one({"id": vehicle_id}, {"_id": 0})
+                    if doc:
+                        return Vehicle(**doc)
+                except Exception:
+                    pass
         return self._vehicles.get(vehicle_id)
-
-    def add_booking_interval(self, vehicle_id: str, start_date: str, end_date: str, booking_id: str) -> bool:
-        vehicle = self.get_vehicle_by_id(vehicle_id)
-        if not vehicle:
-            return False
-        vehicle.rental_availability.append(
-            RentalAvailabilityInterval(start_date=start_date, end_date=end_date, booking_id=booking_id)
-        )
-        return True
 
     def search_vehicles(
         self,
-        intent: str = "rent", # "rent", "buy", or "all"
+        intent: str = "buy",
         location: Optional[str] = None,
         category: Optional[str] = None,
         min_price: Optional[float] = None,
@@ -76,17 +92,24 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
         end_date: Optional[str] = None
     ) -> List[Vehicle]:
         results: List[Vehicle] = []
-        is_rent = (intent.lower() == "rent")
 
-        for v in self._vehicles.values():
-            # 1. Intent check
-            if intent.lower() != "all":
-                if is_rent and not v.available_for_rent:
-                    continue
-                if not is_rent and not v.available_for_purchase:
-                    continue
+        vehicles_source = list(self._vehicles.values())
+        if mongodb_manager.is_connected():
+            coll = mongodb_manager.get_collection("vehicles")
+            if coll is not None:
+                try:
+                    docs = list(coll.find({}, {"_id": 0}))
+                    if docs:
+                        vehicles_source = [Vehicle(**d) for d in docs]
+                except Exception:
+                    pass
 
-            # 2. Location check (case-insensitive substring or match)
+        for v in vehicles_source:
+            # 1. Marketplace is strictly purchase / buy
+            if not v.available_for_purchase:
+                continue
+
+            # 2. Location check
             if location and location.lower() not in ["any", "all", ""]:
                 if location.lower() not in v.location.lower():
                     continue
@@ -94,7 +117,6 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
             # 3. Category check
             if category and category.lower() not in ["any", "all", ""]:
                 cat_match = (v.category.value.lower() == category.lower())
-                # Cross-category match for electric SUVs in Electric Vehicle category
                 if not cat_match and category.lower() in ["suv", "luxury suv"]:
                     is_elec = (fuel_type and fuel_type.lower() == "electric") or (v.fuel_type.value.lower() == "electric")
                     if is_elec and v.category.value == "Electric Vehicle":
@@ -103,8 +125,8 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
                 if not cat_match:
                     continue
 
-            # 4. Budget check (min and max price)
-            price = v.rental_price_per_day if is_rent else v.purchase_price
+            # 4. Budget check (strictly purchase price)
+            price = v.purchase_price
             if min_price and min_price > 0 and price < min_price:
                 continue
             if max_price and max_price > 0 and price > max_price:
@@ -125,7 +147,7 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
                 if not any(v.brand.lower() == b.lower() for b in brands):
                     continue
 
-            # 8. Seating capacity check (Exact / Min / Max)
+            # 8. Seating capacity check
             if seats_match_type == "exact" and seats and seats > 0:
                 if v.seats != seats:
                     continue
@@ -141,16 +163,9 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
                 if v.seats != seats:
                     continue
 
-            # 9. Date Availability (for rent)
-            if is_rent and start_date and end_date:
-                available, _ = is_vehicle_available_for_dates(v, start_date, end_date)
-                if not available:
-                    continue
-
             results.append(v)
 
         return results
 
 # Singleton instance
 marketplace_repo = MarketplaceRepository()
-

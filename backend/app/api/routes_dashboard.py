@@ -15,35 +15,13 @@ def get_dashboard_summary(authorization: Optional[str] = Header(None)):
     }
 
 @router.get("/vehicles")
-def get_dashboard_vehicles(authorization: Optional[str] = Header(None)):
+def get_dashboard_vehicles_deprecated(authorization: Optional[str] = Header(None)):
+    """Deprecated: Maps to confirmed purchases."""
     user_id = resolve_user_id(authorization)
-    vehicles = user_data_repo.get_user_owned_vehicles(user_id)
-    
-    # Categorize vehicles
-    purchased = [v.model_dump() for v in vehicles if v.source.value == "PURCHASED_PLATFORM"]
-    manually_added = [v.model_dump() for v in vehicles if v.source.value == "MANUALLY_ADDED"]
-    listed_for_sale = [v.model_dump() for v in vehicles if v.source.value == "LISTED_FOR_SALE"]
-    sold = [v.model_dump() for v in vehicles if v.source.value == "SOLD"]
-
+    purchases = user_data_repo.get_user_purchases(user_id)
     return {
         "userId": user_id,
-        "total": len(vehicles),
-        "vehicles": [v.model_dump() for v in vehicles],
-        "grouped": {
-            "purchased_platform": purchased,
-            "manually_added": manually_added,
-            "listed_for_sale": listed_for_sale,
-            "sold": sold
-        }
+        "total": len(purchases),
+        "vehicles": [p.model_dump() for p in purchases],
+        "message": "My Garage has been consolidated into My Purchases."
     }
-
-@router.get("/rentals")
-def get_dashboard_rentals(authorization: Optional[str] = Header(None)):
-    user_id = resolve_user_id(authorization)
-    rentals = user_data_repo.get_user_rentals(user_id)
-    return {
-        "userId": user_id,
-        "total": len(rentals),
-        "rentals": [r.model_dump() for r in rentals]
-    }
-

@@ -5,15 +5,14 @@ import { Footer } from './components/Footer';
 import { FloatingConsultantDrawer } from './components/FloatingConsultantDrawer';
 import { useConsultantStore } from './store/consultantStore';
 import { useVehicleStore } from './store/vehicleStore';
+import { useAuthStore } from './store/authStore';
 
 // Marketplace & Flow Pages
 import { Home } from './pages/Home';
 import { ExploreCars } from './pages/ExploreCars';
-import { RentCars } from './pages/RentCars';
 import { BuyCars } from './pages/BuyCars';
 import { VehicleDetails } from './pages/VehicleDetails';
 import { CompareCars } from './pages/CompareCars';
-import { Booking } from './pages/Booking';
 import { Checkout } from './pages/Checkout';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
@@ -26,9 +25,7 @@ import { SellCarPage } from './pages/SellCarPage';
 import { DashboardLayout } from './pages/dashboard/DashboardLayout';
 import { OverviewPage } from './pages/dashboard/OverviewPage';
 import { PurchasesPage } from './pages/dashboard/PurchasesPage';
-import { RentalsPage } from './pages/dashboard/RentalsPage';
 import { PaymentsPage } from './pages/dashboard/PaymentsPage';
-import { VehiclesPage } from './pages/dashboard/VehiclesPage';
 import { ListingsPage } from './pages/dashboard/ListingsPage';
 import { SavedPage } from './pages/dashboard/SavedPage';
 import { ProfilePage } from './pages/dashboard/ProfilePage';
@@ -40,6 +37,7 @@ const ScrollToTop: React.FC = () => {
   const { pathname } = useLocation();
   const { setActiveContext } = useConsultantStore();
   const { vehicles, fetchVehicles, fetchUserOwnership } = useVehicleStore();
+  const { fetchCurrentUser } = useAuthStore();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -51,15 +49,17 @@ const ScrollToTop: React.FC = () => {
       fetchVehicles();
     }
     fetchUserOwnership();
+    fetchCurrentUser();
 
     const handleDataRefresh = () => {
       fetchUserOwnership();
+      fetchCurrentUser();
     };
     window.addEventListener('aura_data_refresh', handleDataRefresh);
     return () => {
       window.removeEventListener('aura_data_refresh', handleDataRefresh);
     };
-  }, [vehicles.length, fetchVehicles, fetchUserOwnership]);
+  }, [vehicles.length, fetchVehicles, fetchUserOwnership, fetchCurrentUser]);
 
   return null;
 };
@@ -80,7 +80,7 @@ export const App: React.FC = () => {
             <Route path="/sell-car" element={<SellCarPage />} />
             <Route path="/vehicles/:id" element={<VehicleDetails />} />
             <Route path="/compare" element={<CompareCars />} />
-            <Route path="/booking/:vehicleId" element={<Booking />} />
+            <Route path="/booking/:vehicleId" element={<Navigate to="/checkout" replace />} />
             <Route path="/checkout/:id" element={<Checkout />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/payment/processing/:orderId" element={<PaymentProcessingPage />} />
@@ -94,7 +94,7 @@ export const App: React.FC = () => {
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="rentals" element={<Navigate to="/dashboard/purchases" replace />} />
               <Route path="payments" element={<PaymentsPage />} />
-              <Route path="vehicles" element={<VehiclesPage />} />
+              <Route path="vehicles" element={<Navigate to="/dashboard/purchases" replace />} />
               <Route path="listings" element={<ListingsPage />} />
               <Route path="saved" element={<SavedPage />} />
               <Route path="profile" element={<ProfilePage />} />

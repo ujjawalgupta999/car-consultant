@@ -257,10 +257,10 @@ export const Home: React.FC = () => {
             <div className="mt-6 flex flex-wrap gap-2 text-xs">
               <button
                 type="button"
-                onClick={() => handleAskAIPrompt("I need an automatic SUV in Delhi for five days starting 15 December 2026. My budget is ₹3,000 per day.")}
+                onClick={() => handleAskAIPrompt("I want to buy an electric SUV in Delhi under ₹25 lakh.")}
                 className="rounded-full border border-surface-border bg-surface px-3 py-1.5 text-gray-300 hover:border-cyan-400 hover:text-white transition-all"
               >
-                🚗 Try Scenario A: Rental in Delhi
+                🚗 Try Scenario A: Electric SUV ₹25L
               </button>
               <button
                 type="button"
@@ -302,7 +302,7 @@ export const Home: React.FC = () => {
               </div>
               <h3 className="text-base font-bold text-white">100% Truthful Marketplace</h3>
               <p className="text-xs text-gray-400 leading-relaxed">
-                No phantom discounts or fabricated availability. Every vehicle, rental interval, and ex-showroom price is authoritatively verified.
+                No phantom discounts or fabricated availability. Every vehicle listing, specification, and ex-showroom price is authoritatively verified.
               </p>
             </div>
 

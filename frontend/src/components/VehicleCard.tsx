@@ -17,11 +17,9 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
   const { addVehicle, removeVehicle, hasVehicle } = useComparisonStore();
   const { isSaved, toggleSaved } = useAuthStore();
   const { setIsOpen, addMessage, setActiveContext } = useConsultantStore();
-  const { purchasedVehicleIds, rentedVehicleIds, rentals } = useVehicleStore();
+  const { purchasedVehicleIds } = useVehicleStore();
 
   const isPurchased = purchasedVehicleIds.includes(vehicle.id);
-  const isRented = rentedVehicleIds.includes(vehicle.id);
-  const activeRental = isRented ? rentals.find((r: any) => (r.vehicleId || r.vehicleSnapshot?.id) === vehicle.id) : null;
 
   const isCompared = hasVehicle(vehicle.id);
   const isFavorite = isSaved(vehicle.id);
@@ -71,8 +69,6 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-surface shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl ${
         isPurchased
           ? 'border-emerald-500/80 ring-1 ring-emerald-500/40'
-          : isRented
-          ? 'border-cyan-500/80 ring-1 ring-cyan-500/40'
           : 'border-surface-border hover:border-primary/50'
       }`}
     >
@@ -87,17 +83,11 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
 
         {/* Category / Ownership Pill */}
         <div className="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
-          {isPurchased && (
+          {isPurchased ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black px-2.5 py-1 shadow-lg uppercase tracking-wider">
               <ShieldCheck className="w-3.5 h-3.5" /> ✓ PURCHASED BY YOU
             </span>
-          )}
-          {isRented && !isPurchased && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-black px-2.5 py-1 shadow-lg uppercase tracking-wider">
-              <ShieldCheck className="w-3.5 h-3.5" /> ✓ CURRENTLY RENTED
-            </span>
-          )}
-          {!isPurchased && !isRented && (
+          ) : (
             <div className="flex items-center gap-1.5 rounded-full bg-background/80 backdrop-blur-md px-2.5 py-1 text-[11px] font-bold text-white border border-white/10 uppercase tracking-wider">
               {vehicle.category}
             </div>
@@ -185,10 +175,10 @@ export const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, priorityInten
           <div className="flex items-center gap-2">
             {isPurchased ? (
               <Link
-                to="/dashboard/vehicles"
+                to="/dashboard/purchases"
                 className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 px-3 py-2 text-xs font-bold text-slate-950 transition-all shadow-md"
               >
-                <span>View in My Garage</span>
+                <span>View in My Purchases</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             ) : (

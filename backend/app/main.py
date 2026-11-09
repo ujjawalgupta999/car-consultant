@@ -11,14 +11,12 @@ from .api import (
     routes_health,
     routes_sessions,
     routes_vehicles,
-    routes_bookings,
     routes_payments,
     routes_a2ui,
     routes_auth,
     routes_purchases,
     routes_dashboard,
     routes_listings,
-    routes_rentals,
     routes_checkout,
     routes_db
 )
@@ -91,14 +89,12 @@ app.add_middleware(
 app.include_router(routes_health.router)
 app.include_router(routes_sessions.router)
 app.include_router(routes_vehicles.router)
-app.include_router(routes_bookings.router)
 app.include_router(routes_payments.router)
 app.include_router(routes_a2ui.router)
 app.include_router(routes_auth.router)
 app.include_router(routes_purchases.router)
 app.include_router(routes_dashboard.router)
 app.include_router(routes_listings.router)
-app.include_router(routes_rentals.router)
 app.include_router(routes_checkout.router)
 app.include_router(routes_db.router)
 

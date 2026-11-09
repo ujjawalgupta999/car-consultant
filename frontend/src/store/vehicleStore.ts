@@ -3,7 +3,7 @@ import { Vehicle } from '../types';
 
 export interface VehicleFilters {
   search: string;
-  intent: 'all' | 'rent' | 'buy';
+  intent: 'buy';
   category: string;
   brand: string;
   transmission: string;
@@ -18,7 +18,7 @@ export interface VehicleFilters {
 
 const DEFAULT_FILTERS: VehicleFilters = {
   search: '',
-  intent: 'all',
+  intent: 'buy',
   category: '',
   brand: '',
   transmission: '',
@@ -37,8 +37,9 @@ interface VehicleStore {
   error: string | null;
   filters: VehicleFilters;
   purchasedVehicleIds: string[];
-  rentedVehicleIds: string[];
   purchases: any[];
+  // Deprecated compatibility fields
+  rentedVehicleIds: string[];
   rentals: any[];
   fetchVehicles: () => Promise<void>;
   fetchUserOwnership: () => Promise<void>;
@@ -54,8 +55,8 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
   error: null,
   filters: DEFAULT_FILTERS,
   purchasedVehicleIds: [],
-  rentedVehicleIds: [],
   purchases: [],
+  rentedVehicleIds: [],
   rentals: [],
 
   fetchVehicles: async () => {
@@ -72,10 +73,10 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
 
   fetchUserOwnership: async () => {
     try {
-      const [purchasesRes, rentalsRes] = await Promise.all([
-        fetch('/api/purchases').catch(() => null),
-        fetch('/api/rentals').catch(() => null),
-      ]);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('aura_auth_token') || 'token_demo_alex_vance' : 'token_demo_alex_vance';
+      const purchasesRes = await fetch('/api/purchases', {
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => null);
 
       const purchasedIds: string[] = [];
       let purchasesData: any[] = [];
@@ -88,39 +89,20 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
         });
       }
 
-      const rentedIds: string[] = [];
-      let rentalsData: any[] = [];
-      if (rentalsRes && rentalsRes.ok) {
-        const rJson = await rentalsRes.json();
-        rentalsData = rJson.rentals || [];
-        rentalsData.forEach((r: any) => {
-          const vId = r.vehicleId || r.vehicleSnapshot?.id;
-          if (vId && !rentedIds.includes(vId)) rentedIds.push(vId);
-        });
-      }
-
       set({
         purchasedVehicleIds: purchasedIds,
-        rentedVehicleIds: rentedIds,
         purchases: purchasesData,
-        rentals: rentalsData,
+        rentedVehicleIds: [],
+        rentals: [],
       });
     } catch (e) {
-      console.warn('Could not fetch user ownership state:', e);
+      console.warn('Could not fetch user purchase ownership state:', e);
     }
   },
 
   setFilters: (partial) => {
     set((state) => {
-      const merged = { ...state.filters, ...partial };
-      // Safety guard against cross-intent price leakage between buy & rent
-      if (partial.intent === 'buy' && (merged.maxPrice < 100000 || (partial.maxPrice === undefined && state.filters.intent === 'rent'))) {
-        merged.maxPrice = 50000000;
-        merged.minPrice = 0;
-      } else if (partial.intent === 'rent' && (merged.maxPrice > 100000 || (partial.maxPrice === undefined && state.filters.intent === 'buy'))) {
-        merged.maxPrice = 50000;
-        merged.minPrice = 0;
-      }
+      const merged = { ...state.filters, ...partial, intent: 'buy' as const };
       return { filters: merged };
     });
   },
@@ -146,9 +128,8 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
           if (!matchName && !matchCat) return false;
         }
 
-        // 2. Intent
-        if (filters.intent === 'rent' && !v.available_for_rent) return false;
-        if (filters.intent === 'buy' && !v.available_for_purchase) return false;
+        // 2. Intent: strictly purchase
+        if (!v.available_for_purchase) return false;
 
         // 3. Category
         if (filters.category && filters.category.toLowerCase() !== 'all' && filters.category !== '') {
@@ -185,34 +166,22 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
 
         // 8.5 Minimum Price
         if (filters.minPrice !== undefined && filters.minPrice > 0) {
-          if (filters.intent === 'rent') {
-            if (v.rental_price_per_day < filters.minPrice) return false;
-          } else if (filters.intent === 'buy') {
-            if (v.purchase_price < filters.minPrice) return false;
-          }
+          if (v.purchase_price < filters.minPrice) return false;
         }
 
         // 9. Price Ceiling
         if (filters.maxPrice && filters.maxPrice > 0) {
-          if (filters.intent === 'rent') {
-            if (v.rental_price_per_day > filters.maxPrice) return false;
-          } else if (filters.intent === 'buy') {
-            if (v.purchase_price > filters.maxPrice) return false;
-          }
+          if (v.purchase_price > filters.maxPrice) return false;
         }
 
         return true;
       })
       .sort((a, b) => {
         if (filters.sort === 'price_asc') {
-          const pA = filters.intent === 'rent' ? a.rental_price_per_day : a.purchase_price;
-          const pB = filters.intent === 'rent' ? b.rental_price_per_day : b.purchase_price;
-          return pA - pB;
+          return a.purchase_price - b.purchase_price;
         }
         if (filters.sort === 'price_desc') {
-          const pA = filters.intent === 'rent' ? a.rental_price_per_day : a.purchase_price;
-          const pB = filters.intent === 'rent' ? b.rental_price_per_day : b.purchase_price;
-          return pB - pA;
+          return b.purchase_price - a.purchase_price;
         }
         if (filters.sort === 'rating') {
           return b.rating - a.rating;
@@ -224,4 +193,3 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
       });
   },
 }));
-
