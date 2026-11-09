@@ -700,6 +700,26 @@ class OrchestrationEngine:
                 f"Would you like to book or reserve this car? Just say *\"book this car\"* or click **Book / Reserve** on the card below."
             )
 
+            # Enhanced with OpenAI GPT-4o & Langfuse tracing if enabled
+            if settings.is_openai_enabled:
+                try:
+                    from ..services.llm_service import llm_service
+                    ai_advice = llm_service.enhance_inquiry_advice(
+                        vehicle=target_vehicle.model_dump(),
+                        user_query=user_content,
+                        session_id=session_id,
+                        user_id=user_id
+                    )
+                    if ai_advice:
+                        bot_text = (
+                            f"### 🔍 Vehicle Deep-Dive: {target_vehicle.brand} {target_vehicle.model} ({target_vehicle.year})\n\n"
+                            f"I've synchronized the background page to **{target_path}** and applied the filter for the **{target_vehicle.brand} {target_vehicle.model}**.\n\n"
+                            f"{ai_advice}\n\n"
+                            f"Would you like to book or reserve this car? Just say *\"book this car\"* or click **Book / Reserve** on the card below."
+                        )
+                except Exception as e:
+                    logger.debug(f"OpenAI enhance_inquiry_advice notice: {e}")
+
             surface_id = f"surf_inquiry_{uuid.uuid4().hex[:6]}"
             card_id = f"rec_card_{target_vehicle.id}"
             comps = [

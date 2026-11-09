@@ -41,19 +41,17 @@ class UserDataRepository:
             return
 
         try:
-            import pymongo
-            client = pymongo.MongoClient(
-                settings.mongodb_uri,
-                serverSelectionTimeoutMS=300,
-                connectTimeoutMS=300,
-                socketTimeoutMS=500
-            )
-            client.admin.command('ping')
-            self._mongo_client = client
-            self._mongo_db = client.get_database()
-            logger.info(f"Connected to MongoDB database '{self._mongo_db.name}'.")
+            from ..db.mongodb import mongodb_manager
+            if mongodb_manager.is_connected() or mongodb_manager.connect():
+                self._mongo_client = mongodb_manager._client
+                self._mongo_db = mongodb_manager.get_database()
+                logger.info(f"UserDataRepository linked to MongoDB database '{self._mongo_db.name}'.")
+            else:
+                self._mongo_client = None
+                self._mongo_db = None
+                logger.info("MongoDB not connected. Operating in high-performance in-memory persistence mode.")
         except Exception as e:
-            logger.info("MongoDB not running on localhost. Operating in high-performance in-memory persistence mode.")
+            logger.info(f"MongoDB initialization notice: {e}. Operating in in-memory persistence mode.")
             self._mongo_client = None
             self._mongo_db = None
 

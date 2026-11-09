@@ -6,6 +6,7 @@ from .base import MarketplaceRepositoryBase
 from ..models.vehicle import Vehicle, RentalAvailabilityInterval
 from ..marketplace.availability import is_vehicle_available_for_dates
 from ..config import settings
+from ..db.mongodb import mongodb_manager
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
         self.data_path = Path(data_path) if data_path else (Path(__file__).parent.parent.parent / "data" / "vehicles.json")
         self._vehicles: Dict[str, Vehicle] = {}
         self.load_from_json()
+        self.load_from_mongodb()
 
     def load_from_json(self):
         if not self.data_path.exists():
@@ -24,7 +26,22 @@ class MarketplaceRepository(MarketplaceRepositoryBase):
             for item in raw_data:
                 vehicle = Vehicle(**item)
                 self._vehicles[vehicle.id] = vehicle
-        logger.info(f"Loaded {len(self._vehicles)} vehicles into marketplace repository.")
+        logger.info(f"Loaded {len(self._vehicles)} vehicles into marketplace repository from JSON.")
+
+    def load_from_mongodb(self):
+        """If MongoDB is connected and populated, synchronize the in-memory catalog from MongoDB."""
+        try:
+            if mongodb_manager.is_connected():
+                coll = mongodb_manager.get_collection("vehicles")
+                if coll is not None:
+                    count = coll.count_documents({})
+                    if count > 0:
+                        for doc in coll.find({}, {"_id": 0}):
+                            vehicle = Vehicle(**doc)
+                            self._vehicles[vehicle.id] = vehicle
+                        logger.info(f"Synchronized {count} vehicles from MongoDB 'vehicles' collection.")
+        except Exception as e:
+            logger.warning(f"Could not load vehicles from MongoDB: {e}")
 
     def get_all_vehicles(self) -> List[Vehicle]:
         return list(self._vehicles.values())

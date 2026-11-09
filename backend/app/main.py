@@ -19,7 +19,8 @@ from .api import (
     routes_dashboard,
     routes_listings,
     routes_rentals,
-    routes_checkout
+    routes_checkout,
+    routes_db
 )
 
 logging.basicConfig(
@@ -29,12 +30,33 @@ logging.basicConfig(
 logger = logging.getLogger("car_consultant")
 
 from contextlib import asynccontextmanager
+from .db.mongodb import mongodb_manager
+from .db.transfer_to_mongo import transfer_all_data_to_mongodb
+from .observability.langfuse_client import langfuse_manager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} in '{settings.environment}' mode.")
     logger.info(f"Agent mode: '{settings.agent_mode}' | Storage: '{settings.storage_backend}'")
+    
+    # 1. Connect MongoDB & auto-transfer data if live
+    if mongodb_manager.connect():
+        logger.info("MongoDB connection active. Transferring/synchronizing catalog and user data...")
+        transfer_all_data_to_mongodb(force=False)
+    else:
+        logger.info("MongoDB offline or placeholder username present; operating in high-performance memory/JSON mode.")
+
+    # 2. Log Observability status
+    if settings.is_openai_enabled:
+        logger.info(f"OpenAI GPT-4o engine enabled. Model: {settings.openai_model}")
+    if settings.is_langfuse_enabled:
+        logger.info(f"Langfuse observability enabled. Host: {settings.effective_langfuse_host}")
+
     yield
+
+    # Teardown
+    mongodb_manager.disconnect()
+    langfuse_manager.flush()
 
 app = FastAPI(
     title=settings.app_name,
@@ -78,6 +100,7 @@ app.include_router(routes_dashboard.router)
 app.include_router(routes_listings.router)
 app.include_router(routes_rentals.router)
 app.include_router(routes_checkout.router)
+app.include_router(routes_db.router)
 
 # Mount MCP Apps static directory if it exists
 mcp_apps_dir = Path(__file__).parent.parent.parent / "mcp-apps"
