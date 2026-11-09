@@ -79,21 +79,30 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
 
         # 3. Transfer User Demo Portfolio from UserDataRepository
         from ..repositories.user_data_repo import user_data_repo
+        from ..api.routes_auth import _USERS_DB
 
-        # User Profile
+        # User Profiles
         demo_user = user_data_repo.get_profile()
         if demo_user:
-            user_doc = demo_user.model_dump()
+            user_doc = demo_user if isinstance(demo_user, dict) else demo_user.model_dump()
             db.user_profiles.update_one(
                 {"id": user_doc["id"]},
                 {"$set": user_doc},
                 upsert=True
             )
-            counts["user_profiles"] = db.user_profiles.count_documents({})
+
+        for email, u_data in _USERS_DB.items():
+            u_doc = {k: v for k, v in u_data.items() if k != "password_hash"}
+            db.user_profiles.update_one(
+                {"id": u_doc["id"]},
+                {"$set": u_doc},
+                upsert=True
+            )
+        counts["user_profiles"] = db.user_profiles.count_documents({})
 
         # Owned Vehicles (Digital Garage)
         for ov in user_data_repo.get_all_owned_vehicles():
-            doc = ov.model_dump()
+            doc = ov.model_dump() if hasattr(ov, "model_dump") else dict(ov)
             db.owned_vehicles.update_one(
                 {"id": doc["id"]},
                 {"$set": doc},
@@ -103,7 +112,7 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
 
         # Purchase Orders
         for po in user_data_repo.get_all_purchases():
-            doc = po.model_dump()
+            doc = po.model_dump() if hasattr(po, "model_dump") else dict(po)
             db.purchase_orders.update_one(
                 {"id": doc["id"]},
                 {"$set": doc},
@@ -113,7 +122,7 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
 
         # Payment Transactions
         for pt in user_data_repo.get_all_payments():
-            doc = pt.model_dump()
+            doc = pt.model_dump() if hasattr(pt, "model_dump") else dict(pt)
             db.payment_transactions.update_one(
                 {"id": doc["id"]},
                 {"$set": doc},
@@ -123,7 +132,7 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
 
         # Selling Listings
         for sl in user_data_repo.get_all_selling_listings():
-            doc = sl.model_dump()
+            doc = sl.model_dump() if hasattr(sl, "model_dump") else dict(sl)
             db.selling_listings.update_one(
                 {"id": doc["id"]},
                 {"$set": doc},
@@ -132,10 +141,12 @@ def transfer_all_data_to_mongodb(force: bool = False) -> Dict[str, Any]:
         counts["selling_listings"] = db.selling_listings.count_documents({})
 
         # Saved Vehicles
-        for sv_id in user_data_repo.get_saved_vehicle_ids():
+        saved_ids = user_data_repo.get_saved_vehicle_ids()
+        u_id = demo_user.get("id", "usr_demo_01") if isinstance(demo_user, dict) else "usr_demo_01"
+        for sv_id in saved_ids:
             db.saved_vehicles.update_one(
-                {"userId": demo_user.id if demo_user else "usr_demo_01", "vehicleId": sv_id},
-                {"$set": {"userId": demo_user.id if demo_user else "usr_demo_01", "vehicleId": sv_id}},
+                {"userId": u_id, "vehicleId": sv_id},
+                {"$set": {"userId": u_id, "vehicleId": sv_id}},
                 upsert=True
             )
         counts["saved_vehicles"] = db.saved_vehicles.count_documents({})

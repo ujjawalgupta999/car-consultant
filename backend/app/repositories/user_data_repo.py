@@ -743,5 +743,35 @@ class UserDataRepository:
             "portfolio_valuation_inr": sum(v.currentEstimatedValue or 0 for v in owned)
         }
 
+    def get_profile(self, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        from ..api.routes_auth import _USERS_DB
+        target_id = user_id or self._demo_user_id
+        for u in _USERS_DB.values():
+            if u.get("id") == target_id:
+                return {k: v for k, v in u.items() if k != "password_hash"}
+        return {
+            "id": "usr_demo_01",
+            "name": "Alex Vance",
+            "email": "demo@auramotors.com",
+            "phone": "+91 98765 43210",
+            "saved_vehicles": ["CAR-001", "CAR-021"]
+        }
+
+    def get_all_owned_vehicles(self) -> List[OwnedVehicle]:
+        return list(self._owned_vehicles.values())
+
+    def get_all_purchases(self) -> List[PurchaseRecord]:
+        return list(self._purchases.values())
+
+    def get_all_payments(self) -> List[PaymentRecord]:
+        return list(self._payments.values())
+
+    def get_all_selling_listings(self) -> List[VehicleListing]:
+        return list(self._listings.values())
+
+    def get_saved_vehicle_ids(self, user_id: Optional[str] = None) -> List[str]:
+        p = self.get_profile(user_id)
+        return p.get("saved_vehicles", []) if p else []
+
 # Singleton instance
 user_data_repo = UserDataRepository()
