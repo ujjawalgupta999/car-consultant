@@ -57,15 +57,15 @@ class WebsiteActionRegistry:
 
     def _register_default_actions(self):
         # -------------------------------------------------------------
-        # 1. ACCOUNT & GARAGE ACTIONS
+        # 1. ACCOUNT ACTIONS
         # -------------------------------------------------------------
         self.register_action(ActionDefinition(
             name="view_my_vehicles",
-            description="Retrieve and display all vehicles owned by the authenticated user in their digital garage",
+            description="Retrieve and display all vehicles purchased and owned by the authenticated user",
             intent="VIEW_MY_VEHICLES",
             category="ACCOUNT",
             requires_auth=True,
-            navigation_path="/dashboard/vehicles",
+            navigation_path="/dashboard/purchases",
             ui_action_type="NAVIGATE"
         ))
 
@@ -81,11 +81,11 @@ class WebsiteActionRegistry:
 
         self.register_action(ActionDefinition(
             name="view_my_rentals",
-            description="Retrieve and display active and past vehicle rental reservations for the authenticated user",
+            description="Retrieve and display the authenticated user's vehicle orders (redirects to purchases)",
             intent="VIEW_RENTALS",
             category="ACCOUNT",
             requires_auth=True,
-            navigation_path="/dashboard/rentals",
+            navigation_path="/dashboard/purchases",
             ui_action_type="NAVIGATE"
         ))
 

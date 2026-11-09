@@ -38,8 +38,6 @@ export const PaymentResultPage: React.FC = () => {
     (payment?.vehicleId ? getVehicleById(payment.vehicleId) : null) ||
     vehicles[0];
 
-  const isRent = (orderId || '').startsWith('BK-') || (orderId || '').startsWith('bk_');
-
   // Authoritative fetch from database if not passed via state or after refresh
   const fetchAuthoritativeStatus = async () => {
     if (!orderId) return;
@@ -108,13 +106,13 @@ export const PaymentResultPage: React.FC = () => {
             </span>
 
             <h1 className="text-3xl font-bold text-white tracking-tight mt-3">
-              {isRent ? 'Rental Reservation Confirmed!' : 'Vehicle Purchase Confirmed!'}
+              Vehicle Purchase Confirmed!
             </h1>
             <p className="text-slate-400 text-sm mt-2 max-w-md mx-auto">
               Your mock payment has been settled. The authoritative record has been synchronized with your account dashboard and Aura AI Consultant.
             </p>
 
-            {/* Post-Transaction Purchased / Reserved Vehicle Showcase Card */}
+            {/* Post-Transaction Purchased Vehicle Showcase Card */}
             {showcaseVehicle && (
               <div className="my-6 rounded-2xl border-2 border-emerald-500/80 bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950/30 p-5 text-left shadow-2xl relative overflow-hidden">
                 <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-3 border-b border-slate-800">
@@ -141,28 +139,22 @@ export const PaymentResultPage: React.FC = () => {
                   </div>
 
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-slate-950 text-xs font-black px-3 py-1 shadow-lg uppercase tracking-wider">
-                    <ShieldCheck className="w-3.5 h-3.5" /> {isRent ? 'ACTIVE RENTAL PASS' : 'OWNED / IN GARAGE'}
+                    <ShieldCheck className="w-3.5 h-3.5" /> OWNED / IN MY PURCHASES
                   </span>
                 </div>
 
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="text-slate-300">
                     <span className="text-slate-500">Ownership Status:</span>{' '}
-                    <strong className="text-emerald-400 font-bold">{isRent ? 'Rental Reserved' : 'Added to Digital Garage'}</strong>
+                    <strong className="text-emerald-400 font-bold">Added to My Purchases</strong>
                   </div>
                   <div className="flex items-center gap-2">
                     <Link
-                      to="/dashboard/vehicles"
+                      to="/dashboard/purchases"
                       className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition flex items-center gap-1.5"
                     >
-                      <span>View in My Garage</span>
+                      <span>View in My Purchases</span>
                       <ArrowRight className="w-3 h-3" />
-                    </Link>
-                    <Link
-                      to={isRent ? '/dashboard/rentals' : '/dashboard/purchases'}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition"
-                    >
-                      {isRent ? 'View Rental Pass' : 'View Purchases'}
                     </Link>
                   </div>
                 </div>
@@ -194,7 +186,7 @@ export const PaymentResultPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-800/60">
                 <div>
                   <span className="text-slate-500 block text-[11px]">Service Type:</span>
-                  <span className="text-white font-medium">{isRent ? 'Self-Drive Fleet Rental' : 'Certified Purchase Token Deposit'}</span>
+                  <span className="text-white font-medium">Certified Purchase Token Deposit</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[11px]">Payment Method:</span>
@@ -219,11 +211,11 @@ export const PaymentResultPage: React.FC = () => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row justify-center gap-3">
               <Link
-                to={isRent ? '/dashboard/rentals' : '/dashboard/purchases'}
+                to="/dashboard/purchases"
                 className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl text-sm transition shadow-lg shadow-cyan-950/30 flex items-center justify-center gap-2"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span>{isRent ? 'View My Rentals' : 'View My Purchases'}</span>
+                <span>View My Purchases</span>
               </Link>
 
               <Link

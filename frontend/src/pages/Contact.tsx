@@ -148,7 +148,7 @@ export const Contact: React.FC = () => {
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500"
                     >
                       <option value="General Fleet Inquiry">General Fleet Inquiry</option>
-                      <option value="Long-term Luxury Rental">Long-term Luxury Rental</option>
+                      <option value="Certified Pre-Owned Purchase">Certified Pre-Owned Purchase</option>
                       <option value="Pre-owned Vehicle Purchase">Pre-owned Vehicle Purchase</option>
                       <option value="Corporate Fleet Solutions">Corporate Fleet Solutions</option>
                       <option value="Press & Media">Press & Media</option>

@@ -38,9 +38,6 @@ interface VehicleStore {
   filters: VehicleFilters;
   purchasedVehicleIds: string[];
   purchases: any[];
-  // Deprecated compatibility fields
-  rentedVehicleIds: string[];
-  rentals: any[];
   fetchVehicles: () => Promise<void>;
   fetchUserOwnership: () => Promise<void>;
   setFilters: (partial: Partial<VehicleFilters>) => void;
@@ -56,8 +53,6 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
   filters: DEFAULT_FILTERS,
   purchasedVehicleIds: [],
   purchases: [],
-  rentedVehicleIds: [],
-  rentals: [],
 
   fetchVehicles: async () => {
     set({ isLoading: true, error: null });
@@ -92,8 +87,6 @@ export const useVehicleStore = create<VehicleStore>((set, get) => ({
       set({
         purchasedVehicleIds: purchasedIds,
         purchases: purchasesData,
-        rentedVehicleIds: [],
-        rentals: [],
       });
     } catch (e) {
       console.warn('Could not fetch user purchase ownership state:', e);

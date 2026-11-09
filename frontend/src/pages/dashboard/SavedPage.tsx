@@ -18,7 +18,7 @@ export const SavedPage: React.FC = () => {
 
   const handleAskAiAboutSaved = async (vehicleName: string) => {
     setIsOpen(true);
-    const prompt = `Give me a full concierge briefing on my saved vehicle: ${vehicleName}. What are its ownership highlights, resale stability, and current rental demand?`;
+    const prompt = `Give me a full concierge briefing on my saved vehicle: ${vehicleName}. What are its ownership highlights, resale stability, and service record history?`;
     addMessage({
       id: `msg_user_${Date.now()}`,
       role: 'user',
@@ -55,7 +55,7 @@ export const SavedPage: React.FC = () => {
         </div>
         <h2 className="text-2xl font-bold text-white tracking-tight">Saved Vehicles</h2>
         <p className="text-xs text-slate-400">
-          Vehicles you have bookmarked for comparison, purchase token reserve, or future rental booking.
+          Vehicles you have bookmarked for comparison and purchase token reservation.
         </p>
       </div>
 

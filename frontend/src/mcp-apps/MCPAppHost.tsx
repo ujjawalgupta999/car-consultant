@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { calculateBookingTotal, createBooking, createOrder } from '../services/api';
+import { createOrder } from '../services/api';
 import { ShieldCheck, X } from 'lucide-react';
 
 interface MCPAppHostProps {
@@ -39,79 +39,32 @@ export const MCPAppHost: React.FC<MCPAppHostProps> = ({
             '*'
           );
         }
-      } else if (msg.type === 'mcp-app:action') {
-        if (msg.action === 'recalculate' && msg.payload) {
-          try {
-            const pricing = await calculateBookingTotal(
-              msg.payload.vehicleId,
-              msg.payload.durationDays,
-              msg.payload.addonIds || []
-            );
-            // Post back authoritative calculation
-            if (iframeRef.current && iframeRef.current.contentWindow) {
-              iframeRef.current.contentWindow.postMessage(
-                {
-                  type: 'mcp-app:update',
-                  pricing: pricing,
-                },
-                '*'
-              );
-            }
-          } catch (err) {
-            console.error('Failed to recalculate backend price:', err);
-          }
-        }
       } else if (msg.type === 'mcp-app:finish') {
         if (msg.status === 'cancelled' || msg.action === 'cancel') {
           onCancel();
         } else if (msg.action === 'proceed_checkout' && msg.data) {
-          // Booking form completed -> Create booking or order on backend
+          // Complete purchase order on backend
           try {
-            if (msg.data.intent === 'buy') {
-              const res = await createOrder({
-                session_id: msg.data.sessionId,
-                vehicle_id: msg.data.vehicleId,
-                customer_name: msg.data.customerName,
-                customer_email: msg.data.customerEmail,
-                customer_phone: msg.data.customerPhone,
-                pan_or_id: msg.data.idNumber,
-                delivery_city: msg.data.location || 'Delhi',
-                financing_selected: false,
-                deposit_amount: 25000.0,
-              });
-              onFinish({
-                nextApp: 'checkout',
-                orderId: res.order_id,
-                totalAmount: 25000.0,
-                vehicle: contextData.vehicle,
-                intent: 'buy',
-              });
-            } else {
-              const res = await createBooking({
-                session_id: msg.data.sessionId,
-                vehicle_id: msg.data.vehicleId,
-                customer_name: msg.data.customerName,
-                customer_email: msg.data.customerEmail,
-                customer_phone: msg.data.customerPhone,
-                driver_license_number: msg.data.idNumber,
-                pickup_date: msg.data.pickupDate,
-                return_date: msg.data.pickupDate, // calculated by backend
-                duration_days: msg.data.durationDays,
-                pickup_location: msg.data.location,
-                return_location: msg.data.location,
-                addon_ids: msg.data.addonIds,
-              });
-              onFinish({
-                nextApp: 'checkout',
-                bookingId: res.booking_id,
-                totalAmount: res.booking.total_amount,
-                vehicle: contextData.vehicle,
-                durationDays: msg.data.durationDays,
-                intent: 'rent',
-              });
-            }
+            const res = await createOrder({
+              session_id: msg.data.sessionId,
+              vehicle_id: msg.data.vehicleId,
+              customer_name: msg.data.customerName,
+              customer_email: msg.data.customerEmail,
+              customer_phone: msg.data.customerPhone,
+              pan_or_id: msg.data.idNumber,
+              delivery_city: msg.data.location || 'Delhi',
+              financing_selected: false,
+              deposit_amount: 25000.0,
+            });
+            onFinish({
+              nextApp: 'checkout',
+              orderId: res.order_id,
+              totalAmount: 25000.0,
+              vehicle: contextData.vehicle,
+              intent: 'buy',
+            });
           } catch (e) {
-            console.error('Failed to save booking:', e);
+            console.error('Failed to create purchase order:', e);
           }
         } else if (msg.status === 'paid') {
           onFinish({

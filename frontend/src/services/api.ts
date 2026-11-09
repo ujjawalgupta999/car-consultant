@@ -48,32 +48,7 @@ export async function sendA2uiAction(sessionId: string, surfaceId: string, actio
   return res.json();
 }
 
-export async function calculateBookingTotal(vehicleId: string, durationDays: number, addonIds: string[]) {
-  const res = await fetch(`${API_BASE}/api/bookings/calculate`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      vehicle_id: vehicleId,
-      duration_days: durationDays,
-      addon_ids: addonIds
-    })
-  });
-  if (!res.ok) throw new Error('Failed to calculate booking total');
-  return res.json();
-}
 
-export async function createBooking(payload: any) {
-  const res = await fetch(`${API_BASE}/api/bookings`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Idempotency-Key': `idemp_bk_${Date.now()}`
-    },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) throw new Error('Failed to create booking');
-  return res.json();
-}
 
 export async function createOrder(payload: any) {
   const res = await fetch(`${API_BASE}/api/orders`, {
@@ -199,15 +174,7 @@ export async function getPaymentById(paymentId: string) {
   return res.json();
 }
 
-export async function getRentals(params?: { status?: string; search?: string }) {
-  const query = new URLSearchParams();
-  if (params?.status) query.append('status', params.status);
-  if (params?.search) query.append('search', params.search);
-  const qStr = query.toString();
-  const res = await fetch(`${API_BASE}/api/rentals${qStr ? `?${qStr}` : ''}`);
-  if (!res.ok) throw new Error('Failed to fetch rentals');
-  return res.json();
-}
+
 
 export async function recheckPayment(paymentId: string) {
   const res = await fetch(`${API_BASE}/api/payments/${paymentId}/recheck`, {

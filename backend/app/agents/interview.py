@@ -124,14 +124,7 @@ class AdaptiveInterviewAgent:
             has_buy_signal = any(re.search(pat, text_lower) for pat in buy_patterns) and not negated_buy
             has_rent_signal = any(re.search(pat, text_lower) for pat in rent_patterns) and not negated_rent
 
-            if has_rent_signal and (not has_buy_signal or negated_buy):
-                current_prefs.intent = IntentType.RENT
-                current_prefs.purchase_details = None
-                current_prefs.sell_details = None
-                if not current_prefs.rental_details:
-                    current_prefs.rental_details = RentalDetails()
-                extracted_fields.append("intent: RENT")
-            elif has_buy_signal and (not has_rent_signal or negated_rent):
+            if has_rent_signal or has_buy_signal:
                 current_prefs.intent = IntentType.BUY
                 current_prefs.rental_details = None
                 current_prefs.sell_details = None
@@ -535,7 +528,7 @@ class AdaptiveInterviewAgent:
                 return f"I can certainly help you list your {cat_desc} for sale on Aura Motors.\n\nIs the vehicle currently registered in your name?"
             return "Could you provide details about your car — such as make, model, year, kilometers driven, and expected selling price?"
 
-        is_rent = (prefs.intent == "RENT" or prefs.intent == IntentType.RENT)
+        is_rent = False
 
         # Natural conversational acknowledgement
         ack_prefix = ""
@@ -550,12 +543,11 @@ class AdaptiveInterviewAgent:
             cap_desc = words.get(prefs.seating_capacity, f"{prefs.seating_capacity} people")
             # If both city and budget are missing and user specified seating capacity, ask both concisely
             if "location" in missing and "budget" in missing:
-                budget_phrase = "what's your approximate purchase budget" if not is_rent else "what's your daily rental budget"
+                budget_phrase = "what's your approximate purchase budget"
                 return f"Got it! Let's find a car for {cap_desc}.\n\nWhich city will you be driving in, and {budget_phrase}?"
             ack_prefix = f"Got it! Let's find a car for {cap_desc}.\n\n"
         elif prefs.category and not prefs.location:
-            intent_word = "rental" if is_rent else "purchase"
-            ack_prefix = f"Great! Let's find a {prefs.category.value.lower()} for your {intent_word}.\n\n"
+            ack_prefix = f"Great! Let's find a {prefs.category.value.lower()} for your purchase.\n\n"
         elif prefs.location and (prefs.category or prefs.seating_capacity):
             ack_prefix = f"Perfect, {prefs.location}. "
 
@@ -564,16 +556,7 @@ class AdaptiveInterviewAgent:
             return (ack_prefix + "Which city will you be driving in (e.g., Delhi, Mumbai, Bangalore)?").strip()
 
         if "budget" in missing:
-            if is_rent:
-                return (ack_prefix + "What is your approximate daily rental budget?").strip()
-            else:
-                return (ack_prefix + "What is your target purchase budget (e.g., ₹15 Lakh)?").strip()
-
-        if "pickup_date" in missing and is_rent:
-            return (ack_prefix + "When would you like to pick up the car (e.g., 15 December 2026)?").strip()
-
-        if "rental_duration" in missing and is_rent:
-            return (ack_prefix + "How many days will you need the vehicle for?").strip()
+            return (ack_prefix + "What is your target purchase budget (e.g., ₹15 Lakh)?").strip()
 
         if "category" in missing and not prefs.seating_capacity:
             return (ack_prefix + "What style of vehicle are you looking for (e.g., SUV, Sedan, EV, Hatchback)?").strip()

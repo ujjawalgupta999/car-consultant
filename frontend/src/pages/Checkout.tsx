@@ -45,11 +45,6 @@ export const Checkout: React.FC = () => {
   const [customerPhone, setCustomerPhone] = useState(user?.phone || '+91 98765 43210');
   const [deliveryCity, setDeliveryCity] = useState('Delhi NCR');
 
-  // Rental specific dates
-  const [pickupDate, setPickupDate] = useState('2026-12-15');
-  const [returnDate, setReturnDate] = useState('2026-12-20');
-  const [durationDays, setDurationDays] = useState(5);
-
   // Payment states
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking'>('upi');
   const [upiId, setUpiId] = useState('alex@okaxis');
@@ -69,9 +64,6 @@ export const Checkout: React.FC = () => {
     if (checkoutDraft.customerPhone) setCustomerPhone(checkoutDraft.customerPhone);
     if (checkoutDraft.deliveryCity) setDeliveryCity(checkoutDraft.deliveryCity);
     if (checkoutDraft.pickupLocation) setDeliveryCity(checkoutDraft.pickupLocation);
-    if (checkoutDraft.pickupDate) setPickupDate(checkoutDraft.pickupDate);
-    if (checkoutDraft.returnDate) setReturnDate(checkoutDraft.returnDate);
-    if (checkoutDraft.durationDays) setDurationDays(checkoutDraft.durationDays);
     if (checkoutDraft.paymentMethod) {
       const m = String(checkoutDraft.paymentMethod).toLowerCase();
       if (m === 'upi' || m === 'card' || m === 'netbanking') {
@@ -116,11 +108,6 @@ export const Checkout: React.FC = () => {
               if (data.customer.email) setCustomerEmail(data.customer.email);
               if (data.customer.phone) setCustomerPhone(data.customer.phone);
             }
-            if (data.rentalDetails) {
-              if (data.rentalDetails.pickupDate) setPickupDate(data.rentalDetails.pickupDate);
-              if (data.rentalDetails.returnDate) setReturnDate(data.rentalDetails.returnDate);
-              if (data.rentalDetails.durationDays) setDurationDays(data.rentalDetails.durationDays);
-            }
           }
         } catch (e) {
           console.error('Failed to fetch checkout details:', e);
@@ -132,15 +119,9 @@ export const Checkout: React.FC = () => {
     }
   }, [id]);
 
-  const isRent = passedIntent === 'rent' || orderId.startsWith('BK-') || orderId.startsWith('bk_');
-
   // Pricing calculations
-  const dailyRate = vehicle?.rental_price_per_day || 3500;
   const purchasePrice = vehicle?.purchase_price || 1500000;
-  const rentalSubtotal = dailyRate * durationDays;
-  const rentalTaxes = rentalSubtotal * 0.18;
-  const securityDeposit = 5000;
-  const payableAmount = isRent ? rentalSubtotal + rentalTaxes : 25000; // 25,000 reservation deposit for buy
+  const payableAmount = 25000; // 25,000 reservation deposit for purchase token
 
   const handleStartPayment = (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +134,7 @@ export const Checkout: React.FC = () => {
         paymentMethod,
         simScenario,
         vehicle,
-        isRent,
+        isRent: false,
         customerName,
         customerEmail
       }
@@ -171,7 +152,7 @@ export const Checkout: React.FC = () => {
           paymentMethod,
           simScenario: 'success',
           vehicle,
-          isRent,
+          isRent: false,
           customerName,
           customerEmail
         }
@@ -181,7 +162,7 @@ export const Checkout: React.FC = () => {
     return () => {
       window.removeEventListener('aura_execute_checkout_submit', handleExecuteSubmit);
     };
-  }, [orderId, payableAmount, paymentMethod, vehicle, isRent, customerName, customerEmail, navigate]);
+  }, [orderId, payableAmount, paymentMethod, vehicle, customerName, customerEmail, navigate]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pt-28 pb-20">
@@ -193,7 +174,7 @@ export const Checkout: React.FC = () => {
             <span>Unified Checkout &amp; Settlement</span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
-            {isRent ? 'Rental Reservation Checkout' : 'Vehicle Purchase Checkout'}
+            Vehicle Purchase Checkout
           </h1>
           <p className="text-slate-400 text-sm mt-1">
             Authoritative transactional checkout shared across Aura AI Consultant and marketplace catalogue.
@@ -253,7 +234,7 @@ export const Checkout: React.FC = () => {
                 </div>
                 <div>
                   <label className="block font-semibold text-slate-400 mb-1">
-                    {isRent ? 'Pickup City' : 'Delivery City'}
+                    Delivery City
                   </label>
                   <input
                     type="text"
@@ -266,52 +247,10 @@ export const Checkout: React.FC = () => {
               </div>
             </div>
 
-            {/* Rental Duration Selector (If Rental) */}
-            {isRent && (
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-cyan-400" />
-                  <span>2. Rental Period &amp; Schedule</span>
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                  <div>
-                    <label className="block font-semibold text-slate-400 mb-1">Pickup Date</label>
-                    <input
-                      type="date"
-                      value={pickupDate}
-                      onChange={(e) => setPickupDate(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-400 mb-1">Return Date</label>
-                    <input
-                      type="date"
-                      value={returnDate}
-                      onChange={(e) => setReturnDate(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-400 mb-1">Duration (Days)</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={30}
-                      value={durationDays}
-                      onChange={(e) => setDurationDays(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-cyan-500"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Payment Method Selection */}
             <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
               <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
-                <span>{isRent ? '3.' : '2.'} Select Mock Payment Method</span>
+                <span>2. Select Mock Payment Method</span>
               </h3>
 
               <div className="grid grid-cols-3 gap-3 mb-6">
@@ -519,45 +458,18 @@ export const Checkout: React.FC = () => {
                   <span className="font-mono text-white font-semibold">{orderId}</span>
                 </div>
 
-                {isRent ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Daily Fleet Rate:</span>
-                      <span className="font-medium text-white">₹{dailyRate.toLocaleString()} / day</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Duration:</span>
-                      <span className="font-medium text-white">{durationDays} Days</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Rental Subtotal:</span>
-                      <span className="font-medium text-white">₹{rentalSubtotal.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Taxes &amp; Fees (GST 18%):</span>
-                      <span className="font-medium text-white">₹{rentalTaxes.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Refundable Security Deposit:</span>
-                      <span className="text-emerald-400 font-semibold">₹{securityDeposit.toLocaleString()} (Hold)</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Vehicle Total Price:</span>
-                      <span className="font-medium text-white">₹{purchasePrice.toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Certification &amp; Inspection:</span>
-                      <span className="text-emerald-400 font-semibold">Complimentary</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-400">Reservation Token Deposit:</span>
-                      <span className="font-medium text-white">₹25,000</span>
-                    </div>
-                  </>
-                )}
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Vehicle Total Price:</span>
+                  <span className="font-medium text-white">₹{purchasePrice.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Certification &amp; Inspection:</span>
+                  <span className="text-emerald-400 font-semibold">Complimentary</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Reservation Token Deposit:</span>
+                  <span className="font-medium text-white">₹25,000</span>
+                </div>
 
                 <div className="pt-4 border-t border-slate-800 flex justify-between items-baseline">
                   <div>

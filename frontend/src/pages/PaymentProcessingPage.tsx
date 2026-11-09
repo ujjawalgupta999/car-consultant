@@ -60,7 +60,7 @@ export const PaymentProcessingPage: React.FC = () => {
             brand: stateData.vehicle?.brand || data.payment?.vehicleSnapshot?.brand,
             model: stateData.vehicle?.model || data.payment?.vehicleSnapshot?.model,
             amount,
-            type: stateData.isRent ? 'RENT' : 'BUY',
+            type: 'BUY',
           });
 
           await new Promise((r) => setTimeout(r, 600));

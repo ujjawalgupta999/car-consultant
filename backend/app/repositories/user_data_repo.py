@@ -400,6 +400,26 @@ class UserDataRepository:
         logger.info(f"Purchase successfully recorded: {purchase.id} for user '{target_user}'.")
         return purchase
 
+    def get_user_owned_vehicles(self, user_id: str) -> List[Any]:
+        """Maps user confirmed purchases to owned vehicle representations."""
+        purchases = self.get_user_purchases(user_id)
+        owned_list = []
+        for p in purchases:
+            snap = p.vehicleSnapshot
+            class OwnedVehicleItem:
+                def __init__(self, p_rec, s):
+                    self.id = s.id or p_rec.vehicleId
+                    self.brand = s.brand
+                    self.model = s.model
+                    self.variant = s.variant or "Standard Edition"
+                    self.year = s.year or 2024
+                    self.category = s.category
+                    self.image = s.image
+                    self.purchasePrice = p_rec.purchasePrice
+                    self.currentEstimatedValue = round(p_rec.purchasePrice * 0.9, 2)
+            owned_list.append(OwnedVehicleItem(p, snap))
+        return owned_list
+
     def get_user_purchases(
         self,
         user_id: str,

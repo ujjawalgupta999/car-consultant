@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
             <p className="text-xs text-gray-400">
-              Conversational Car Rental & Purchase Consultant
+              Conversational AI Car Buying & Selling Consultant
             </p>
           </div>
         </div>

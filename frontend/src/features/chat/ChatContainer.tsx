@@ -124,17 +124,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                       card.cardType === 'OWNED_VEHICLE' ||
                       card.status === 'OWNED' ||
                       card.status === 'PURCHASED';
-                    const isRentedCard =
-                      card.cardType === 'RENTAL' ||
-                      card.status === 'RENTAL CONFIRMED' ||
-                      card.status === 'ACTIVE RENTAL';
 
                     const priceStr = card.amount
                       ? `₹${card.amount.toLocaleString('en-IN')}`
                       : card.purchasePrice
                       ? `₹${card.purchasePrice.toLocaleString('en-IN')}`
-                      : card.rentalPrice
-                      ? `₹${card.rentalPrice.toLocaleString('en-IN')}/day`
                       : card.totalAmount
                       ? `₹${card.totalAmount.toLocaleString('en-IN')}`
                       : card.expectedPrice
@@ -153,8 +147,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                         className={`group relative overflow-hidden rounded-xl border bg-slate-900/90 shadow-md transition-all duration-300 hover:shadow-xl select-none ${
                           isOwnedCard
                             ? 'border-emerald-500/80 ring-1 ring-emerald-500/40'
-                            : isRentedCard
-                            ? 'border-cyan-500/80 ring-1 ring-cyan-500/40'
                             : 'border-surface-border hover:border-cyan-500/60'
                         }`}
                       >
@@ -179,10 +171,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                               {isOwnedCard ? (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 text-slate-950 text-[9px] font-black px-2 py-0.5 shadow uppercase tracking-wider">
                                   ✓ OWNED
-                                </span>
-                              ) : isRentedCard ? (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500 text-slate-950 text-[9px] font-black px-2 py-0.5 shadow uppercase tracking-wider">
-                                  RENTED
                                 </span>
                               ) : card.category ? (
                                 <span className="rounded-full bg-slate-900/80 backdrop-blur-md px-2 py-0.5 text-[9px] font-bold text-gray-300 border border-white/10 uppercase tracking-wider">
@@ -248,7 +236,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                 <p><span className="text-gray-500">Paid:</span> <span className="text-emerald-400 font-semibold">₹{card.purchasePrice.toLocaleString()}</span></p>
                               )}
                               {card.totalAmount && (
-                                <p><span className="text-gray-500">Rental Total:</span> <span className="text-cyan-300 font-semibold">₹{card.totalAmount.toLocaleString()}</span></p>
+                                <p><span className="text-gray-500">Amount:</span> <span className="text-cyan-300 font-semibold">₹{card.totalAmount.toLocaleString()}</span></p>
                               )}
                               {card.expectedPrice && (
                                 <p><span className="text-gray-500">Asking Price:</span> <span className="text-emerald-400 font-semibold">₹{card.expectedPrice.toLocaleString()}</span></p>
@@ -274,7 +262,7 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                                     else if (act.action === 'SELL_VEHICLE') navigate('/sell-car');
                                     else if (act.action === 'select_vehicle') {
                                       useConsultantStore.getState().executeWebsiteAction(
-                                        { type: 'NAVIGATE_TO_PAGE', payload: { path: `/booking/${card.id || card.vehicleId}` } },
+                                        { type: 'NAVIGATE_TO_PAGE', payload: { path: `/checkout/${card.id || card.vehicleId}` } },
                                         navigate
                                       );
                                     }
@@ -302,11 +290,9 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
                       const path: string = a.payload.path;
                       let label = 'Open Page';
                       if (path.includes('/dashboard/purchases')) label = 'View My Purchases';
-                      else if (path.includes('/dashboard/rentals')) label = 'View My Rentals';
                       else if (path.includes('/dashboard/payments')) label = 'Payment History';
                       else if (path.includes('/dashboard/listings')) label = 'My Listings';
                       else if (path.includes('/buy')) label = 'Explore Buy Cars';
-                      else if (path.includes('/rent')) label = 'Explore Rental Fleet';
                       else if (path.includes('/compare')) label = 'View Comparison Matrix';
                       else if (path.includes('/sell')) label = 'Sell a Car Portal';
 

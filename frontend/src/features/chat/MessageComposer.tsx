@@ -32,10 +32,10 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         </span>
         <button
           type="button"
-          onClick={() => setPreset("I need an automatic SUV in Delhi for five days starting 15 December 2026. My budget is ₹3,000 per day.")}
+          onClick={() => setPreset("I want to buy a luxury electric sedan in Delhi NCR under ₹40 lakh.")}
           className="rounded-full border border-surface-border bg-surface px-3 py-1 text-gray-300 hover:border-cyan-500/60 hover:text-white transition-all"
         >
-          🚗 Scenario A: Rental (Delhi SUV 5 Days)
+          ⚡ Scenario A: EV Sedan Purchase (₹40L)
         </button>
         <button
           type="button"
@@ -46,7 +46,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => setPreset("I need an automatic convertible in Delhi for 5 days starting 15 December 2026 with a daily budget of ₹500.")}
+          onClick={() => setPreset("I need an automatic convertible in Delhi under ₹5 lakh.")}
           className="rounded-full border border-surface-border bg-surface px-3 py-1 text-gray-300 hover:border-amber-500/60 hover:text-white transition-all"
         >
           ⚠️ Scenario C: Zero Match Relaxation

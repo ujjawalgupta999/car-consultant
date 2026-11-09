@@ -27,7 +27,7 @@ export const About: React.FC = () => {
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">200-Point Inspection</h3>
             <p className="text-slate-400 text-xs leading-relaxed">
-              Every vehicle in our rental and purchase catalogue undergoes certified diagnostic teardowns covering powertrain integrity, structural geometry, and digital telemetry.
+              Every vehicle in our certified vehicle catalogue undergoes certified diagnostic teardowns covering powertrain integrity, structural geometry, and digital telemetry.
             </p>
           </div>
 

@@ -146,7 +146,7 @@ export const CompareCars: React.FC = () => {
                     <option value="">Select vehicle...</option>
                     {availableToAdd.map((v) => (
                       <option key={v.id} value={v.id}>
-                        {v.brand} {v.model} ({v.category}) - ₹{v.rental_price_per_day.toLocaleString()}/day
+                        {v.brand} {v.model} ({v.category}) - ₹{(v.purchase_price / 100000).toFixed(2)} Lakh
                       </option>
                     ))}
                   </select>
@@ -192,10 +192,7 @@ export const CompareCars: React.FC = () => {
                         <h4 className="text-base font-semibold text-white truncate">{v.model}</h4>
                         <div className="mt-2 flex flex-col gap-1">
                           <span className="text-xs text-slate-400">
-                            Rent: <strong className="text-white">₹{v.rental_price_per_day.toLocaleString()}</strong>/day
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            Buy: <strong className="text-white">₹{(v.purchase_price / 100000).toFixed(2)}L</strong>
+                            Purchase: <strong className="text-white">₹{(v.purchase_price / 100000).toFixed(2)} Lakh</strong>
                           </span>
                         </div>
                         <div className="mt-3 flex items-center space-x-2">
@@ -206,10 +203,10 @@ export const CompareCars: React.FC = () => {
                             Details
                           </Link>
                           <Link
-                            to={`/booking/${v.id}`}
+                            to={`/checkout/${v.id}`}
                             className="flex-1 py-1.5 text-center text-xs font-medium bg-cyan-600 hover:bg-cyan-500 text-white rounded transition"
                           >
-                            Rent
+                            Reserve
                           </Link>
                         </div>
                       </th>

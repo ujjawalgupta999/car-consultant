@@ -88,7 +88,7 @@ export const ProfilePage: React.FC = () => {
             <div className="p-3.5 rounded-xl bg-gradient-to-r from-cyan-950/40 to-slate-950 border border-cyan-800/40 flex items-center justify-between">
               <div>
                 <span className="font-bold text-cyan-300 block">Aura Black Tier Member</span>
-                <span className="text-[11px] text-slate-400">Zero-deposit car rentals & VIP priority dispatch</span>
+                <span className="text-[11px] text-slate-400">Zero-fee vehicle acquisition & VIP priority dispatch</span>
               </div>
               <Award className="w-6 h-6 text-cyan-400" />
             </div>

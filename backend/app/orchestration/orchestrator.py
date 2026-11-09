@@ -152,7 +152,7 @@ class OrchestrationEngine:
                         }
                         title_desc = f"{sell_payload['year']} {sell_payload['brand']} {sell_payload['model']}"
                         bot_text = (
-                            f"Awesome! I see you have a **{title_desc}** in your digital garage.\n\n"
+                            f"Awesome! I see you have a **{title_desc}** in your verified purchases.\n\n"
                             f"I've pre-filled your listing form with your car's verified details "
                             f"({sell_payload['variant']}, 32,000 km, asking ₹{sell_payload['expected_price']/100000:.1f} Lakh) "
                             f"and navigated you directly to our **Sell a Car** portal. Please review the details before confirming your listing."
@@ -1166,30 +1166,29 @@ class OrchestrationEngine:
             }
 
         # -----------------------------------------------------------------
-        # CANCEL_BOOKING
+        # CANCEL_ORDER / CANCEL_RESERVATION
         # -----------------------------------------------------------------
-        if detected.intent == "CANCEL_BOOKING":
+        if detected.intent in ["CANCEL_BOOKING", "CANCEL_ORDER"]:
             order_id = detected.entities.get("order_id")
-            from ..models.rental import RentalStatus
-            cancelled_ref = "your booking"
+            from ..models.purchase import PurchaseStatus
+            cancelled_ref = "your reservation"
             if order_id:
-                rental = user_data_repo.get_rental_by_order(order_id)
-                if rental:
-                    rental.rentalStatus = RentalStatus.CANCELLED
-                    cancelled_ref = f"booking `{order_id}`"
+                purchase = user_data_repo.get_purchase_by_order(order_id)
+                if purchase:
+                    purchase.purchaseStatus = PurchaseStatus.CANCELLED
+                    cancelled_ref = f"order `{order_id}`"
             else:
-                # Cancel latest rental if available
-                user_rentals = user_data_repo.get_user_rentals(user_id)
-                if user_rentals:
-                    user_rentals[0].rentalStatus = RentalStatus.CANCELLED
-                    cancelled_ref = f"booking `{user_rentals[0].orderId}`"
+                user_purchases = user_data_repo.get_user_purchases(user_id)
+                if user_purchases:
+                    user_purchases[0].purchaseStatus = PurchaseStatus.CANCELLED
+                    cancelled_ref = f"order `{user_purchases[0].orderId}`"
 
-            bot_text = f"{cancelled_ref.capitalize()} has been successfully cancelled. I've updated your rentals dashboard."
+            bot_text = f"{cancelled_ref.capitalize()} has been successfully cancelled. I've updated your Purchases dashboard."
             actions = [
-                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/rentals"}},
-                {"type": "NAVIGATE", "payload": {"path": "/dashboard/rentals"}},
-                {"type": "REFRESH_DATA", "payload": {"resource": "myRentals"}},
-                {"type": "SHOW_NOTIFICATION", "payload": {"message": "Booking cancelled successfully"}}
+                {"type": "NAVIGATE_TO_PAGE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "NAVIGATE", "payload": {"path": "/dashboard/purchases"}},
+                {"type": "REFRESH_DATA", "payload": {"resource": "myPurchases"}},
+                {"type": "SHOW_NOTIFICATION", "payload": {"message": "Order reservation cancelled successfully"}}
             ]
             bot_msg = ChatMessage(id=f"msg_{uuid.uuid4().hex[:8]}", role=ChatRole.ASSISTANT, content=bot_text)
             session_repo.add_message(session_id, bot_msg)
@@ -1495,16 +1494,11 @@ class OrchestrationEngine:
             )
 
             a2ui_surfaces = []
-            has_date = bool(session.preferences.rental_start_date or (session.preferences.rental_details and session.preferences.rental_details.pickup_date))
-            has_dur = bool(session.preferences.rental_details and session.preferences.rental_details.rental_duration_days)
             diag = None
-            if not has_date or not has_dur:
-                session.workflow_state = WorkflowState.INTERVIEWING
-                session.search_results = []
-            elif ranked:
+            if ranked:
                 session.workflow_state = WorkflowState.RECOMMENDATIONS_READY
                 surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
-                rec_components = self._build_recommendations_a2ui_components(ranked, True)
+                rec_components = self._build_recommendations_a2ui_components(ranked, False)
                 await self.emit_event(session_id, "a2ui", {
                     "type": "createSurface",
                     "surfaceId": surface_id,
@@ -1512,7 +1506,7 @@ class OrchestrationEngine:
                 })
                 a2ui_surfaces = [surface_id]
             else:
-                session.workflow_state = WorkflowState.RECOMMENDATIONS_READY
+                session.workflow_state = WorkflowState.INTERVIEWING
                 all_v = marketplace_repo.get_all_vehicles()
                 diag = RankingEngine.diagnose_zero_results(all_v, session.preferences)
                 surface_id = f"surf_zero_{uuid.uuid4().hex[:6]}"
@@ -1523,7 +1517,7 @@ class OrchestrationEngine:
                 role=ChatRole.ASSISTANT,
                 content=bot_text,
                 a2ui_surfaces=a2ui_surfaces,
-                data={"messageType": "RENTAL_SEARCH", "cards": cards, "actions": actions}
+                data={"messageType": "VEHICLE_SEARCH", "cards": cards, "actions": actions}
             )
             session_repo.add_message(session_id, bot_msg)
             session_repo.save_session(session)
@@ -1671,7 +1665,7 @@ class OrchestrationEngine:
             max_b = session.preferences.budget_max or (session.preferences.budget.amount if session.preferences.budget else None)
             min_b = session.preferences.budget_min
             preview_matches = marketplace_repo.search_vehicles(
-                intent="rent" if is_rent else "buy",
+                intent="buy",
                 category=session.preferences.category.value if session.preferences.category else None,
                 location=session.preferences.location,
                 min_price=min_b,
@@ -1690,7 +1684,7 @@ class OrchestrationEngine:
                 preview_ranked = RankingEngine.rank_vehicles(preview_matches, session.preferences, limit=3)
                 surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
                 rec_components = self._build_recommendations_a2ui_components(
-                    preview_ranked, is_rent
+                    preview_ranked, False
                 )
                 a2ui_surfaces_list.append(surface_id)
                 await self.emit_event(session_id, "a2ui", {
@@ -1780,16 +1774,14 @@ class OrchestrationEngine:
         session.workflow_state = WorkflowState.SEARCHING
 
         # Execute repository search
-        is_rent = (session.preferences.intent == "RENT" or session.preferences.intent == IntentType.RENT)
-        start_d = session.preferences.rental_details.pickup_date if (is_rent and session.preferences.rental_details) else None
-        end_d = session.preferences.rental_details.return_date if (is_rent and session.preferences.rental_details) else None
+        is_rent = False
         max_p = session.preferences.budget_max or (session.preferences.budget.amount if session.preferences.budget else None)
         min_p = session.preferences.budget_min
         trans = session.preferences.transmission if session.preferences.transmission not in ["any", None] else None
         fuel = session.preferences.fuel_type if session.preferences.fuel_type not in ["any", None] else None
 
         filtered_vehicles = marketplace_repo.search_vehicles(
-            intent="rent" if is_rent else "buy",
+            intent="buy",
             location=session.preferences.location,
             category=session.preferences.category.value if session.preferences.category else None,
             min_price=min_p,
@@ -1798,9 +1790,7 @@ class OrchestrationEngine:
             fuel_type=fuel,
             seats=session.preferences.seating_capacity,
             seats_match_type=session.preferences.seating_match_type or "exact",
-            brands=session.preferences.preferred_brands if session.preferences.preferred_brands else None,
-            start_date=start_d,
-            end_date=end_d
+            brands=session.preferences.preferred_brands if session.preferences.preferred_brands else None
         )
 
         await self.emit_event(session_id, "progress", {
@@ -1864,22 +1854,22 @@ class OrchestrationEngine:
             "message": f"Prepared {len(ranked_items)} personalized recommendations."
         })
 
-        intent_word = "rental" if is_rent else "purchase"
+        intent_word = "purchase"
         top_name = f"{ranked_items[0].vehicle.brand} {ranked_items[0].vehicle.model}"
         loc_str = f" in {session.preferences.location}" if session.preferences.location else ""
         bot_text = (
-            f"I have found {len(ranked_items)} verified {intent_word} options for you{loc_str}. "
+            f"I have found {len(ranked_items)} verified purchase options for you{loc_str}. "
             f"My top recommendation is the **{top_name}** with a {ranked_items[0].match_score}% match score.\n\n"
-            f"Review the options below and click **'Select'** to launch the booking details."
+            f"Review the options below and click **'Select'** to inspect specs and proceed to purchase reservation."
         )
 
         surface_id = f"surf_rec_{uuid.uuid4().hex[:6]}"
-        rec_components = self._build_recommendations_a2ui_components(ranked_items, is_rent)
+        rec_components = self._build_recommendations_a2ui_components(ranked_items, False)
 
         structured_data = {
             "messageType": "VEHICLE_RECOMMENDATIONS",
-            "intent": session.preferences.intent.value if hasattr(session.preferences.intent, "value") else str(session.preferences.intent or "buy"),
-            "title": f"Verified {intent_word.capitalize()} Recommendations",
+            "intent": "buy",
+            "title": "Verified Purchase Recommendations",
             "summary": f"{len(ranked_items)} options identified{loc_str}",
             "message": bot_text,
             "collectedPreferences": session.preferences.model_dump(),
@@ -1905,9 +1895,9 @@ class OrchestrationEngine:
         })
 
         # Generate Website Actions to dynamically control the frontend
-        target_path = "/rent" if is_rent else "/buy"
+        target_path = "/buy"
         filter_payload = {
-            "intent": "rent" if is_rent else "buy",
+            "intent": "buy",
             "category": session.preferences.category.value if session.preferences.category else "",
             "transmission": session.preferences.transmission if session.preferences.transmission not in ["any", None] else "",
             "location": session.preferences.location or "",
@@ -2047,7 +2037,7 @@ class OrchestrationEngine:
             ))
         return comps
 
-    def _build_recommendations_a2ui_components(self, items: List[Any], is_rent: bool) -> List[A2UIComponent]:
+    def _build_recommendations_a2ui_components(self, items: List[Any], is_rent: bool = False) -> List[A2UIComponent]:
         comps: List[A2UIComponent] = []
         card_ids = []
 
@@ -2055,7 +2045,7 @@ class OrchestrationEngine:
             card_id = f"rec_card_{idx}"
             card_ids.append(card_id)
             v = item.vehicle
-            price_str = f"₹{v.rental_price_per_day:,.0f}/day" if is_rent else f"₹{v.purchase_price:,.0f}"
+            price_str = f"₹{v.purchase_price:,.0f}"
 
             comps.append(A2UIComponent(
                 id=card_id,

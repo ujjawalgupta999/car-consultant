@@ -34,7 +34,7 @@ interface ConsultantStore {
   setSellDraft: (draft: any) => void;
   checkoutDraft: Record<string, any> | null;
   setCheckoutDraft: (draft: Record<string, any> | null) => void;
-  acknowledgeManualTransaction: (transaction: { orderId: string; brand?: string; model?: string; amount?: number; type?: 'RENT' | 'BUY' }) => void;
+  acknowledgeManualTransaction: (transaction: { orderId: string; brand?: string; model?: string; amount?: number; type?: 'BUY' }) => void;
   executeWebsiteAction: (action: WebsiteAction, navigate?: (path: string) => void) => void;
   resetConversation: () => void;
 }
@@ -81,7 +81,7 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
 
   acknowledgeManualTransaction: (txn) => {
     const carTitle = txn.brand && txn.model ? `${txn.brand} ${txn.model}` : 'your selected vehicle';
-    const txnType = txn.type === 'RENT' ? 'rental booking' : 'purchase reservation';
+    const txnType = 'purchase reservation';
     const amountStr = txn.amount ? ` (Total: ₹${txn.amount.toLocaleString()})` : '';
 
     const ackMessage: ChatMessage = {
@@ -90,7 +90,7 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
       content:
         `🎉 **Transaction Confirmed on Website!**\n\n` +
         `Your ${txnType} for **${carTitle}**${amountStr} has been successfully recorded (Reference: \`${txn.orderId}\`).\n\n` +
-        `I have updated your digital garage, transaction records, and payment history in real time.`,
+        `I have updated your purchases, transaction records, and payment history in real time.`,
       timestamp: new Date().toISOString(),
     };
     set((state) => ({ messages: [...state.messages, ackMessage] }));
@@ -242,7 +242,7 @@ export const useConsultantStore = create<ConsultantStore>((set, get) => ({
         {
           id: 'msg_welcome_reset',
           role: 'assistant',
-          content: 'Session reset! How can I assist you with vehicle discovery, rental, purchase, or comparisons today?',
+          content: 'Session reset! How can I assist you with vehicle discovery, purchase, or comparisons today?',
           timestamp: new Date().toISOString(),
         },
       ],

@@ -39,7 +39,7 @@ export const PaymentsPage: React.FC = () => {
   const [payments, setPayments] = useState<PaymentItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState<string>('ALL'); // ALL, SUCCESS, FAILED, PENDING, BUY, RENT
+  const [filterType, setFilterType] = useState<string>('ALL'); // ALL, SUCCESS, FAILED, PENDING, BUY
   const [sortBy, setSortBy] = useState('date_desc');
   const [selectedPayment, setSelectedPayment] = useState<PaymentItem | null>(null);
 
@@ -157,8 +157,7 @@ export const PaymentsPage: React.FC = () => {
               { id: 'SUCCESS', label: 'Successful' },
               { id: 'PENDING', label: 'Pending' },
               { id: 'FAILED', label: 'Declined' },
-              { id: 'BUY', label: 'Purchases' },
-              { id: 'RENT', label: 'Rentals' }
+              { id: 'BUY', label: 'Purchases' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -339,7 +338,7 @@ export const PaymentsPage: React.FC = () => {
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-800/60">
                 <span className="text-slate-400">Transaction Type:</span>
-                <span className="text-white font-bold">{selectedPayment.transactionType === 'BUY' ? 'Vehicle Purchase Token' : 'Fleet Rental Booking'}</span>
+                <span className="text-white font-bold">Vehicle Purchase Token Deposit</span>
               </div>
               <div className="flex justify-between py-1.5 border-b border-slate-800/60">
                 <span className="text-slate-400">Target Vehicle:</span>

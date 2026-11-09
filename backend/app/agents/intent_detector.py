@@ -239,7 +239,7 @@ class UniversalIntentDetector:
         if any(re.search(p, target_text) for p in purchases_patterns):
             return DetectedIntent(intent="VIEW_PURCHASES", is_intent_switch=is_switching, raw_query=user_text)
 
-        # VIEW_RENTALS
+        # VIEW_RENTALS (Forwarded to VIEW_PURCHASES)
         rentals_patterns = [
             r"\b(?:show|list|view|display|open|see)\s+(?:me\s+)?(?:my\s+)?(?:rental\s+(?:history|bookings?)|rentals?|previous\s+rentals?|past\s+rentals?)\b",
             r"\b(?:show|list|view|display|open|see)\s+(?:me\s+)?(?:all\s+the\s+)?(?:cars|vehicles)\s+(?:that\s+)?i(?:\x27ve|\s+have)?\s+(?:rented|booked)\b",
@@ -247,7 +247,7 @@ class UniversalIntentDetector:
             r"\b(?:my\s+rental\s+bookings|cars\s+i(?:\x27m|\s+am)?\s+renting)\b"
         ]
         if any(re.search(p, target_text) for p in rentals_patterns):
-            return DetectedIntent(intent="VIEW_RENTALS", is_intent_switch=is_switching, raw_query=user_text)
+            return DetectedIntent(intent="VIEW_PURCHASES", is_intent_switch=is_switching, raw_query=user_text)
 
         # VIEW_SELLING_LISTINGS
         listings_patterns = [
